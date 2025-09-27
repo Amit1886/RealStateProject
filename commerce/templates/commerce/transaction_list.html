@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Transaction List</h2>
+<a href="{% url 'commerce:add_transaction' %}" style="padding:5px; background:blue; color:white; text-decoration:none; border-radius:4px;">➕ Add Transaction</a>
+<table>
+  <tr><th>Party</th><th>Type</th><th>Amount</th><th>Date</th></tr>
+  {% for txn in transactions %}
+  <tr>
+    <td>{{ txn.party.name }}</td>
+    <td>{{ txn.txn_type }}</td>
+    <td>{{ txn.amount }}</td>
+    <td>{{ txn.date }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

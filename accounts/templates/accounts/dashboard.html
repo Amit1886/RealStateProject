@@ -1,0 +1,185 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      color: #333;
+    }
+    .current-plan {
+      background: #e3f2fd;
+      border: 1px solid #90caf9;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .plans {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .plan-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .plan-card:hover {
+      transform: translateY(-5px);
+    }
+    .plan-card h4 {
+      margin-top: 0;
+      color: #1976d2;
+    }
+    .plan-card p {
+      margin: 8px 0;
+      color: #555;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    .btn-disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    .btn-subscribe {
+      background: #1976d2;
+    }
+    .btn-subscribe:hover {
+      background: #0d47a1;
+    }
+    .btn-switch {
+      background: #43a047;
+    }
+    .btn-switch:hover {
+      background: #2e7d32;
+    }
+    .quick-view {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+    }
+    .quick-view h3 {
+      color: #1976d2;
+      margin-top: 0;
+    }
+    .quick-view h4 {
+      margin-bottom: 5px;
+      color: #333;
+    }
+    .quick-view ul {
+      list-style: none;
+      padding: 0;
+    }
+    .quick-view ul li {
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .quick-view a {
+      display: inline-block;
+      margin-top: 8px;
+      text-decoration: none;
+      color: #1976d2;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="{% url 'profile' %}" class="text-gray-700 hover:text-blue-600">
+  Hello, {{ request.user.username }}
+ </a>
+
+  <!-- ✅ Profile Edit Shortcut -->
+  <p>
+    <a href="{% url 'khataapp:profile' %}" class="btn btn-switch">Edit Profile</a>
+  </p>
+
+  <!-- ✅ Current Plan -->
+  <div class="current-plan">
+    <h3>🎯 Your Current Plan: <strong>{{ profile.plan.name }}</strong></h3>
+    <p>Features: {{ profile.plan.features }}</p>
+  </div>
+
+  <!-- ✅ Available Plans -->
+  <h3>Available Plans</h3>
+  <div class="plans">
+    {% for p in plans %}
+      <div class="plan-card">
+        <h4>{{ p.name }}</h4>
+        <p>
+          Price:
+          {% if p.is_free %}
+            <strong>Free</strong>
+          {% else %}
+            <strong>₹{{ p.price }}</strong>
+          {% endif %}
+        </p>
+        <p>{{ p.features }}</p>
+
+        {% if profile.plan.id == p.id %}
+          <a class="btn btn-disabled">Current Plan</a>
+        {% else %}
+          {% if p.is_free %}
+            <a href="{% url 'switch_plan' p.id %}" class="btn btn-switch">Switch</a>
+          {% else %}
+            <a href="{% url 'start_payment' p.id %}" class="btn btn-subscribe">Upgrade / Subscribe</a>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- ✅ Quick View -->
+  <div class="quick-view">
+    <h3>Quick View</h3>
+
+    <h4>Latest Parties</h4>
+    <ul>
+      {% for party in parties|slice:":5" %}
+        <li>{{ party.name }} - {{ party.mobile }}</li>
+      {% empty %}
+        <li>No parties available</li>
+      {% endfor %}
+    </ul>
+    <a href="{% url 'commerce:party_list' %}">View All Parties</a>
+
+    <h4>Latest Transactions</h4>
+    <ul>
+      {% for txn in transactions|slice:":5" %}
+        <li>
+          {{ txn.party.name }} - {{ txn.txn_type }} - ₹{{ txn.amount }}
+          <span style="color: gray; font-size: 12px;">({{ txn.date|date:"d M Y" }})</span>
+        </li>
+      {% empty %}
+        <li>No transactions available</li>
+      {% endfor %}
+    </ul>
+    <a href="{% url 'commerce:transaction_list' %}">View All Transactions</a>
+  </div>
+
+</body>
+</html>

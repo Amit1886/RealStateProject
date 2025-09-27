@@ -1,0 +1,21 @@
+<!-- accounts/templates/accounts/profile_view.html -->
+<h2 class="text-xl font-bold">Complete Your Profile</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    <label>Name</label>
+    <input type="text" name="name" value="{{ party.name|default:profile.user.username }}" class="border p-2 w-full">
+
+    <label>Mobile</label>
+    <input type="text" name="mobile" value="{{ profile.mobile|default:party.mobile }}" class="border p-2 w-full">
+
+    <button type="submit" class="bg-blue-600 text-white p-2 mt-3 rounded">Save</button>
+</form>
+
+<h3 class="mt-5">Current Plan: {{ profile.plan|capfirst }}</h3>
+{% if profile.plan == "free" %}
+    <a href="{% url 'activate_basic' %}" class="bg-green-500 text-white p-2 rounded">Activate Basic</a>
+    <a href="{% url 'billing:choose_plan' %}" class="bg-yellow-500 text-white p-2 rounded">Upgrade to Premium</a>
+{% elif profile.plan == "basic" %}
+    <a href="{% url 'billing:choose_plan' %}" class="bg-yellow-500 text-white p-2 rounded">Upgrade to Premium</a>
+{% endif %}

@@ -1,0 +1,22 @@
+{% extends "commerce/base.html" %}
+{% block content %}
+<h2>Products <a class="right" href="{% url 'commerce:product_create' %}">+ Add</a></h2>
+<table>
+  <thead><tr><th>Name</th><th>Price</th><th>Visible</th><th>Actions</th></tr></thead>
+  <tbody>
+    {% for p in products %}
+      <tr>
+        <td>{{ p.name }}</td>
+        <td>₹{{ p.price }}</td>
+        <td>{{ p.visible_to_parties }}</td>
+        <td>
+          <a href="{% url 'commerce:product_edit' p.id %}">Edit</a> |
+          <a href="{% url 'commerce:product_delete' p.id %}" onclick="return confirm('Delete?')">Delete</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4">No products</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

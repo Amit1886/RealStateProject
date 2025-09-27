@@ -1,0 +1,51 @@
+{% extends "commerce/base.html" %}
+
+{% block title %}Edit Transaction{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="bg-warning text-dark p-4 rounded shadow-sm mb-4">
+        <h2 class="mb-1">✏ Edit Transaction</h2>
+        <p class="mb-0">Update the details of this transaction</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+
+                <div class="mb-3">
+                    <label class="form-label">Party</label>
+                    {{ form.party|as_widget:attrs }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Transaction Type</label>
+                    {{ form.txn_type }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Amount</label>
+                    {{ form.amount }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Notes</label>
+                    {{ form.note }}
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'commerce:transactions_list' %}" class="btn btn-secondary">⬅ Cancel</a>
+                    <button type="submit" class="btn btn-warning">💾 Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

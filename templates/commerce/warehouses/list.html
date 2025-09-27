@@ -1,0 +1,15 @@
+{% extends "commerce/base.html" %}
+{% block content %}
+<h2>Warehouses <a class="right" href="{% url 'commerce:warehouse_create' %}">+ Add</a></h2>
+<ul>
+  {% for w in warehouses %}
+    <li>
+      <b>{{ w.name }}</b> — {{ w.address }}
+      [ <a href="{% url 'commerce:warehouse_edit' w.id %}">Edit</a> |
+        <a href="{% url 'commerce:warehouse_delete' w.id %}" onclick="return confirm('Delete?')">Delete</a> ]
+    </li>
+  {% empty %}
+    <li>No warehouses.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

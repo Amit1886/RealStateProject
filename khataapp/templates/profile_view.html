@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>My Profile - KhataPro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: system-ui, Segoe UI, Arial;
+      margin: 40px;
+      background: #f9f9f9;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      padding: 24px;
+      max-width: 720px;
+      margin: auto;
+      background: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    img {
+      margin-top: 12px;
+      border-radius: 10px;
+    }
+    button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-top: 12px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>My Profile</h2>
+    <p><b>Full Name:</b> {{ profile.full_name }}</p>
+    <p><b>Mobile:</b> {{ profile.mobile_number }}</p>
+    <p><b>Business:</b> {{ profile.business_name }}</p>
+    <p><b>Address:</b> {{ profile.address }}</p>
+    <p><b>Business Type:</b> {{ profile.business_type }}</p>
+    <p><b>GST No:</b> {{ profile.gst_number }}</p>
+    
+    {% if profile.profile_picture %}
+      <img src="{{ profile.profile_picture.url }}" width="120">
+    {% endif %}
+
+    <hr>
+    <h3>Change Your Plan</h3>
+    <form method="post" action="{% url 'khataapp:update_plan' %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Update Plan</button>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{% extends "commerce/base.html" %}
+{% block content %}
+<h2>Chat with {{ party.name }}</h2>
+<p>Party Portal: {% if portal %}<a href="{% url 'commerce:portal_home' portal.token %}" target="_blank">{{ request.build_absolute_uri|slice:"://"|first }}{{ portal.portal_url }}</a>{% endif %}</p>
+<div id="chatbox" style="border:1px solid #ddd; padding:10px; height:300px; overflow:auto;"></div>
+<form id="sendForm">
+  {% csrf_token %}
+  <textarea name="text" rows="2" placeholder="Type message..."></textarea>
+  <button>Send</button>
+</form>
+<script>
+const threadId = {{ thread.id }};
+let lastTs = "";
+function fetchMsgs(){
+  fetch("{% url 'commerce:api_chat_messages' thread.id %}?after="+encodeURIComponent(lastTs))
+    .then(r=>r.json()).then(d=>{
+      const box=document.getElementById('chatbox');
+      d.messages.forEach(m=>{
+        const div=document.createElement('div');
+        div.textContent = `[${m.created_at}] ${m.sent_by}: ${m.text}`;
+        box.appendChild(div);
+        lastTs = m.created_at;
+      });
+      box.scrollTop = box.scrollHeight;
+    });
+}
+setInterval(fetchMsgs, 3000); fetchMsgs();
+
+document.getElementById('sendForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  fetch("{% url 'commerce:api_chat_send' thread.id %}", {method:"POST", body:fd, headers:{"X-CSRFToken":"{{ csrf_token }}"}})
+    .then(r=>r.json()).then(d=>{ if(d.ok){ e.target.reset(); fetchMsgs(); }});
+});
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% if messages %}
+  {% for message in messages %}
+    <p style="color: green;">{{ message }}</p>
+  {% endfor %}
+{% endif %}
+
+{% block content %}
+<h2>Party List</h2>
+<a href="{% url 'commerce:add_party' %}" style="padding:5px; background:blue; color:white; text-decoration:none; border-radius:4px;">➕ Add Party</a>
+<br><br>
+
+<table border="1" cellpadding="5">
+  <tr>
+    <th>Name</th>
+    <th>Mobile</th>
+    <th>Email</th>
+    <th>Party Type</th>
+  </tr>
+  {% for party in parties %}
+  <tr>
+    <td>{{ party.name }}</td>
+    <td>{{ party.mobile }}</td>
+    <td>{{ party.email }}</td>
+    <td>{{ party.party_type }}</td>
+  </tr>
+  {% empty %}
+  <tr>
+    <td colspan="4">No parties found.</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

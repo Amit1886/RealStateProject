@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Invoice: {{ invoice.number }}</h2>
+<p><strong>Status:</strong> {{ invoice.get_status_display }}</p>
+<p><strong>Amount:</strong> ₹{{ invoice.amount }}</p>
+<p><strong>Order:</strong> {{ invoice.order }}</p>
+<p><strong>Created At:</strong> {{ invoice.created_at }}</p>
+
+{% if invoice.payment_link %}
+    <p>
+        <a href="{{ invoice.payment_link }}" target="_blank" class="btn btn-success">
+            Pay Now
+        </a>
+    </p>
+{% endif %}
+{% endblock %}

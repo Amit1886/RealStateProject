@@ -1,0 +1,133 @@
+{% extends "accounts/base.html" %}
+{% load widget_tweaks %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="p-6 min-h-screen bg-gray-50">
+
+  <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+
+  <!-- Profile Info -->
+  <div class="bg-white rounded-xl shadow p-5 mb-8">
+    <h2 class="text-xl font-semibold mb-4">Profile</h2>
+    {% if profile %}
+      <p><strong>Name:</strong> {{ profile.name|default:request.user.username }}</p>
+      <p><strong>Email:</strong> {{ request.user.email }}</p>
+      <p><strong>Mobile:</strong> {{ profile.mobile|default:"-" }}</p>
+      <p><strong>Plan:</strong> {{ profile.plan.name|default:"Free" }}</p>
+    {% else %}
+      <p class="text-gray-500">Profile incomplete. <a href="{% url 'accounts:complete_profile' %}" class="text-blue-600 underline">Complete now</a></p>
+    {% endif %}
+  </div>
+
+  <!-- Metrics Cards -->
+  <div class="grid md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow p-5 text-center">
+      <div class="text-gray-400 font-medium">Total Credit</div>
+      <div class="text-3xl font-bold mt-2">₹{{ total_credit|default:"0" }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-5 text-center">
+      <div class="text-gray-400 font-medium">Total Debit</div>
+      <div class="text-3xl font-bold mt-2">₹{{ total_debit|default:"0" }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow p-5 text-center">
+      <div class="text-gray-400 font-medium">Balance</div>
+      <div class="text-3xl font-bold mt-2">₹{{ balance|default:"0" }}</div>
+    </div>
+  </div>
+
+  <!-- Parties -->
+  <div class="bg-white rounded-xl shadow p-5 mb-8">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold">Recent Parties</h2>
+      <a href="{% url 'commerce:add_party' %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">+ Add Party</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-left">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="py-2 px-3">Name</th>
+            <th class="py-2 px-3">Type</th>
+            <th class="py-2 px-3">Grade</th>
+            <th class="py-2 px-3">Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in parties %}
+          <tr class="border-b hover:bg-gray-50">
+            <td class="py-2 px-3">{{ p.name }}</td>
+            <td class="py-2 px-3">{{ p.party_type|title }}</td>
+            <td class="py-2 px-3">{{ p.credit_grade|default:"-" }}</td>
+            <td class="py-2 px-3">{{ p.created_at|date:"Y-m-d" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td class="py-2 px-3 text-center" colspan="4">No parties available</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Quick Transactions -->
+  <div class="bg-white rounded-xl shadow p-5 mb-8">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold">Quick Transactions</h2>
+      <a href="{% url 'commerce:add_transaction' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">+ Add Transaction</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-left">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="py-2 px-3">Party</th>
+            <th class="py-2 px-3">Type</th>
+            <th class="py-2 px-3">Amount</th>
+            <th class="py-2 px-3">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for txn in transactions %}
+          <tr class="border-b hover:bg-gray-50">
+            <td class="py-2 px-3">{{ txn.party.name }}</td>
+            <td class="py-2 px-3">{{ txn.txn_type|title }}</td>
+            <td class="py-2 px-3">₹{{ txn.amount }}</td>
+            <td class="py-2 px-3">{{ txn.created_at|date:"Y-m-d" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td class="py-2 px-3 text-center" colspan="4">No transactions available</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Plans & Pricing -->
+  {% if plans %}
+  <h2 class="text-2xl font-bold mb-4">Plans & Pricing</h2>
+  <div class="grid md:grid-cols-3 gap-6">
+    {% for plan in plans %}
+    <div class="bg-white rounded-2xl shadow p-6 border {% if plan.popular %}border-blue-500{% else %}border-gray-200{% endif %}">
+      {% if plan.popular %}
+      <div class="text-xs uppercase tracking-wide text-blue-600 font-bold mb-2">Most Popular</div>
+      {% endif %}
+      <div class="text-xl font-semibold mb-1">{{ plan.name }}</div>
+      <div class="text-gray-500 mb-3">{{ plan.tagline }}</div>
+      <div class="text-3xl font-bold mb-4">₹{{ plan.price_per_month|default:"0" }} <span class="text-base text-gray-400">/mo</span></div>
+      {% if plan.feature_list %}
+      <ul class="mb-4 list-disc pl-5">
+        {% for f in plan.feature_list %}
+        <li>{{ f }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      <a href="{% url 'accounts:subscribe_plan' plan.id %}" class="block text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded transition">Choose {{ plan.name }}</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

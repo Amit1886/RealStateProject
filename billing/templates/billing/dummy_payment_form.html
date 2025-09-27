@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Pay for {{ plan.name }} (₹{{ invoice.amount }})</h2>
+<p>Using gateway: {{ gateway.name }} ({{ gateway.provider }})</p>
+
+<!-- In real gateway you redirect to provider; this dummy simulates payment -->
+<form method="post" action="{% url 'billing:gateway_webhook' gateway.provider %}">
+  {% csrf_token %}
+  <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+  <input type="hidden" name="amount" value="{{ invoice.amount }}">
+  <input type="hidden" name="subscription_id" value="{{ subscription.id }}">
+  <input type="hidden" name="payment_ref" value="DUMMY-{{ invoice.id }}-{{ subscription.id }}">
+  <button type="submit">Simulate Payment Success (Dummy)</button>
+</form>
+
+<p>Or click Simulate Failure to test failure path</p>
+<form method="post" action="{% url 'billing:gateway_webhook' gateway.provider %}">
+  {% csrf_token %}
+  <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+  <input type="hidden" name="status" value="failed">
+  <button type="submit">Simulate Payment Failure</button>
+</form>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h2>My Credits</h2>
+
+  <h4>Credit Limit: ₹{{ party.credit_limit }}</h4>
+  <h4>Current Grade: {{ party.credit_grade }}</h4>
+  <hr>
+
+  <h3>Credit Entries</h3>
+  <table border="1" cellpadding="5">
+    <tr>
+      <th>ID</th>
+      <th>Amount</th>
+      <th>Date</th>
+      <th>Status</th>
+    </tr>
+    {% for entry in entries %}
+      <tr>
+        <td>{{ entry.id }}</td>
+        <td>₹{{ entry.amount }}</td>
+        <td>{{ entry.created_at|date:"Y-m-d" }}</td>
+        <td>{{ entry.status }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4">No credit entries yet.</td></tr>
+    {% endfor %}
+  </table>
+
+  <h3>EMI Schedule</h3>
+  <table border="1" cellpadding="5">
+    <tr>
+      <th>Entry</th>
+      <th>Due Date</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Penalty</th>
+    </tr>
+    {% for emi in emis %}
+      <tr>
+        <td>{{ emi.entry.id }}</td>
+        <td>{{ emi.due_date }}</td>
+        <td>₹{{ emi.amount }}</td>
+        <td>{{ emi.status }}</td>
+        <td>₹{{ emi.penalty_amount }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5">No EMIs yet.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

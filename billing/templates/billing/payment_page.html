@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Checkout — {{ invoice.plan.name }}</h2>
+<p>Invoice: <strong>{{ invoice.number }}</strong></p>
+<p>Amount: <strong>₹{{ invoice.amount }}</strong></p>
+
+<form method="post">
+  {% csrf_token %}
+  <p>Click to simulate payment (in production, redirect to payment gateway)</p>
+  <button type="submit" style="padding:10px 14px;background:#28a745;color:white;border:none;border-radius:6px;">Simulate Payment</button>
+</form>
+{% endblock %}

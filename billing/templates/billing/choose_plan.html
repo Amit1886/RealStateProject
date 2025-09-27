@@ -1,0 +1,23 @@
+<!-- /home/jaistech/myproject/khatapro/templates/billing/choose_plan.html -->
+<h2>Choose Your Plan</h2>
+
+<p>Current Plan: <strong>{{ current_plan.name }}</strong></p>
+
+<form method="post">
+    {% csrf_token %}
+    {% for plan in plans %}
+        <div style="margin:10px; padding:10px; border:1px solid #ccc;">
+            <h3>{{ plan.name }}</h3>
+            <p>{{ plan.description }}</p>
+            <p>Price: {{ plan.price }} / month</p>
+
+            {% if current_plan.id == plan.id %}
+                <button type="button" disabled>Active</button>
+            {% else %}
+                <button type="submit" name="plan_id" value="{{ plan.id }}">
+                    Switch to {{ plan.name }}
+                </button>
+            {% endif %}
+        </div>
+    {% endfor %}
+</form>

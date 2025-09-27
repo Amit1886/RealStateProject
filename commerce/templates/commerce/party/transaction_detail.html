@@ -1,0 +1,53 @@
+{% extends "commerce/base.html" %}
+
+{% block title %}Transaction Detail{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="bg-info text-white p-4 rounded shadow-sm mb-4">
+        <h2 class="mb-1">📄 Transaction Details</h2>
+        <p class="mb-0">Detailed view of the selected transaction</p>
+    </div>
+
+    <!-- Transaction Card -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="card-title mb-3">
+                {% if transaction.txn_type == "credit" %}
+                    <span class="badge bg-success">Credit</span>
+                {% else %}
+                    <span class="badge bg-danger">Debit</span>
+                {% endif %}
+                Transaction #{{ transaction.id }}
+            </h4>
+
+            <ul class="list-group list-group-flush mb-3">
+                <li class="list-group-item d-flex justify-content-between">
+                    <strong>Party:</strong> <span>{{ transaction.party.name }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <strong>Amount:</strong> <span class="fw-bold">₹{{ transaction.amount }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <strong>Date:</strong> <span>{{ transaction.date|date:"d M Y, H:i" }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <strong>Notes:</strong> <span>{{ transaction.notes|default:"-" }}</span>
+                </li>
+            </ul>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'commerce:transactions_list' %}" class="btn btn-secondary">⬅ Back to List</a>
+                <div>
+                    <a href="{% url 'transaction_edit' transaction.id %}" class="btn btn-warning">✏ Edit</a>
+                    <a href="{% url 'transaction_delete' transaction.id %}" class="btn btn-danger">🗑 Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

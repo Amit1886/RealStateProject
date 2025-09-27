@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Party Detail: {{ party.name }}</h2>
+<p><strong>Mobile:</strong> {{ party.mobile }}</p>
+<p><strong>Email:</strong> {{ party.email }}</p>
+<p><strong>Type:</strong> {{ party.party_type }}</p>
+<p><strong>Balance:</strong> {{ balance }}</p>
+<p><strong>Total Credit:</strong> {{ total_credit }}</p>
+<p><strong>Total Debit:</strong> {{ total_debit }}</p>
+
+<h3>Transactions</h3>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>ID</th>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>Date</th>
+        <th>Notes</th>
+        <th>Action</th>
+    </tr>
+    {% for txn in transactions %}
+    <tr>
+        <td>{{ txn.id }}</td>
+        <td>{{ txn.txn_type }}</td>
+        <td>{{ txn.amount }}</td>
+        <td>{{ txn.date }}</td>
+        <td>{{ txn.notes }}</td>
+        <td>
+            <a href="{% url 'commerce:transaction_detail' txn.pk %}">View</a> |
+            <a href="{% url 'commerce:transaction_edit' txn.pk %}">Edit</a> |
+            <a href="{% url 'commerce:transaction_delete' txn.pk %}">Delete</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6">No transactions yet.</td></tr>
+    {% endfor %}
+</table>
+
+<a href="{% url 'commerce:add_transaction' %}?party={{ party.id }}">➕ Add Transaction</a>
+{% endblock %}

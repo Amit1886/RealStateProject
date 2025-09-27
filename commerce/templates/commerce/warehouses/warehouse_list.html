@@ -1,0 +1,37 @@
+{% extends "commerce/base.html" %}
+
+{% block title %}Warehouses{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">Warehouses</h2>
+    <a href="{% url 'commerce:warehouse_create' %}" class="btn btn-success mb-3">+ Add Warehouse</a>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for warehouse in warehouses %}
+            <tr>
+                <td>{{ warehouse.id }}</td>
+                <td>{{ warehouse.name }}</td>
+                <td>{{ warehouse.location }}</td>
+                <td>
+                    <a href="{% url 'commerce:warehouse_edit' warehouse.id %}" class="btn btn-sm btn-primary">Edit</a>
+                    <a href="{% url 'commerce:warehouse_delete' warehouse.id %}" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">No warehouses found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
