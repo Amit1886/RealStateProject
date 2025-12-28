@@ -1,5 +1,7 @@
 {% extends "base.html" %}
-{% block content %}
+{% load static %}
+
+{% block billing_content %}
 <h2>Checkout — {{ invoice.plan.name }}</h2>
 <p>Invoice: <strong>{{ invoice.number }}</strong></p>
 <p>Amount: <strong>₹{{ invoice.amount }}</strong></p>

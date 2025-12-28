@@ -1,0 +1,182 @@
+/* ===============================
+   SIDEBAR CORE
+================================ */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 260px;
+    height: 100vh;
+    background: #0f172a;
+    color: #fff;
+    transition: width 0.3s ease;
+    overflow-x: hidden;   /* horizontal hide */
+    overflow-y: auto;     /* vertical scroll ENABLE */
+    z-index: 1000;
+}
+/* ===============================
+   COLLAPSED STATE
+================================ */
+.sidebar.collapsed {
+    width: 80px;
+    overflow-y: hidden;   /* icons-only view */
+}
+
+/* ===============================
+   LOGO HEADER
+================================ */
+.logo-header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    height: 60px;
+    background: #020617;
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: 600;
+    margin-left: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.3s ease, width 0.3s ease;
+}
+
+/* Hide logo text cleanly (NO CUT) */
+.sidebar.collapsed .logo-text {
+    opacity: 0;
+    width: 0;
+    margin-left: 0;
+}
+
+/* ===============================
+   TOGGLE BUTTON
+================================ */
+.btn-toggle {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    min-width: 30px;
+}
+
+/* ===============================
+   MENU
+================================ */
+.menu {
+    list-style: none;
+    padding: 10px;
+    margin: 0;
+}
+
+.menu li {
+    margin-bottom: 5px;
+}
+
+.menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #cbd5f5;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.menu a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* ===============================
+   ICON & LABEL
+================================ */
+.icon {
+    width: 30px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.label {
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+}
+
+/* Hide labels when collapsed */
+.sidebar.collapsed .label {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+/* ===============================
+   SUBMENU
+================================ */
+.has-submenu .submenu {
+    display: none;
+    padding-left: 35px;
+    margin-top: 5px;
+}
+
+.has-submenu.open .submenu {
+    display: block;
+}
+
+.submenu-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin: 10px 0 5px;
+}
+
+.submenu a {
+    font-size: 14px;
+    padding: 6px 0;
+    display: block;
+    color: #cbd5f5;
+}
+
+.submenu a:hover {
+    color: #fff;
+}
+
+/* ===============================
+   HOVER OPEN MODE
+================================ */
+.sidebar.hover-open {
+    width: 260px !important;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.4);
+    overflow-y: auto;   /* 👈 ensure scroll works */
+}
+
+.sidebar.hover-open .logo-text,
+.sidebar.hover-open .label {
+    opacity: 1;
+    width: auto;
+}
+
+/* ===============================
+   MAIN CONTENT SHIFT
+================================ */
+.main-content {
+    margin-left: 260px;
+    transition: margin-left 0.3s ease;
+}
+
+.sidebar.collapsed ~ .main-content {
+    margin-left: 80px;
+}
+
+/* ===============================
+   SCROLLBAR (OPTIONAL NICE LOOK)
+================================ */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+}

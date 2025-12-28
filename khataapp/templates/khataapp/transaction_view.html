@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/transaction_view.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="card txn-view-card">
+        <div class="card-header txn-view-header">
+            <h4>Transaction Details</h4>
+
+            <div class="header-actions">
+                <a href="{% url 'khataapp:transaction_edit' txn.id %}" class="btn btn-edit">
+                    ✏ Edit
+                </a>
+                <a href="{% url 'khataapp:transaction_delete' txn.id %}"
+                   onclick="return confirm('Delete this transaction?')"
+                   class="btn btn-delete">
+                    🗑 Delete
+                </a>
+                <a href="{% url 'khataapp:transaction_list' %}" class="btn btn-back">
+                    ← Back
+                </a>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="txn-grid">
+
+                <div class="txn-box">
+                    <span class="label">Party</span>
+                    <span class="value">{{ txn.party.name }}</span>
+                </div>
+
+                <div class="txn-box">
+                    <span class="label">Transaction Type</span>
+                    <span class="value {{ txn.txn_type }}">
+                        {{ txn.txn_type|title }}
+                    </span>
+                </div>
+
+                <div class="txn-box">
+                    <span class="label">Amount</span>
+                    <span class="value amount">₹ {{ txn.amount }}</span>
+                </div>
+
+                <div class="txn-box">
+                    <span class="label">Date</span>
+                    <span class="value">{{ txn.date }}</span>
+                </div>
+
+                <div class="txn-box full">
+                    <span class="label">Notes</span>
+                    <span class="value notes">
+                        {{ txn.notes|default:"—" }}
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/transaction_view.js' %}"></script>
+{% endblock %}

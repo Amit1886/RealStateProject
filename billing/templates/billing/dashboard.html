@@ -1,24 +1,48 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Billing Dashboard</h2>
+{% extends "accounts/base.html" %}
+{% load static %}
 
-<h3>Your Subscriptions</h3>
-<ul>
-  {% for s in subscriptions %}
-    <li>{{ s.plan.name }} — {{ s.status }} {% if s.start_date %} (since {{ s.start_date|date:"d M Y" }}){% endif %}</li>
-  {% empty %}
-    <li>No subscriptions</li>
-  {% endfor %}
-</ul>
+{% block billing_content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Billing Dashboard</h2>
+    <!-- ✅ Add New Commerce Button -->
+{% if request.user.userprofile.plan.feature_toggle.allow_commerce %}
+  <a href="{% url 'commerce:add_commerce' %}" class="btn btn-primary">+ Add New Commerce</a>
+{% endif %}
+</div>
 
-<h3>Your Invoices</h3>
-<ul>
-  {% for inv in invoices %}
-    <li>{{ inv.number }} — ₹{{ inv.amount }} — {{ inv.paid|yesno:"Paid,Pending" }} — {{ inv.created_at|date:"d M Y" }}</li>
-  {% empty %}
-    <li>No invoices</li>
-  {% endfor %}
-</ul>
+   <hr>
+     <h3>Your Subscriptions</h3>
+  <ul>
+    {% for s in subscriptions %}
+      <li>
+        {{ s.plan.name }} — {{ s.status }}
+        {% if s.start_date %}
+          (since {{ s.start_date|date:"d M Y" }})
+        {% endif %}
+      </li>
+    {% empty %}
+      <li>No subscriptions</li>
+    {% endfor %}
+  </ul>
 
-<p><a href="{% url 'billing:choose_plan' %}">Change / Buy Plan</a></p>
+  <h3>Your Invoices</h3>
+  <ul>
+    {% for inv in invoices %}
+      <li>
+        {{ inv.number }} — ₹{{ inv.amount }}
+        — {{ inv.paid|yesno:"Paid,Pending" }}
+        — {{ inv.created_at|date:"d M Y" }}
+      </li>
+    {% empty %}
+      <li>No invoices</li>
+    {% endfor %}
+  </ul>
+
+  <p>
+    <a href="{% url 'billing:choose_plan' %}" class="btn btn-primary">
+      Change / Buy Plan
+    </a>
+  </p>
+</div>
 {% endblock %}

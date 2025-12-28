@@ -1,0 +1,26 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block billing_content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Upgrade Your Plan</h2>
+  <div class="row">
+    {% for plan in plans %}
+    <div class="col-md-4">
+      <div class="card shadow-lg border-0 mb-4">
+        <div class="card-body text-center">
+          <h4 class="card-title">{{ plan.name }}</h4>
+          <p class="card-text text-muted">{{ plan.description }}</p>
+          <h3 class="text-primary mb-3">₹{{ plan.price }}</h3>
+          {% if current_plan and plan.id == current_plan.id %}
+            <button class="btn btn-success" disabled>Current Plan</button>
+          {% else %}
+            <a href="{% url 'billing:checkout' %}?plan_id={{ plan.id }}" class="btn btn-primary">Upgrade Now</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,51 +1,60 @@
 from django.urls import path
 from . import views
+from .views import (
+    sales_voucher_detail,
+     )
+
+
 
 app_name = "commerce"
 
 urlpatterns = [
     # ------------------- Dashboard -------------------
-    path("dashboard/", views.dashboard, name="User_dashboard"),
+    path("dashboard/", views.user_commerce_dashboard, name="User_dashboard"),
+    path("user-dashboard/", views.user_commerce_dashboard, name="user_commerce_dashboard"),
+
 
     # ------------------- Products -------------------
+    path("add-category/", views.add_category, name="add_category"),
+    path("add-product/", views.add_product, name="add_product"),
     path("products/", views.product_list, name="product_list"),
+    path("products/<int:id>/",views.product_detail,name="product_detail"),
     path("products/new/", views.product_create, name="product_create"),
     path("products/<int:pk>/edit/", views.product_edit, name="product_edit"),
     path("products/<int:pk>/delete/", views.product_delete, name="product_delete"),
 
-    # ------------------- Warehouses -------------------
+    # ---------------- PRODUCT MANAGEMENT ----------------
+    path("product/add/", views.add_product, name="add_product"),
+    path("add-payment/", views.add_payment, name="add_payment"),
+    path("add-stock/", views.add_stock, name="add_stock"),
+
+
+   # ------------------- Warehouses -------------------
+    path("add-warehouse/", views.add_warehouse, name="add_warehouse"),
     path("warehouses/", views.warehouse_list, name="warehouse_list"),
     path("warehouses/new/", views.warehouse_create, name="warehouse_create"),
     path("warehouses/<int:pk>/edit/", views.warehouse_edit, name="warehouse_edit"),
     path("warehouses/<int:pk>/delete/", views.warehouse_delete, name="warehouse_delete"),
 
     # ------------------- Orders -------------------
+    path("add-order/", views.add_order, name="add_order"),
+    path("view-order/<int:order_id>/", views.view_order, name="view_order"),
+    path("get-price/<int:pk>/", views.get_product_price, name="get_price"),
+    path('download-invoice/<int:order_id>/', views.download_invoice, name='download_invoice'),
     path("orders/", views.order_list, name="order_list"),
-    path("orders/new/", views.order_create_user, name="order_create_user"),
+    path('orders/sales/', views.sales_order_list, name='sales_order_list'),
+    path('orders/purchase/', views.purchase_order_list, name='purchase_order_list'),
+    path("orders/<int:order_id>/<str:action>/",views.order_action,name="order_action"),
     path("orders/<int:pk>/", views.order_detail, name="order_detail"),
-    path("orders/<int:pk>/accept/", views.order_accept, name="order_accept"),
-    path("orders/<int:pk>/reject/", views.order_reject, name="order_reject"),
-
-    # ------------------- Parties -------------------
-    path("party/add/", views.add_party, name="add_party"),
-    path("party/", views.party_list, name="party_list"),
-
-    # ------------------- Transactions / Invoices -------------------
-    path("transaction/add/", views.add_transaction, name="add_transaction"),
-    path("transaction/", views.transaction_list, name="transaction_list"),
+    path("sales/voucher/create/<int:order_id>/",views.sales_voucher_create,name="sales_voucher_create"),
+    path("sales/voucher/<int:invoice_no>/", sales_voucher_detail, name="sales_voucher_detail"),
+    path("invoices/add/", views.add_invoice, name="add_invoice"),
 
     # ------------------- Chat -------------------
+    path("add-chat-thread/", views.add_chat_thread, name="add_chat_thread"),
+    path("add-chat-message/", views.add_chat_message, name="add_chat_message"),
     path("chat/<int:thread_id>/", views.chat_room, name="chat_room"),
     path("api/chat/<int:thread_id>/messages/", views.api_chat_messages, name="api_chat_messages"),
     path("api/chat/<int:thread_id>/send/", views.api_chat_send, name="api_chat_send"),
 
-    # ------------------- Party Portal (Token Protected) -------------------
-    path("portal/<str:token>/", views.portal_home, name="portal_home"),
-    path("portal/<str:token>/products/", views.portal_products, name="portal_products"),
-    path("portal/<str:token>/order/new/", views.portal_place_order, name="portal_place_order"),
-    path("portal/<str:token>/chat/", views.portal_chat_room, name="portal_chat_room"),
-    path("portal/<str:token>/api/messages/", views.portal_api_messages, name="portal_api_messages"),
-    path("portal/<str:token>/api/send/", views.portal_api_send, name="portal_api_send"),
-
-
-]
+   ]

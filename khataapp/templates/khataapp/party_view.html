@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="view-card">
+
+    <h2 class="title">👁️ Party Details – {{ party.name }}</h2>
+
+    <div class="grid-2">
+
+        <div class="view-item">
+            <label>Name</label>
+            <p>{{ party.name }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>Party Type</label>
+            <p>{{ party.party_type|title }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>Mobile</label>
+            <p>{{ party.mobile }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>Email</label>
+            <p>{{ party.email }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>Aadhaar No</label>
+            <p>{{ party.aadhaar }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>PAN No</label>
+            <p>{{ party.pan }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>Opening Balance</label>
+            <p>{{ party.opening_balance }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>Opening Balance Type</label>
+            <p>{{ party.opening_type|title }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>PIN Code</label>
+            <p>{{ party.pin_code }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>State</label>
+            <p>{{ party.state }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>District</label>
+            <p>{{ party.district }}</p>
+        </div>
+
+    </div>
+
+    <div class="view-item full">
+        <label>Address</label>
+        <p>{{ party.address }}</p>
+    </div>
+
+    <h3 class="subtitle">Payment Details</h3>
+
+    <div class="grid-2">
+
+        <div class="view-item">
+            <label>UPI ID</label>
+            <p>{{ party.upi_id }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>Bank Account Number</label>
+            <p>{{ party.bank_account_number }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>WhatsApp Number</label>
+            <p>{{ party.whatsapp_number }}</p>
+        </div>
+
+        <div class="view-item">
+            <label>SMS Number</label>
+            <p>{{ party.sms_number }}</p>
+        </div>
+
+        <div class="view-item full">
+            <label>QR Code</label>
+            {% if party.qr_code %}
+                <img src="{{ party.qr_code.url }}" alt="QR" width="110" class="qr-preview">
+            {% else %}
+                <p>No QR Uploaded</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div class="btn-row">
+        <a href="{% url 'khataapp:party_list' %}" class="btn-secondary">Back</a>
+        <a href="{% url 'khataapp:edit_party' party.id %}" class="btn-primary">Edit</a>
+    </div>
+
+</div>
+
+<link rel="stylesheet" href="{% static 'css/party_view.css' %}">
+<script src="{% static 'js/party_view.js' %}"></script>
+
+{% endblock %}

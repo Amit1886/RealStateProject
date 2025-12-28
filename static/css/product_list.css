@@ -1,0 +1,37 @@
+.smart-card {
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.05);
+}
+
+.smart-table th {
+    background: #f1f5f9;
+    font-weight: 600;
+}
+
+.btn-view {
+    background: #0ea5e9;
+    color: #fff;
+}
+
+.btn-edit {
+    background: #16a34a;
+    color: #fff;
+}
+
+.btn-delete {
+    background: #dc2626;
+    color: #fff;
+}
+
+.btn-add {
+    background: #2563eb;
+    color: #fff;
+}
+
+.filter-card input {
+    border-radius: 8px;
+}
+
+.dataTables_wrapper .dt-buttons {
+    margin-bottom: 12px;
+}

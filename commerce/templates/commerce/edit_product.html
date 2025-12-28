@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+  <div class="bg-white shadow-xl rounded-2xl w-full max-w-md p-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+      ✏️ Edit Product
+    </h2>
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="mb-4">
+        <label class="block text-gray-700 font-semibold mb-2">Product Name</label>
+        <input
+          type="text"
+          name="name"
+          value="{{ product.name }}"
+          required
+          class="w-full border rounded-lg px-4 py-2 focus:ring focus:ring-indigo-300"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-gray-700 font-semibold mb-2">Price (₹)</label>
+        <input
+          type="number"
+          name="price"
+          value="{{ product.price }}"
+          step="0.01"
+          required
+          class="w-full border rounded-lg px-4 py-2 focus:ring focus:ring-indigo-300"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-gray-700 font-semibold mb-2">Stock Quantity</label>
+        <input
+          type="number"
+          name="stock"
+          value="{{ product.stock }}"
+          min="0"
+          class="w-full border rounded-lg px-4 py-2 focus:ring focus:ring-indigo-300"
+        />
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-gray-700 font-semibold mb-2">Description</label>
+        <textarea
+          name="description"
+          rows="3"
+          class="w-full border rounded-lg px-4 py-2 focus:ring focus:ring-indigo-300"
+        >{{ product.description }}</textarea>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg transition"
+      >
+        💾 Update Product
+      </button>
+
+      <a
+        href="{% url 'commerce:product_list' %}"
+        class="block text-center mt-4 text-indigo-500 hover:text-indigo-700 font-semibold"
+      >
+        ← Back to Products
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}

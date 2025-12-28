@@ -1,27 +1,29 @@
-from django.urls import path, include
-from . import views
+# accounts/urls.py
+from django.urls import path
+from . import views   # <-- sirf apna views kaam aa raha hai
+from .views import daily_summary_view
+
 
 app_name = "accounts"
 
 urlpatterns = [
-    # Authentication
+    path("dashboard/", views.dashboard, name="dashboard"),
+    path("staff-dashboard/", views.staff_dashboard, name="staff_dashboard"),
+    path("profile/", views.profile_settings, name="profile_settings"),
     path("signup/", views.signup_view, name="signup"),
     path("login/", views.login_view, name="login"),
-    path("logout/", views.logout_view, name="logout"),
-
-    # Profile
-    path("complete-profile/", views.complete_profile, name="complete_profile"),
     path("verify-otp/", views.verify_otp_view, name="verify_otp"),
-    path("profile/", views.profile_view, name="profile"),
-
-    # Dashboard
-    path("dashboard/", views.dashboard_view, name="dashboard"),  # fixed name
-
-    # Commerce app
-    path("commerce/", include("commerce.urls")),  # fixed include
-
-    # Plan Subscription
-    path("subscribe/<int:plan_id>/", views.subscribe_plan, name="switch_plan"),
-    path("start-payment/<int:plan_id>/", views.start_payment, name="start_payment"),
-    path("payment-success/<int:plan_id>/", views.payment_success, name="payment_success"),
+    path("logout/", views.logout_view, name="logout"),
+    path("settings/", views.profile_settings, name="profile_settings"),
+    path("subscribe-plan/<int:plan_id>/", views.subscribe_plan, name="subscribe_plan"),
+    path('dashboard/edit/', views.edit_profile, name='edit_profile'),
+    path("party/<int:party_id>/ledger/", views.party_ledger, name="party_ledger"),
+    path('ledger/<int:party_id>/load-more/', views.party_ledger_load_more, name='party_ledger_load_more'),
+    path("ledger/", views.ledger_list, name="ledger_list"),
+    path('ledger/<int:party_id>/pdf/', views.party_ledger_pdf, name='party_ledger_pdf'),
+    path("summary/", daily_summary_view, name="daily_summary"),
+    path("business-snapshot/",views.business_snapshot_view,name="business_snapshot"),
+    path("expenses/create/", views.create_expense, name="expense_create"),
+    path("expenses/", views.expense_list, name="expense_list"),
 ]
+

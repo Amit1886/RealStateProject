@@ -1,0 +1,40 @@
+{% extends "accounts/base.html" %}
+
+{% load static %}
+
+
+{% block content %}
+  <div class="header">
+    <div class="company">{{ request.site_name|default:"Your Company" }}</div>
+    <div>Party Ledger — {{ party.name }}</div>
+    <div style="font-size:11px;color:#666;">Generated on: {{ generated_on|date:"d M Y H:i" }}</div>
+  </div>
+
+  <div class="party-info">
+    <strong>Mobile:</strong> {{ party.mobile }} &nbsp; &nbsp;
+    <strong>Type:</strong> {{ party.party_type }} &nbsp; &nbsp;
+    <strong>Address:</strong> {{ party.address|default:"-" }}
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Type</th><th>Description</th><th>Amount (₹)</th></tr>
+    </thead>
+    <tbody>
+      {% for e in entries %}
+      <tr>
+        <td>{{ e.date|date:"d M Y" }}</td>
+        <td>{{ e.type }}</td>
+        <td>{{ e.desc }}</td>
+        <td style="text-align:right;">{{ e.amount }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="totals">
+    Total Credit: ₹{{ total_credit }} &nbsp; | &nbsp;
+    Total Debit: ₹{{ total_debit }} &nbsp; | &nbsp;
+    Balance: ₹{{ balance }}
+  </div>
+{% endblock %}

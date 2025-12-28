@@ -1,5 +1,7 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block billing_content %}
 <h2>Pay for {{ plan.name }} (₹{{ invoice.amount }})</h2>
 <p>Using gateway: {{ gateway.name }} ({{ gateway.provider }})</p>
 

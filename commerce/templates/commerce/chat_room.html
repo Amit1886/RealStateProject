@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow-lg rounded-3 border-0 p-0">
+    <div class="bg-primary text-white p-3 rounded-top d-flex align-items-center justify-content-between">
+      <h5 class="m-0">💬 Chat Room #{{ thread.id }}</h5>
+      <span class="badge bg-light text-primary">{{ thread.participants.count }} Participants</span>
+    </div>
+
+    <div class="chat-messages p-3" id="chat-box" style="height: 65vh; overflow-y: auto; background-color: #f9fafb;">
+      {% for msg in messages %}
+        <div class="d-flex {% if msg.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %} mb-2">
+          <div class="{% if msg.sender == request.user %}bg-primary text-white{% else %}bg-light text-dark{% endif %} rounded-4 p-2 px-3 shadow-sm" style="max-width: 70%;">
+            <small><strong>{{ msg.sender.username }}</strong></small><br>
+            {{ msg.message }}
+            <div class="text-end"><small class="text-muted">{{ msg.timestamp|date:"H:i" }}</small></div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="text-center text-muted mt-5">No messages yet.</div>
+      {% endfor %}
+    </div>
+
+    <form method="POST" class="p-3 border-top bg-white d-flex align-items-center">
+      {% csrf_token %}
+      <input type="text" name="message" class="form-control rounded-pill me-2" placeholder="Type a message..." required>
+      <button type="submit" class="btn btn-primary rounded-circle px-3 py-2">
+        📩
+      </button>
+    </form>
+  </div>
+</div>
+
+<style>
+@media (max-width: 576px) {
+  .chat-messages { height: 70vh; }
+}
+</style>
+{% endblock %}

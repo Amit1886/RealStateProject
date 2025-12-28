@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+  <h3>Create Sales Voucher</h3>
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="card p-4 mb-3">
+      <h5>Voucher Details</h5>
+
+      <div class="form-group mb-3">
+        <label>Party</label>
+        <select name="party" class="form-control" required>
+          <option value="">-- Select Party --</option>
+          {% for p in parties %}
+            <option value="{{ p.id }}">{{ p.name }} ({{ p.mobile }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-check mb-3">
+        <input type="checkbox" name="is_gst" class="form-check-input" checked>
+        <label class="form-check-label">Apply GST</label>
+      </div>
+    </div>
+
+    <div class="card p-4 mb-3">
+      <h5>Items</h5>
+
+      <table class="table" id="itemTable">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Rate</th>
+            <th>GST</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>
+              <select name="product[]" class="form-control">
+                <option value="">Select</option>
+                {% for pr in products %}
+                  <option value="{{ pr.id }}">{{ pr.name }}</option>
+                {% endfor %}
+              </select>
+            </td>
+
+            <td><input type="number" name="qty[]" class="form-control" min="1" value="1"></td>
+            <td><input type="number" name="rate[]" class="form-control" min="1"></td>
+
+            <td>
+              <select name="gst_rate[]" class="form-control">
+                <option value="0">0%</option>
+                <option value="5">5%</option>
+                <option value="12">12%</option>
+                <option value="18">18%</option>
+                <option value="28">28%</option>
+              </select>
+            </td>
+
+            <td><button type="button" class="btn btn-danger remove-row">X</button></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="button" id="addRow" class="btn btn-secondary">Add Item</button>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Voucher</button>
+
+  </form>
+</div>
+
+<script>
+document.getElementById("addRow").onclick = function() {
+  let table = document.querySelector("#itemTable tbody");
+  let newRow = table.rows[0].cloneNode(true);
+
+  newRow.querySelectorAll("input").forEach(i => i.value = "");
+  table.appendChild(newRow);
+
+  newRow.querySelector(".remove-row").onclick = function() {
+    newRow.remove();
+  };
+};
+
+document.querySelectorAll(".remove-row").forEach(btn => {
+  btn.onclick = function() {
+    btn.closest("tr").remove();
+  };
+});
+</script>
+
+{% endblock %}

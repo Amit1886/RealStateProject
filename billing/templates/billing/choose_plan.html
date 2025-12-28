@@ -1,4 +1,7 @@
-<!-- /home/jaistech/myproject/khatapro/templates/billing/choose_plan.html -->
+{% extends "billing/base.html" %}
+{% load static %}
+
+{% block billing_content %}
 <h2>Choose Your Plan</h2>
 
 <p>Current Plan: <strong>{{ current_plan.name }}</strong></p>
@@ -21,3 +24,4 @@
         </div>
     {% endfor %}
 </form>
+{% endblock %}

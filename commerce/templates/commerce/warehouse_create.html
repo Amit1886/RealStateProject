@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Add Warehouse{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-100 via-white to-blue-50 flex items-center justify-center py-10 px-4">
+  <div class="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-lg border border-gray-200">
+    
+    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+      🏗️ Add New Warehouse
+    </h2>
+
+    <form method="POST" class="space-y-4">
+      {% csrf_token %}
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Warehouse Name <span class="text-red-500">*</span></label>
+        <input type="text" name="name" required placeholder="Enter warehouse name"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Location <span class="text-red-500">*</span></label>
+        <input type="text" name="location" required placeholder="Enter location"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Capacity</label>
+        <input type="number" name="capacity" min="0" placeholder="Enter capacity (optional)"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none" />
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-1">Note</label>
+        <textarea name="note" rows="3" placeholder="Additional notes..."
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+      </div>
+
+      <button type="submit"
+        class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition duration-200">
+        ➕ Add Warehouse
+      </button>
+
+      <div class="text-center mt-4">
+        <a href="{% url 'commerce:warehouse_list' %}" class="text-blue-600 hover:underline text-sm font-medium">
+          ← Back to Warehouse List
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

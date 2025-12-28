@@ -1,0 +1,121 @@
+/* ================= Card ================= */
+.warehouse-card {
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background: #fff;
+}
+
+/* ================= Header ================= */
+.card.warehouse-card > .warehouse-header {
+    background: #f8fafc !important;
+    color: #020617;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.warehouse-header h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Add button */
+.btn-add {
+    background: #2563eb;
+    color: #fff !important;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+.btn-add:hover {
+    background: #1d4ed8;
+}
+
+/* ================= Table ================= */
+.warehouse-table {
+    width: 100% !important;
+    margin-bottom: 0;
+}
+
+/* Header like Party List */
+.warehouse-table thead th {
+    background: linear-gradient(180deg, #020617, #0f172a) !important;
+    color: #fff !important;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 10px;
+    border: none !important;
+}
+
+/* Body rows */
+.warehouse-table tbody td {
+    font-size: 13px;
+    padding: 9px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+}
+
+.warehouse-table tbody tr:hover {
+    background: #f1f5f9;
+}
+
+/* ================= Action Buttons ================= */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    color: #fff !important;
+    text-decoration: none;
+}
+
+.btn-edit {
+    background: #22c55e;
+}
+.btn-edit:hover {
+    background: #16a34a;
+}
+
+.btn-delete {
+    background: #ef4444;
+}
+.btn-delete:hover {
+    background: #dc2626;
+}
+
+/* ================= Datatable Controls ================= */
+.dataTables_wrapper {
+    padding-top: 6px;
+}
+
+.dataTables_filter label {
+    font-size: 13px;
+}
+
+.dataTables_filter input {
+    border-radius: 6px;
+    padding: 4px 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 12px;
+}
+
+.dataTables_length select {
+    border-radius: 6px;
+    padding: 3px 6px;
+    font-size: 12px;
+}
+
+.dataTables_info {
+    font-size: 12px;
+}
+
+.dataTables_paginate .page-link {
+    font-size: 12px;
+    border-radius: 6px !important;
+}

@@ -1,0 +1,69 @@
+{% extends "accounts/base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <div class="card shadow-sm border-0" style="border-radius:14px;">
+    <div class="card-header bg-white">
+      <h5 class="mb-0 fw-bold">➕ Create an Expense</h5>
+    </div>
+
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Expense Number -->
+        <div class="mb-3">
+          <label class="form-label">Expense Number</label>
+          <input type="text" class="form-control" value="Auto Generated" disabled>
+        </div>
+
+        <!-- Expense Date -->
+        <div class="mb-3">
+          <label class="form-label">Expense Date</label>
+          <input type="date" name="expense_date" class="form-control" value="{{ today }}" required>
+        </div>
+
+        <!-- Category -->
+        <div class="mb-3">
+          <label class="form-label">Expense Category</label>
+          <select name="category" class="form-select">
+            {% for cat in categories %}
+              <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Add New Category -->
+        <div class="mb-3">
+          <label class="form-label">Add new category name</label>
+          <input type="text" name="new_category" class="form-control" placeholder="e.g. Office Rent, Electricity">
+        </div>
+
+        <!-- Expense Details -->
+        <div class="mb-3">
+          <label class="form-label">Expense Item Details</label>
+          <textarea name="description" class="form-control" rows="3"></textarea>
+          <small class="text-muted">
+            ℹ Expense items will not affect your regular inventory items
+          </small>
+        </div>
+
+        <!-- Amount Paid -->
+        <div class="mb-3">
+          <label class="form-label">Amount Paid</label>
+          <input type="number" step="0.01" name="amount_paid" class="form-control" required>
+        </div>
+
+        <!-- Button -->
+        <div class="text-end">
+          <button class="btn btn-primary px-4">
+            Save Expense
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

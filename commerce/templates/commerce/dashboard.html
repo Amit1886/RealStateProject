@@ -1,87 +1,34 @@
-{% extends "commerce/base.html" %}
-{% block title %}Dashboard{% endblock %}
-
+{% extends 'base.html' %}
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-5">
+  <h2 class="text-primary mb-3">🛍 Commerce Dashboard</h2>
 
-    <!-- Balance Cards -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <canvas id="creditDebitChart"></canvas>
+  {% if not is_paid %}
+  <div class="alert alert-warning">
+    You are on a <strong>Free Plan</strong>. Upgrade to manage products and warehouses.
+  </div>
+  {% endif %}
+
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title text-success">Warehouses</h5>
+          <p>Total: {{ warehouses|length }}</p>
+          <a href="{% url 'commerce:warehouse_list' %}" class="btn btn-outline-success btn-sm">View All</a>
         </div>
-        {% if show_orders %}
-        <div class="col-md-6">
-            <canvas id="ordersChart"></canvas>
-        </div>
-        {% endif %}
+      </div>
     </div>
 
-    {% if show_inventory %}
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <canvas id="inventoryChart"></canvas>
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="card-title text-info">Products</h5>
+          <p>Total: {{ products|length }}</p>
+          <a href="{% url 'commerce:product_list' %}" class="btn btn-outline-info btn-sm">View All</a>
         </div>
+      </div>
     </div>
-    {% endif %}
+  </div>
 </div>
-
-<!-- Chart.js Scripts -->
-<script>
-    // Credit vs Debit
-    const creditDebitCtx = document.getElementById('creditDebitChart');
-    new Chart(creditDebitCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Credit', 'Debit'],
-            datasets: [{
-                data: [{{ total_credit }}, {{ total_debit }}],
-                backgroundColor: ['#28a745', '#dc3545'],
-            }]
-        }
-    });
-
-    // Orders by Status
-    {% if show_orders %}
-    const ordersCtx = document.getElementById('ordersChart');
-    new Chart(ordersCtx, {
-        type: 'bar',
-        data: {
-            labels: [{% for item in orders_status_data %}'{{ item.status }}',{% endfor %}],
-            datasets: [{
-                label: 'Orders',
-                data: [{% for item in orders_status_data %}{{ item.count }},{% endfor %}],
-                backgroundColor: '#007bff'
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
-            }
-        }
-    });
-    {% endif %}
-
-    // Inventory Stock
-    {% if show_inventory %}
-    const inventoryCtx = document.getElementById('inventoryChart');
-    new Chart(inventoryCtx, {
-        type: 'bar',
-        data: {
-            labels: [{% for item in inventory_data %}'{{ item.name }}',{% endfor %}],
-            datasets: [{
-                label: 'Stock',
-                data: [{% for item in inventory_data %}{{ item.stock }},{% endfor %}],
-                backgroundColor: '#ffc107'
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
-            }
-        }
-    });
-    {% endif %}
-</script>
 {% endblock %}

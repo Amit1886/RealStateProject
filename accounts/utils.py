@@ -2,6 +2,18 @@
 from django.core.mail import send_mail
 import requests
 from django.conf import settings
+from io import BytesIO
+import urllib.parse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from khataapp.models import Transaction
+from django.utils import timezone
+from django.db.models import Sum
+from accounts.models import DailySummary
+
+
 
 def send_email_otp(to_email, code):
     subject = "Your OTP Code"
@@ -23,3 +35,65 @@ def send_sms_otp(mobile, code, api_key=None):
         requests.get(url, headers={"cache-control": "no-cache"}, timeout=20)
     except Exception:
         pass
+
+def render_to_pdf_bytes(template_src, context_dict={}):
+    """Render HTML template into PDF bytes."""
+    template = get_template(template_src)
+    html = template.render(context_dict)
+
+    result = BytesIO()
+    pdf = pisa.CreatePDF(html, dest=result)
+
+    if not pdf.err:
+        return result.getvalue()
+
+    return None
+
+def whatsapp_message_url(mobile_number, message_text):
+    """
+    Returns a whatsapp wa.me link which opens chat with prefilled text.
+    mobile_number: string with country code, e.g. 91XXXXXXXXXX
+    message_text: plain text
+    """
+    text = urllib.parse.quote(message_text)
+    # Ensure mobile_number has only digits, include country code (e.g. 91)
+    number = ''.join(ch for ch in (mobile_number or '') if ch.isdigit())
+    return f"https://wa.me/{number}?text={text}"
+
+
+def update_daily_summary(user):
+
+    if user is None or not hasattr(user, "id"):
+        return None
+
+    today = timezone.now().date()
+
+    transactions = Transaction.objects.filter(
+        party__owner=user,
+        date=today
+    )
+
+    total_credit = transactions.filter(txn_type="credit").aggregate(total=Sum("amount"))["total"] or 0
+    total_debit = transactions.filter(txn_type="debit").aggregate(total=Sum("amount"))["total"] or 0
+    balance = total_debit - total_credit
+    total_transactions = transactions.count()
+
+    summary, created = DailySummary.objects.get_or_create(
+        user=user,
+        date=today,
+        defaults={
+            "total_credit": total_credit,
+            "total_debit": total_debit,
+            "balance": balance,
+            "total_transactions": total_transactions
+        }
+    )
+
+    # Update old summary
+    summary.total_credit = total_credit
+    summary.total_debit = total_debit
+    summary.balance = balance
+    summary.total_transactions = total_transactions
+    summary.save()
+
+    return summary

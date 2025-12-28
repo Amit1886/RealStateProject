@@ -1,4 +1,3 @@
-# ~/myproject/khatapro/billing/views.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -7,17 +6,45 @@ from django.utils import timezone
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from .models import Plan, Subscription, Invoice, PaymentGateway
+
+# ✅ Import all models properly
+from .models import (
+    Plan, Subscription, BillingInvoice, PaymentGateway, Payment,
+    Order, OrderItem, Warehouse, Stock, ChatMessage, ChatThread,
+    Notification, PartyPortal
+)
+from .forms import CommerceForm   # if used later
+
+from django.contrib.auth import authenticate, login
+
+# --------------------------------------------------------------------------------
+# CUSTOM LOGIN HANDLER (Role-Based Redirect)
+# --------------------------------------------------------------------------------
+def login_user(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(username=username, password=password)
+
+        if user:
+            login(request, user)
+            # ✅ Role-based redirect
+            if user.is_superuser:
+                return redirect("/admin/")  # Full admin
+            elif user.is_staff:
+                return redirect("billing:dashboard")  # Staff dashboard
+            else:
+                return redirect("billing:commerce_dashboard")  # Normal user dashboard
+        else:
+            messages.error(request, "Invalid credentials.")
+            return redirect("login")
+
+    return render(request, "billing/login.html")
 
 
-@login_required
-def payment_success(request, plan_id):
-    plan = get_object_or_404(Plan, id=plan_id)
-    profile = request.user.userprofile
-    profile.plan = plan
-    profile.save()
-    return redirect("dashboard")
-
+# --------------------------------------------------------------------------------
+# PLAN SELECTION
+# --------------------------------------------------------------------------------
 @login_required
 def choose_plan(request):
     plans = Plan.objects.filter(active=True)
@@ -30,147 +57,80 @@ def choose_plan(request):
                 profile = request.user.userprofile
                 profile.plan = plan
                 profile.save()
-                return redirect("profile_view")  # apne profile view ke name se replace karo
+
+                # ✅ Free plan → activate immediately
+                if plan.is_free or plan.price == 0:
+                    invoice = BillingInvoice.objects.create(
+                        user=request.user,
+                        plan=plan,
+                        amount=0,
+                        paid=True
+                    )
+                    Subscription.objects.create(
+                        user=request.user,
+                        plan=plan,
+                        invoice=BillingInvoice,
+                        status="active",
+                        start_date=timezone.now()
+                    )
+                    messages.success(request, f"'{plan.name}' plan activated (Free).")
+                    return redirect("billing:dashboard")
+                else:
+                    # ✅ Paid plan → go to checkout
+                    return redirect(f"/billing/checkout/?plan_id={plan.id}")
+
             except Plan.DoesNotExist:
-                pass
+                messages.error(request, "Selected plan does not exist.")
+                return redirect("billing:choose_plan")
 
     return render(request, "billing/choose_plan.html", {"plans": plans})
 
 
+# --------------------------------------------------------------------------------
+# CHECKOUT PAGE
+# --------------------------------------------------------------------------------
 @login_required
-def start_payment(request, plan_slug):
-    """
-    Start a payment:
-    - If free plan → immediately activate subscription
-    - If paid plan → create invoice + subscription (pending) and redirect to checkout
-    """
-    plan = get_object_or_404(Plan, slug=plan_slug)
+def checkout(request):
+    plan_id = request.GET.get("plan_id")
+    plan = get_object_or_404(Plan, id=plan_id)
 
-    # Free plan: directly activate
-    if plan.is_free or plan.price == 0:
-        invoice = Invoice.objects.create(
-            user=request.user,
-            plan=plan,
-            amount=0,
-            paid=True
-        )
-        Subscription.objects.create(
-            user=request.user,
-            plan=plan,
-            invoice=invoice,
-            status="active",
-            start_date=timezone.now()
-        )
-        for g in plan.groups.all():
-            request.user.groups.add(g)
-        messages.success(request, f"'{plan.name}' plan activated (Free).")
-        return redirect("billing:dashboard")
-
-    # Paid plan
-    invoice = Invoice.objects.create(
+    invoice, _ = BillingInvoice.objects.get_or_create(
         user=request.user,
         plan=plan,
-        amount=plan.price,
-        paid=False
-    )
-    subscription = Subscription.objects.create(
-        user=request.user,
-        plan=plan,
-        invoice=invoice,
-        status="pending",
-        start_date=timezone.now()
+        defaults={"amount": plan.price, "status": "unpaid"}
     )
 
-    # Pick gateway
-    gateway = PaymentGateway.objects.filter(active=True).first()
-    if not gateway:
-        return render(request, "billing/no_gateway_configured.html", {"plan": plan})
-
-    # Razorpay integration
-    if gateway.provider == "razorpay":
-        try:
-            import razorpay
-            client = razorpay.Client(auth=(gateway.api_key, gateway.api_secret))
-            order_amount = int(plan.price * 100)  # in paise
-            order_currency = "INR"
-            order_receipt = f"inv_{invoice.id}"
-            razor_order = client.order.create(dict(
-                amount=order_amount,
-                currency=order_currency,
-                receipt=order_receipt,
-                payment_capture=1
-            ))
-            invoice.payment_reference = razor_order.get("id")
-            invoice.save(update_fields=["payment_reference"])
-            return render(request, "billing/razorpay_checkout.html", {
-                "gateway": gateway,
-                "plan": plan,
-                "invoice": invoice,
-                "razor_order": razor_order,
-                "razor_key": gateway.api_key,
-                "subscription": subscription,
-            })
-        except Exception:
-            return render(request, "billing/dummy_payment_form.html", {
-                "gateway": gateway,
-                "plan": plan,
-                "invoice": invoice,
-                "subscription": subscription
-            })
-
-    # PhonePe integration (dummy placeholder for now)
-    if gateway.provider == "phonepe":
-        return render(request, "billing/dummy_payment_form.html", {
-            "gateway": gateway,
-            "plan": plan,
-            "invoice": invoice,
-            "subscription": subscription
-        })
-
-    # Default → Dummy
-    return render(request, "billing/dummy_payment_form.html", {
-        "gateway": gateway,
+    return render(request, "billing/checkout.html", {
         "plan": plan,
-        "invoice": invoice,
-        "subscription": subscription
+        "invoice": invoice
     })
 
 
+# --------------------------------------------------------------------------------
+# PAYMENT SUCCESS PAGE
+# --------------------------------------------------------------------------------
 @login_required
-def payment_page(request, invoice_number):
-    invoice = get_object_or_404(Invoice, number=invoice_number, user=request.user)
-    if request.method == "POST":
-        # Simulated payment success
-        invoice.paid = True
-        invoice.payment_method = "simulated"
-        invoice.payment_reference = f"SIM-{invoice.number}"
-        invoice.paid_at = timezone.now()
-        invoice.save()
-
-        # Activate subscription
-        try:
-            sub = invoice.subscription
-            sub.activate()
-        except Subscription.DoesNotExist:
-            Subscription.objects.create(
-                user=request.user,
-                plan=invoice.plan,
-                invoice=invoice,
-                status="active",
-                start_date=timezone.now()
-            )
-
-        messages.success(request, "Payment successful — subscription activated.")
-        return redirect("billing:dashboard")
-
-    return render(request, "billing/payment_page.html", {"invoice": invoice})
+def payment_success(request, plan_id):
+    plan = get_object_or_404(Plan, id=plan_id)
+    return render(request, "billing/payment_success.html", {"plan": plan})
 
 
+# --------------------------------------------------------------------------------
+# BILLING DASHBOARD (Staff Access)
+# --------------------------------------------------------------------------------
 @login_required
 def dashboard(request):
+    """
+    Dashboard visible to staff or admin users only.
+    """
+    user = request.user
+    if not user.is_staff and not user.is_superuser:
+        return redirect("billing:commerce_dashboard")
+
     plans = Plan.objects.filter(active=True).order_by("price")
     invoices = request.user.billing_invoices.all().order_by("-created_at")[:10]
     subscriptions = request.user.subscriptions.all().order_by("-created_at")[:5]
+
     return render(request, "billing/dashboard.html", {
         "plans": plans,
         "invoices": invoices,
@@ -178,30 +138,24 @@ def dashboard(request):
     })
 
 
-@login_required
-def payment_return(request):
-    return render(request, "billing/payment_return.html", {})
-
-
+# --------------------------------------------------------------------------------
+# WEBHOOK HANDLERS (Razorpay, PhonePe, Dummy)
+# --------------------------------------------------------------------------------
 @csrf_exempt
 def gateway_webhook(request, provider):
-    """
-    Webhook endpoint for payment gateways.
-    Supports: razorpay, phonepe, dummy
-    """
     gateway = PaymentGateway.objects.filter(provider=provider, active=True).first()
     try:
         payload = json.loads(request.body.decode("utf-8"))
     except Exception:
         payload = {}
 
-    # Razorpay webhook
+    # ✅ Razorpay
     if provider == "razorpay":
         payment_id = payload.get("payload", {}).get("payment", {}).get("entity", {}).get("id")
         order_id = payload.get("payload", {}).get("payment", {}).get("entity", {}).get("order_id")
         status = payload.get("event")
 
-        invoice = Invoice.objects.filter(payment_reference=order_id).first()
+        invoice = BillingInvoice.objects.filter(payment_reference=order_id).first()
         if invoice and "captured" in str(status).lower():
             invoice.paid = True
             invoice.payment_reference = payment_id
@@ -210,11 +164,11 @@ def gateway_webhook(request, provider):
             return HttpResponse(status=200)
         return HttpResponse(status=400)
 
-    # PhonePe webhook (dummy verification for now)
+    # ✅ PhonePe
     if provider == "phonepe":
         invoice_number = payload.get("transactionId")
         status = payload.get("status")
-        invoice = Invoice.objects.filter(number=invoice_number).first()
+        invoice = BillingInvoice.objects.filter(number=invoice_number).first()
         if invoice and status == "SUCCESS":
             invoice.paid = True
             invoice.save(update_fields=["paid"])
@@ -222,10 +176,10 @@ def gateway_webhook(request, provider):
             return HttpResponse(status=200)
         return HttpResponse(status=400)
 
-    # Dummy webhook
+    # ✅ Dummy
     if provider == "dummy":
         inv_id = payload.get("invoice_id")
-        invoice = Invoice.objects.filter(id=inv_id).first()
+        invoice = BillingInvoice.objects.filter(id=inv_id).first()
         if not invoice:
             return HttpResponse(status=404)
         if payload.get("status") in ("paid", "success"):
@@ -240,3 +194,50 @@ def gateway_webhook(request, provider):
         return HttpResponse(status=200)
 
     return HttpResponse(status=400)
+
+
+# --------------------------------------------------------------------------------
+# PLAN UPGRADE PAGE
+# --------------------------------------------------------------------------------
+@login_required
+def upgrade_plan(request):
+    user = request.user
+    plans = Plan.objects.all().order_by("price")
+    current_plan = getattr(getattr(user, "userprofile", None), "plan", None)
+
+    return render(request, "billing/upgrade_plan.html", {
+        "plans": plans,
+        "current_plan": current_plan
+    })
+
+
+# --------------------------------------------------------------------------------
+# COMMERCE DASHBOARD (Normal User Side)
+# --------------------------------------------------------------------------------
+@login_required
+def commerce_dashboard(request):
+    """
+    Display commerce data if user's plan allows.
+    Free plan → view-only mode
+    Paid plan → full access
+    """
+    user = request.user
+    profile = getattr(user, "userprofile", None)
+    plan = getattr(profile, "plan", None)
+    is_paid = plan and not plan.is_free
+
+    context = {
+        "is_paid": is_paid,
+        "invoices": BillingInvoice.objects.filter(user=user),
+        "payments": Payment.objects.filter(user=user),
+        "orders": Order.objects.filter(user=user),
+        "order_items": OrderItem.objects.all(),
+        "warehouses": Warehouse.objects.all(),
+        "stocks": Stock.objects.all(),
+        "chats": ChatMessage.objects.filter(user=user),
+        "threads": ChatThread.objects.filter(user=user),
+        "notifications": Notification.objects.filter(user=user),
+        "portals": PartyPortal.objects.filter(user=user),
+    }
+
+    return render(request, "billing/commerce_dashboard.html", context)

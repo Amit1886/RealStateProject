@@ -1,0 +1,159 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="card saas-card">
+
+  <!-- HEADER -->
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Edit Profile</h2>
+      <p class="card-subtitle">Manage your personal & business information</p>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="card-body">
+
+    <!-- PROFILE COMPLETION -->
+    <div class="profile-progress">
+      <span>Profile Completion</span>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 75%"></div>
+      </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- BASIC INFO -->
+      <div class="section">
+        <h4 class="section-heading">Basic Information</h4>
+
+        <div class="form-grid">
+
+          <div class="form-field">
+            <i class="fa fa-user"></i>
+            {{ form.full_name }}
+            <label>Full Name</label>
+          </div>
+
+          <div class="form-field">
+            <i class="fa fa-phone"></i>
+            {{ form.mobile_number }}
+            <label>Mobile Number</label>
+          </div>
+
+          <div class="form-field">
+            <i class="fa fa-briefcase"></i>
+            {{ form.business_name }}
+            <label>Business Name</label>
+          </div>
+
+          <div class="form-field">
+            <i class="fa fa-building"></i>
+            {{ form.business_type }}
+            <label>Business Type</label>
+          </div>
+
+          <div class="form-field">
+            <i class="fa fa-id-card"></i>
+            {{ form.gst_number }}
+            <label>GST Number</label>
+          </div>
+
+          <div class="form-field full">
+            <i class="fa fa-map-marker"></i>
+            {{ form.address }}
+            <label>Address</label>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MEDIA -->
+      <div class="section">
+        <h4 class="section-heading">Profile Media</h4>
+
+        <div class="form-grid">
+
+          <div class="form-field">
+            <label class="static">Profile Picture</label>
+            {{ form.profile_picture }}
+
+            {% if profile.profile_picture %}
+              <img src="{{ profile.profile_picture.url }}" class="preview-img">
+            {% endif %}
+          </div>
+
+          <div class="form-field">
+            <label class="static">Plan</label>
+            {{ form.plan }}
+            <p class="muted-text">
+              Current: <strong>{{ profile.plan.name }}</strong>
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BANK -->
+      <div class="section">
+        <h4 class="section-heading">Bank & Payment Details</h4>
+
+        <div class="form-grid">
+
+          <div class="form-field">
+            <i class="fa fa-qrcode"></i>
+            {{ form.upi_id }}
+            <label>UPI ID</label>
+          </div>
+
+          <div class="form-field">
+            <i class="fa fa-credit-card"></i>
+            {{ form.account_number }}
+            <label>Account Number</label>
+          </div>
+
+          <div class="form-field">
+            <i class="fa fa-university"></i>
+            {{ form.bank_name }}
+            <label>Bank Name</label>
+          </div>
+
+          <div class="form-field">
+            <i class="fa fa-lock"></i>
+            {{ form.ifsc_code }}
+            <label>IFSC Code</label>
+          </div>
+
+          <div class="form-field">
+            <label class="static">QR Code</label>
+            {{ form.qr_code }}
+
+            {% if profile.qr_code %}
+              <img src="{{ profile.qr_code.url }}" class="preview-img">
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="form-actions">
+        <a href="{% url 'accounts:dashboard' %}" class="btn btn-light">
+          Back
+        </a>
+
+        <button type="submit" class="btn btn-primary">
+          Save Changes
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

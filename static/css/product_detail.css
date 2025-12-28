@@ -1,0 +1,128 @@
+/* ==============================
+   PRODUCT DETAIL – MODERN UI
+================================ */
+
+.product-detail-wrapper {
+    max-width: 900px;
+    margin: auto;
+}
+
+.product-card {
+    border-radius: 14px;
+    overflow: hidden;
+    border: none;
+    background: #ffffff;
+}
+
+.product-card .card-header {
+    background: linear-gradient(135deg, #4f46e5, #2563eb);
+    color: #fff;
+    padding: 16px 20px;
+}
+
+.product-card .card-header h4 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.product-card .card-body {
+    padding: 22px;
+}
+
+.product-info-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.info-box {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid #e5e7eb;
+}
+
+.info-box label {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.info-box p {
+    margin: 6px 0 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.badge-stock {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.stock-ok {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.stock-low {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.stock-out {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.product-description {
+    background: #f8fafc;
+    border: 1px dashed #c7d2fe;
+    padding: 16px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.product-card .card-footer {
+    background: #f1f5f9;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Buttons */
+.btn-back {
+    background: #64748b;
+    color: #fff;
+    border-radius: 8px;
+}
+
+.btn-back:hover {
+    background: #475569;
+    color: #fff;
+}
+
+.btn-edit {
+    background: #2563eb;
+    color: #fff;
+    border-radius: 8px;
+}
+
+.btn-edit:hover {
+    background: #1e40af;
+}
+
+.btn-delete {
+    background: #dc2626;
+    color: #fff;
+    border-radius: 8px;
+}
+
+.btn-delete:hover {
+    background: #991b1b;
+}

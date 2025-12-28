@@ -1,0 +1,68 @@
+/* Card style */
+.smart-card {
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    margin-top: 10px;
+}
+
+/* Buttons */
+.btn-view {
+    background: #0ea5e9;
+    color: #fff;
+}
+
+.btn-accept {
+    background: #22c55e;
+    color: #fff;
+}
+
+.btn-reject {
+    background: #ef4444;
+    color: #fff;
+}
+
+.btn-cancel {
+    background: #1f2937; /* dark */
+    color: #fff;
+}
+
+.btn-voucher {
+    background: #f59e0b; /* amber */
+    color: #fff;
+}
+
+.btn-view:hover,
+.btn-accept:hover,
+.btn-reject:hover,
+.btn-cancel:hover,
+.btn-voucher:hover {
+    opacity: .9;
+    transition: .2s;
+}
+
+/* Status badges */
+.badge.status-pending {
+    background: #facc15;
+    color: #000;
+}
+.badge.status-accepted {
+    background: #22c55e;
+    color: #fff;
+}
+.badge.status-rejected {
+    background: #ef4444;
+    color: #fff;
+}
+.badge.status-cancelled {
+    background: #374151;
+    color: #fff;
+}
+.badge.status-fulfilled {
+    background: #3b82f6;
+    color: #fff;
+}
+
+/* DataTables buttons override */
+div.dt-buttons .btn {
+    margin-right: 5px;
+}

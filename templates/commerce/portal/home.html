@@ -1,9 +1,0 @@
-{% extends "commerce/base.html" %}
-{% block content %}
-<h2>Welcome {{ party.name }}</h2>
-<p>
-  <a href="{% url 'commerce:portal_products' portal.token %}">View Products</a> |
-  <a href="{% url 'commerce:portal_place_order' portal.token %}">Place Order</a> |
-  <a href="{% url 'commerce:portal_chat_room' portal.token %}">Chat</a>
-</p>
-{% endblock %}

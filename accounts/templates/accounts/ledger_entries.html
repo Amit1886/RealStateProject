@@ -1,0 +1,32 @@
+{% extends "accounts/base.html" %}
+{% for e in entries %}
+<tr>
+    <td>{{ e.date|date:"d M Y" }}</td>
+
+    <td>
+        {% if e.source == "order" %}
+            <span class="tag tag-order">Order</span>
+        {% elif e.txn_type == "credit" %}
+            <span class="tag tag-credit">Credit</span>
+        {% else %}
+            <span class="tag tag-debit">Debit</span>
+        {% endif %}
+    </td>
+
+    <td>{% if e.invoice_no %}#{{ e.invoice_no }}{% else %}—{% endif %}</td>
+    <td>{{ e.description|default:"—" }}</td>
+
+    <td class="text-end">{% if e.credit %}₹{{ e.credit }}{% else %}—{% endif %}</td>
+    <td class="text-end">{% if e.debit %}₹{{ e.debit }}{% else %}—{% endif %}</td>
+
+    <td class="text-end amount">
+        {% if e.txn_type == "credit" %}
+            +₹{{ e.amount }}
+        {% else %}
+            -₹{{ e.amount }}
+        {% endif %}
+    </td>
+
+    <td class="text-end balance">₹{{ e.balance }}</td>
+</tr>
+{% endfor %}

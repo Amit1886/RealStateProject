@@ -1,0 +1,31 @@
+{% extends "accounts/base.html" %}
+<h2>Admin Users</h2>
+<table>
+  <tr>
+    <th>ID</th><th>Name</th><th>Username</th><th>Email</th>
+  </tr>
+  {% for u in admin_users %}
+  <tr>
+    <td>{{ u.id }}</td>
+    <td>{{ u.get_full_name }}</td>
+    <td>{{ u.username }}</td>
+    <td>{{ u.email }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+
+<h2>Signup Users (khataapp)</h2>
+<table>
+  <tr>
+    <th>ID</th><th>Name</th><th>Phone</th><th>Email</th>
+  </tr>
+  {% for p in profiles %}
+  <tr>
+    <td>{{ p.id }}</td>
+    <td>{{ p.user.username }}</td>
+    <td>{{ p.phone }}</td>
+    <td>{{ p.user.email }}</td>
+  </tr>
+  {% endfor %}
+</table>

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+  /* 🌈 Modern App Card UI */
+  .order-container {
+    max-width: 480px;
+    margin: 40px auto;
+    background: linear-gradient(135deg, #f8fafc, #e0f2fe);
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    transition: all 0.3s ease;
+  }
+  .order-container:hover {
+    transform: translateY(-3px);
+  }
+
+  .order-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .order-header h3 {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #0f172a;
+  }
+
+  .order-form label {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .order-form select,
+  .order-form textarea,
+  .order-form input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.2s ease;
+    background: #fff;
+  }
+
+  .order-form select:focus,
+  .order-form textarea:focus,
+  .order-form input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  .order-form textarea {
+    resize: none;
+    min-height: 80px;
+  }
+
+  .btn-submit {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    width: 100%;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .btn-submit:hover {
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
+    transform: scale(1.02);
+  }
+
+  @media (max-width: 600px) {
+    .order-container {
+      margin: 20px;
+      padding: 20px;
+    }
+    .order-header h3 {
+      font-size: 1.3rem;
+    }
+  }
+</style>
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+  <div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md">
+    <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">📦 Create New Order</h2>
+
+    <form method="POST" class="space-y-4 order-form">
+      {% csrf_token %}
+
+      <!-- Party Dropdown -->
+      <div>
+        <label>Select Party</label>
+        <select name="party" required class="border rounded-lg p-2 focus:ring focus:ring-blue-200">
+          <option value="">-- Select Party --</option>
+          {% for p in parties %}
+            <option value="{{ p.id }}">{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Order Status -->
+      <div>
+        <label>Order Status</label>
+        <select name="status" required class="border rounded-lg p-2 focus:ring focus:ring-blue-200">
+          <option value="">-- Select Status --</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <label>Notes</label>
+        <textarea name="notes" rows="3" placeholder="Add any notes..." class="border rounded-lg p-2 focus:ring focus:ring-blue-200"></textarea>
+      </div>
+
+      <!-- Assigned To -->
+      <div>
+        <label>Assigned To</label>
+        <select name="assigned_to" class="border rounded-lg p-2 focus:ring focus:ring-blue-200">
+          <option value="">-- Select User --</option>
+          {% for u in users %}
+            <option value="{{ u.id }}">{{ u.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn-submit">
+        ✅ Create Order
+      </button>
+    </form>
+    <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary px-4 rounded-pill">← Back to Dashboard</a>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,67 @@
+/* Card */
+.txn-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Header */
+.txn-header {
+    background: #f8fafc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.txn-header h4 {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Table */
+.txn-table thead th {
+    background: linear-gradient(180deg, #020617, #0f172a) !important;
+    color: #fff !important;
+    font-size: 12px;
+    padding: 10px;
+}
+
+.txn-table td {
+    font-size: 13px;
+    padding: 9px;
+}
+
+/* Badges */
+.badge.credit {
+    background: #22c55e;
+}
+.badge.debit {
+    background: #ef4444;
+}
+
+/* Buttons */
+.btn-view {
+    background: #0ea5e9;
+    color: #fff;
+}
+.btn-edit {
+    background: #22c55e;
+    color: #fff;
+}
+.btn-delete {
+    background: #ef4444;
+    color: #fff;
+}
+
+.btn-view:hover { background:#0284c7; }
+.btn-edit:hover { background:#16a34a; }
+.btn-delete:hover { background:#dc2626; }
+
+/* Datatable */
+.dataTables_filter input,
+.dataTables_length select {
+    font-size: 12px;
+    border-radius: 6px;
+}

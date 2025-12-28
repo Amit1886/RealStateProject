@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <div class="card p-4 shadow rounded-4 mx-auto" style="max-width:600px">
+
+    <h4 class="mb-3">Create Voucher</h4>
+
+    <p>
+      <strong>Order:</strong> #{{ order.id }} <br>
+      <strong>Party:</strong> {{ order.party.name }} <br>
+      <strong>Total:</strong> ₹{{ order.total_amount }}
+    </p>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <!-- GST Optional -->
+      <div class="mb-3">
+        <label>Voucher Type</label>
+        <select name="gst_type" class="form-control">
+          <option value="NON_GST">Non-GST Voucher</option>
+          <option value="GST">GST Voucher</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">
+        Create Voucher
+      </button>
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

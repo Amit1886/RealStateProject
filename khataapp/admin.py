@@ -5,11 +5,12 @@ from django.urls import path
 from django.shortcuts import redirect
 from django.contrib import messages
 from .models import ReportSchedule, Party, Transaction, CompanySettings, UserProfile
-from .forms import TransactionForm
 import requests
 from django.http import FileResponse
 from .utils.credit_report import generate_credit_report_pdf, generate_credit_report_pdf_for_party
 from .models import CreditSettings, CreditAccount, CreditEntry, EMI, Penalty
+
+
 
 # ---------------- Party ----------------
 @admin.register(Party)
@@ -24,6 +25,15 @@ class PartyAdmin(admin.ModelAdmin):
     readonly_fields = ('payment_link_display', 'balance_display')
 
     actions = ['download_credit_report']
+     # ----------------------------
+    # Add this method inside class
+    # ----------------------------
+    def balance_display(self, obj):
+        try:
+            return obj.calculate_balance()
+        except:
+            return 0
+    balance_display.short_description = "Balance"
 
     def whatsapp_status(self, obj):
         return "✅ Active" if obj.whatsapp_number else "❌ No WhatsApp"
@@ -97,9 +107,15 @@ class ReportScheduleAdmin(admin.ModelAdmin):
 
 
 # ---------------- Transaction ----------------
+# ✅ Lazy import function for TransactionForm (prevents early Plan model load)
+def get_transaction_form():
+    from .forms import TransactionForm
+    return TransactionForm
+
+
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    form = TransactionForm
+    form = get_transaction_form()
 
     list_display = (
         "party", "txn_type", "amount", "date", "notes",
@@ -186,7 +202,6 @@ class TransactionAdmin(admin.ModelAdmin):
 
         return redirect("/admin/khataapp/transaction/")
 
-
 # ---------------- CompanySettings ----------------
 @admin.register(CompanySettings)
 class CompanySettingsAdmin(admin.ModelAdmin):
@@ -198,39 +213,46 @@ class CompanySettingsAdmin(admin.ModelAdmin):
 # ---------------- UserProfile ----------------
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "plan", "business_name", "mobile_number", "created_from")
+    list_display = ("user", "plan", "business_name", "mobile", "created_from")
     list_filter = ("plan", "created_from")
-    search_fields = ("user__username", "business_name", "mobile_number")
+    search_fields = ("user__username", "business_name", "mobile")
 
-# --- append near end of file ---
 @admin.register(CreditSettings)
 class CreditSettingsAdmin(admin.ModelAdmin):
-    list_display = ("penalty_rate_percent", "apply_after_days", "created_at")
+    list_display = ("interest_rate", "penalty_rate_percent", "apply_after_days", "allow_partial_payment", "created_at")
+    list_editable = ("penalty_rate_percent", "apply_after_days", "allow_partial_payment")
+    ordering = ("-created_at",)
 
 
 @admin.register(CreditAccount)
 class CreditAccountAdmin(admin.ModelAdmin):
-    list_display = ("party", "credit_limit", "outstanding", "available", "updated_at")
+    list_display = ("party_name", "credit_limit", "outstanding", "available", "updated_at")
     search_fields = ("party__name",)
     actions = ["recalculate_available"]
 
-    def recalculate_available(self, request, queryset):
-        for acc in queryset:
-            acc.save()  # save() recalculates available
-        self.message_user(request, "Recalculated available for selected accounts.")
-    recalculate_available.short_description = "Recalculate available for selected accounts"
+    def party_name(self, obj):
+        return obj.party.name
+    party_name.short_description = "Party"
 
+    def available(self, obj):
+        return obj.available
+    available.admin_order_field = "credit_limit"  # optional for sorting
+
+    def recalculate_available(self, request, queryset):
+        for account in queryset:
+            account.recalc_outstanding()
+        self.message_user(request, "Available credit recalculated.")
+    recalculate_available.short_description = "Recalculate Available Credit"
 
 @admin.register(CreditEntry)
 class CreditEntryAdmin(admin.ModelAdmin):
-    list_display = ("account", "amount", "remaining", "due_date", "status", "created_at")
-    list_filter = ("status",)
+    list_display = ("account", "txn_type", "amount", "remaining", "due_date", "status", "created_at")
+    list_filter = ("status", "txn_type")
     search_fields = ("account__party__name",)
-
 
 @admin.register(EMI)
 class EMIAdmin(admin.ModelAdmin):
-    list_display = ("credit_entry", "amount", "due_date", "paid", "paid_on")
+    list_display = ("entry", "amount", "due_date", "paid", "paid_on")
     list_filter = ("paid", "due_date")
     actions = ["mark_emis_paid"]
 
@@ -243,5 +265,5 @@ class EMIAdmin(admin.ModelAdmin):
 
 @admin.register(Penalty)
 class PenaltyAdmin(admin.ModelAdmin):
-    list_display = ("credit_entry", "penalty_amount", "days_overdue", "applied_at")
-    search_fields = ("credit_entry__account__party__name",)
+    list_display = ("entry", "amount", "reason", "applied_at")
+    search_fields = ("entry__account__party__name",)

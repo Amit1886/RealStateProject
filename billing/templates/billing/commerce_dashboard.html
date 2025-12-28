@@ -1,0 +1,109 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block billing_content %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">🛒 Commerce Dashboard</h2>
+
+  <div class="row">
+    <!-- Product Card -->
+    <div class="col-md-3 mb-3">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Products</h5>
+          <p>{{ products.count }} total</p>
+          <a href="#" class="btn btn-primary btn-sm">View</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders -->
+    <div class="col-md-3 mb-3">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Orders</h5>
+          <p>{{ orders.count }} total</p>
+          <a href="#" class="btn btn-primary btn-sm">View</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payments -->
+    <div class="col-md-3 mb-3">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Payments</h5>
+          <p>{{ payments.count }} total</p>
+          <a href="#" class="btn btn-primary btn-sm">View</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoices -->
+    <div class="col-md-3 mb-3">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Invoices</h5>
+          <p>{{ invoices.count }} total</p>
+          <a href="#" class="btn btn-primary btn-sm">View</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stocks -->
+    <div class="col-md-3 mb-3">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Stocks</h5>
+          <p>{{ stocks.count }} items</p>
+          <a href="#" class="btn btn-primary btn-sm">View</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Warehouses -->
+    <div class="col-md-3 mb-3">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Warehouses</h5>
+          <p>{{ warehouses.count }} total</p>
+          <a href="#" class="btn btn-primary btn-sm">View</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="col-md-3 mb-3">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Notifications</h5>
+          <p>{{ notifications.count }} total</p>
+          <a href="#" class="btn btn-primary btn-sm">View</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="col-md-3 mb-3">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Chat</h5>
+          <p>{{ chats.count }} messages</p>
+          <a href="#" class="btn btn-primary btn-sm">Open</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Party Portal -->
+    <div class="col-md-3 mb-3">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Party Portals</h5>
+          <p>{{ portals.count }} active</p>
+          <a href="#" class="btn btn-primary btn-sm">Open</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

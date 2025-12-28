@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/invoice.css' %}">
+
+<div class="container py-4">
+  <div class="invoice-card">
+    <h3 class="section-title mb-4">
+      ➕ Add Invoice
+    </h3>
+
+    <form method="POST" action="{% url 'commerce:add_invoice' %}">
+      {% csrf_token %}
+
+      <!-- Select Order -->
+      <div class="mb-3">
+        <label>Select Order</label>
+        <select name="order" class="form-control" required>
+          <option value="">-- Select Order --</option>
+          {% for o in orders %}
+            <option value="{{ o.id }}">
+              Order #{{ o.id }} — {{ o.party.name }} — ₹{{ o.total_amount }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Notes -->
+      <div class="mb-3">
+        <label>Notes (Optional)</label>
+        <textarea name="notes" class="form-control" rows="3"></textarea>
+      </div>
+
+      <button type="submit" class="btn-gradient">
+        💾 Create Invoice
+      </button>
+    </form>
+
+    <div class="text-center mt-4">
+      <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary">
+        ← Back to Dashboard
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

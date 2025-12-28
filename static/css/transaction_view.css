@@ -1,0 +1,92 @@
+/* Card */
+.txn-view-card {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    background: #ffffff;
+}
+
+/* Header */
+.txn-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff;
+    border-radius: 16px 16px 0 0;
+}
+
+.txn-view-header h4 {
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Buttons */
+.header-actions .btn {
+    margin-left: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #fff;
+    text-decoration: none;
+}
+
+.btn-edit { background: #22c55e; }
+.btn-delete { background: #ef4444; }
+.btn-back { background: #64748b; }
+
+.header-actions .btn:hover {
+    opacity: 0.9;
+}
+
+/* Grid */
+.txn-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Box */
+.txn-box {
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    border-left: 4px solid #6366f1;
+}
+
+.txn-box.full {
+    grid-column: span 2;
+}
+
+.label {
+    display: block;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.value.amount {
+    color: #16a34a;
+}
+
+/* Credit / Debit */
+.value.credit {
+    color: #16a34a;
+}
+
+.value.debit {
+    color: #dc2626;
+}
+
+.notes {
+    font-weight: 400;
+    color: #334155;
+}

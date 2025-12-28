@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/party.css' %}">
+<script src="{% static 'js/party.js' %}"></script>
+
+<div class="party-list-container">
+
+  <div class="list-header">
+    <h3>Party List</h3>
+    <a href="{% url 'khataapp:add_party' %}" class="btn-primary-small">Add Party</a>
+  </div>
+
+  <!-- FILTERS -->
+  <form method="GET" class="filter-row">
+    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search by name">
+
+    <select name="type">
+    <option value="">All Types</option>
+
+    <option value="customer"
+        {% if request.GET.type|default:'' == "customer" %}selected{% endif %}>
+        Customer
+    </option>
+
+    <option value="supplier"
+        {% if request.GET.type|default:'' == "supplier" %}selected{% endif %}>
+        Supplier
+    </option>
+   </select>
+
+
+    <button class="btn-primary-small">Filter</button>
+  </form>
+
+  <!-- ACTION BUTTONS -->
+  <div class="export-row">
+    <button onclick="printTable()" class="btn-dark-small">Print</button>
+    <button onclick="downloadExcel()" class="btn-dark-small">Excel</button>
+    <button onclick="downloadPDF()" class="btn-dark-small">PDF</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrapper">
+    <table id="partyTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Mobile</th>
+          <th>Email</th>
+          <th>Opening Balance</th>
+          <th>Opening Type</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for party in parties %}
+        <tr>
+          <td>{{ party.name }}</td>
+          <td>{{ party.party_type|title }}</td>
+          <td>{{ party.mobile }}</td>
+          <td>{{ party.email }}</td>
+          <td>{{ party.opening_balance }}</td>
+          <td>{{ party.opening_type|title }}</td>
+          <td>
+            <a href="{% url 'khataapp:party_view' party.id %}" class="btn-view">View</a>
+            <a href="{% url 'khataapp:edit_party' party.id %}" class="btn-table edit">Edit</a>
+            <a href="{% url 'khataapp:delete_party' party.id %}"
+               onclick="return confirm('Delete this party?')"
+               class="btn-table delete">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted">No data found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+{% endblock %}

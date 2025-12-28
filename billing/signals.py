@@ -3,6 +3,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from .models import Subscription, Plan
 from khataapp.models import UserProfile
+from .models import OrderItem
 
 @receiver(post_save, sender=Subscription)
 def apply_subscription_groups(sender, instance: Subscription, created, **kwargs):
@@ -64,3 +65,15 @@ def update_user_profile_plan(sender, instance, **kwargs):
     if instance.plan and instance.status == "active":
         profile.plan = instance.plan
         profile.save()
+
+@receiver(post_save, sender=OrderItem)
+def update_order_total_on_save(sender, instance, **kwargs):
+    order = instance.order
+    order.update_total()
+    order.save()
+
+@receiver(post_delete, sender=OrderItem)
+def update_order_total_on_delete(sender, instance, **kwargs):
+    order = instance.order
+    order.update_total()
+    order.save()

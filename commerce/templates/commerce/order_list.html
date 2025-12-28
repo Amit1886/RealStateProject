@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/order_list.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold">
+      {% if page_type == "SALE" %}
+        📤 Sales Orders
+      {% elif page_type == "PURCHASE" %}
+        📥 Purchase Orders
+      {% else %}
+        📦 Orders
+      {% endif %}
+    </h4>
+
+    <a href="{% url 'commerce:add_order' %}" class="btn btn-sm btn-primary shadow-sm">
+      ➕ Add Order
+    </a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body table-responsive">
+
+      <table id="orderTable" class="table table-bordered align-middle table-hover w-100">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Party</th>
+            <th>Type</th>
+            <th>Total</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+
+            <td>
+              <strong>{{ order.party.name }}</strong>
+            </td>
+
+            <td>
+              {% if order.order_type == "SALE" %}
+                <span class="badge bg-success">Sale</span>
+              {% elif order.order_type == "PURCHASE" %}
+                <span class="badge bg-warning text-dark">Purchase</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ order.order_type }}</span>
+              {% endif %}
+            </td>
+
+            <td class="fw-bold">₹ {{ order.total_amount }}</td>
+
+            <td>{{ order.created_at|date:"d M Y" }}</td>
+
+            <td>
+              {% if order.status == "pending" %}
+                <span class="badge bg-secondary">Pending</span>
+              {% elif order.status == "accepted" %}
+                <span class="badge bg-success">Accepted</span>
+              {% elif order.status == "rejected" %}
+                <span class="badge bg-danger">Rejected</span>
+              {% elif order.status == "cancelled" %}
+                <span class="badge bg-dark">Cancelled</span>
+              {% else %}
+                <span class="badge bg-info">Fulfilled</span>
+              {% endif %}
+            </td>
+
+            <td class="text-center text-nowrap">
+
+              <a href="{% url 'commerce:order_detail' order.id %}"
+                 class="btn btn-sm btn-outline-primary">
+                View
+              </a>
+
+              {% if order.status == "pending" %}
+                <a href="{% url 'commerce:order_action' order.id 'accept' %}"
+                   class="btn btn-sm btn-success">Accept</a>
+
+                <a href="{% url 'commerce:order_action' order.id 'reject' %}"
+                   class="btn btn-sm btn-danger">Reject</a>
+
+                <a href="{% url 'commerce:order_action' order.id 'cancel' %}"
+                   class="btn btn-sm btn-dark">Cancel</a>
+              {% endif %}
+
+              {% if order.status == "accepted" and not order.invoice and order.order_type == "SALE" %}
+                <a href="{% url 'commerce:sales_voucher_create' order.id %}"
+                   class="btn btn-sm btn-warning">
+                  Create Voucher
+                </a>
+              {% endif %}
+
+              {% if order.invoice %}
+                <span class="badge bg-info">Voucher Created</span>
+              {% endif %}
+
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-3">
+              No orders found.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/order_list.js' %}"></script>
+{% endblock %}

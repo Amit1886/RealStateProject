@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/order_detail.css' %}">
+
+<div class="container py-4">
+  <div class="card shadow-lg rounded-4 border-0 p-4 modern-card">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="text-primary fw-bold">Order Details</h3>
+
+      <a href="{% url 'commerce:order_list' %}" class="btn btn-secondary btn-sm back-btn">
+        ← Back to Orders
+      </a>
+    </div>
+
+    <div class="order-info">
+      <p><strong>Order ID:</strong> #{{ order.id }}</p>
+      <p><strong>Party:</strong> {{ order.party.name }}</p>
+      <p><strong>Status:</strong>
+        <span class="badge 
+          {% if order.status == 'pending' %} bg-secondary
+          {% elif order.status == 'accepted' %} bg-success
+          {% elif order.status == 'rejected' %} bg-danger
+          {% elif order.status == 'cancelled' %} bg-dark
+          {% endif %}
+        ">
+        {{ order.status|title }}
+        </span>
+      </p>
+      <p><strong>Assigned To:</strong> {{ order.assigned_to|default:"Not Assigned" }}</p>
+      <p><strong>Notes:</strong> {{ order.notes|default:"No notes" }}</p>
+    </div>
+
+    <hr>
+
+    {% if order.status == "pending" %}
+    <div class="d-flex gap-3 action-buttons">
+
+      <a href="{% url 'commerce:order_action' order.id 'accept' %}"
+         class="btn btn-success flex-fill action-btn">
+         Accept Order
+      </a>
+
+      <a href="{% url 'commerce:order_action' order.id 'reject' %}"
+         class="btn btn-danger flex-fill action-btn">
+         Reject Order
+      </a>
+
+    </div>
+
+    {% elif order.status == "accepted" %}
+      <div class="alert alert-success text-center mt-3">
+        Order Accepted Successfully
+      </div>
+
+    {% elif order.status == "rejected" %}
+      <div class="alert alert-danger text-center mt-3">
+        Order Rejected
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script src="{% static 'js/order_detail.js' %}"></script>
+{% endblock %}

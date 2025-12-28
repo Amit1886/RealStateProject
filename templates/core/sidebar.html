@@ -1,0 +1,107 @@
+<!-- sidebar.html -->
+
+<div id="sidebar" class="sidebar sidebar-style-2">
+    <div class="logo-header">
+        <button class="btn-toggle" id="togglePin">☰</button>
+        <div class="logo-text">
+            {{ company.company_name|default:"JaisTech" }}
+        </div>
+    </div>
+
+    <ul class="menu">
+        <li>
+            <a href="{% url 'accounts:dashboard' %}">
+                <span class="icon">🏠</span>
+                <span class="label">Dashboard</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'khataapp:party_list' %}">
+                <span class="icon">👥</span>
+                <span class="label">Parties</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'khataapp:transaction_list' %}">
+                <span class="icon">💳</span>
+                <span class="label">Transactions</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'commerce:product_list' %}">
+                <span class="icon">📦</span>
+                <span class="label">Product List</span>
+            </a>
+        </li>
+
+        <li class="sidebar-item has-submenu">
+    <a href="javascript:void(0)" class="submenu-toggle">
+        <span class="icon">📝</span>
+        <span class="label">Order List</span>
+        <span class="arrow">▾</span>
+    </a>
+
+    <ul class="submenu">
+        <li>
+            <a href="{% url 'commerce:sales_order_list' %}">
+                📤 Sales Orders
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'commerce:purchase_order_list' %}">
+                📥 Purchase Orders
+            </a>
+        </li>
+    </ul>
+</li>
+        <li>
+            <a href="{% url 'commerce:warehouse_list' %}">
+                <span class="icon">🏬</span>
+                <span class="label">Warehouse</span>
+            </a>
+        </li>
+
+        <!-- Reports -->
+        <li class="has-submenu">
+            <a href="javascript:void(0)" class="submenu-toggle">
+                <span class="icon">📊</span>
+                <span class="label">Reports</span>
+                <span class="arrow">▾</span>
+            </a>
+
+            <ul class="submenu">
+                <li class="submenu-title">Transactions</li>
+                <li><a href="#">All Transactions</a></li>
+                <li><a href="#">Cash Book</a></li>
+                <li><a href="#">Voucher Report</a></li>
+
+                <li class="submenu-title">Sales & Purchase</li>
+                <li><a href="#">Sales Report</a></li>
+                <li><a href="#">Purchase Report</a></li>
+
+                <li class="submenu-title">Inventory</li>
+                <li><a href="#">Stock Summary</a></li>
+                <li><a href="#">Low Stock</a></li>
+
+                <li class="submenu-title">Accounts</li>
+                <li><a href="{% url 'accounts:ledger_list' %}">Party Ledger</a></li>
+                <li><a href="#">Outstanding</a></li>
+
+                <li class="submenu-title">Financial</li>
+                <li><a href="#">Profit & Loss</a></li>
+                <li><a href="#">Day Book</a></li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="/admin/">
+                <span class="icon">⚙</span>
+                <span class="label">Settings</span>
+            </a>
+        </li>
+    </ul>
+</div>

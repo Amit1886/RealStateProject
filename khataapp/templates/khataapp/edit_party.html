@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="form-card">
+    <h2 class="title">✏️ Edit Party – {{ party.name }}</h2>
+
+    <form method="POST" enctype="multipart/form-data" id="editPartyForm">
+        {% csrf_token %}
+
+        <div class="grid-2">
+
+            <div class="form-group">
+                <label>Name *</label>
+                <input type="text" name="name" value="{{ party.name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Mobile *</label>
+                <input type="text" name="mobile" value="{{ party.mobile }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" value="{{ party.email }}">
+            </div>
+
+            <div class="form-group">
+                <label>Aadhaar No</label>
+                <input type="text" name="aadhaar" value="{{ party.aadhaar }}">
+            </div>
+
+            <div class="form-group">
+                <label>PAN No</label>
+                <input type="text" name="pan" value="{{ party.pan }}">
+            </div>
+
+            <div class="form-group">
+                <label>Opening Balance</label>
+                <input type="number" step="0.01" name="opening_balance" value="{{ party.opening_balance }}">
+            </div>
+
+            <div class="form-group">
+                <label>Opening Balance Type</label>
+                <select name="opening_type">
+                    <option value="credit" {% if party.opening_type == "credit" %}selected{% endif %}>Credit</option>
+                    <option value="debit" {% if party.opening_type == "debit" %}selected{% endif %}>Debit</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Party Type *</label>
+                <select name="party_type" required>
+                    <option value="customer" {% if party.party_type == "customer" %}selected{% endif %}>Customer</option>
+                    <option value="supplier" {% if party.party_type == "supplier" %}selected{% endif %}>Supplier</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>PIN Code</label>
+                <input type="text" name="pin_code" value="{{ party.pin_code }}">
+            </div>
+
+            <div class="form-group">
+                <label>State</label>
+                <input type="text" name="state" value="{{ party.state }}">
+            </div>
+
+            <div class="form-group">
+                <label>District</label>
+                <input type="text" name="district" value="{{ party.district }}">
+            </div>
+
+        </div>
+
+        <div class="form-group full">
+            <label>Address</label>
+            <textarea name="address" rows="3">{{ party.address }}</textarea>
+        </div>
+
+        <h3 class="subtitle">Payment Details</h3>
+
+        <div class="grid-2">
+
+            <div class="form-group">
+                <label>UPI ID</label>
+                <input type="text" name="upi_id" value="{{ party.upi_id }}">
+            </div>
+
+            <div class="form-group">
+                <label>Bank Account Number</label>
+                <input type="text" name="bank_account_number" value="{{ party.bank_account_number }}">
+            </div>
+
+            <div class="form-group">
+                <label>WhatsApp Number</label>
+                <input type="text" name="whatsapp_number" value="{{ party.whatsapp_number }}">
+            </div>
+
+            <div class="form-group">
+                <label>SMS Number</label>
+                <input type="text" name="sms_number" value="{{ party.sms_number }}">
+            </div>
+
+            <div class="form-group full">
+                <label>QR Code</label>
+                {% if party.qr_code %}
+                    <img src="{{ party.qr_code.url }}" alt="QR" width="100" class="qr-preview">
+                {% endif %}
+                <input type="file" name="qr_code">
+            </div>
+
+        </div>
+
+        <div class="btn-row">
+            <button class="btn-primary" type="submit">Update Party</button>
+            <a href="{% url 'khataapp:party_list' %}" class="btn-secondary">Back</a>
+        </div>
+    </form>
+</div>
+
+<link rel="stylesheet" href="{% static 'css/party_edit.css' %}">
+<script src="{% static 'js/party_edit.js' %}"></script>
+
+{% endblock %}

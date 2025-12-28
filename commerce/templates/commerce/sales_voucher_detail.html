@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <h3>Sales Voucher #{{ voucher.invoice_no }}</h3>
+
+  <p><strong>Party:</strong> {{ voucher.party.name }}</p>
+  <p><strong>Date:</strong> {{ voucher.date }}</p>
+  <p><strong>GST Applied:</strong> {{ voucher.is_gst }}</p>
+  <p><strong>Total Amount:</strong> ₹{{ voucher.total_amount }}</p>
+
+  <hr>
+
+  <h5>Items</h5>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Rate</th>
+        <th>GST</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for item in voucher.items.all %}
+      <tr>
+        <td>{{ item.product.name }}</td>
+        <td>{{ item.qty }}</td>
+        <td>{{ item.rate }}</td>
+        <td>{{ item.gst_rate }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+
+{% endblock %}
