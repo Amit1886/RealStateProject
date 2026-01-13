@@ -2,6 +2,7 @@
 from django import forms
 from .models import Party, Transaction
 from khataapp.models import UserProfile
+from .models import ContactMessage
 
 
 # ----------------- Party Form -----------------
@@ -49,3 +50,9 @@ class UserProfilePlanForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         Plan = get_plan_model()  # imported lazily
         self.fields['plan'].queryset = Plan.objects.all()
+
+# ----------------- Contact Form -----------------
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = ContactMessage
+        fields = ['name', 'email', 'mobile', 'message']

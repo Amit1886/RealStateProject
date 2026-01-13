@@ -1,0 +1,83 @@
+{% extends "allauth/layouts/entrance.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: #f6f8fb !important;
+        font-family: 'Inter', sans-serif;
+    }
+    .auth-container {
+        max-width: 440px;
+        margin: 50px auto;
+        padding: 0 15px;
+    }
+    .auth-card {
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 35px 32px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        border: 1px solid #e5e5e5;
+    }
+    .auth-logo {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .auth-logo img {
+        height: 55px;
+    }
+    .auth-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: #222;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+    .auth-subtitle {
+        text-align: center;
+        color: #555;
+        margin-bottom: 25px;
+        font-size: 14px;
+    }
+    .auth-footer {
+        margin-top: 18px;
+        text-align: center;
+        font-size: 14px;
+        color: #555;
+    }
+    .auth-footer a {
+        color: #4C8BF5;
+        font-weight: 600;
+        text-decoration: none;
+    }
+</style>
+{% endblock extra_head %}
+
+{% block body %}
+<div class="auth-container">
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <img src="{% static 'img/logo.png' %}" alt="Logo">
+        </div>
+
+        {# Allauth error/messages support #}
+        {% if messages %}
+            {% for message in messages %}
+                <div style="background:#ffecec;color:#c00;padding:10px;border-radius:6px;margin-bottom:15px;text-align:center;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+    <div class="auth-footer">
+        <a href="/">{% trans "Back to Homepage" %}</a>
+    </div>
+</div>
+{% endblock body %}

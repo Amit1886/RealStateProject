@@ -1,0 +1,19 @@
+from channels.generic.websocket import AsyncWebsocketConsumer
+import json
+
+class ChatConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+
+        if data["type"] == "typing":
+            await self.send(text_data=json.dumps({
+                "typing": True
+            }))
+
+        if data["type"] == "admin_reply":
+            await self.send(text_data=json.dumps({
+                "reply": data["message"]
+            }))

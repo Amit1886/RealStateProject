@@ -391,3 +391,22 @@ class Penalty(models.Model):
 
     def __str__(self):
         return f"Penalty {self.amount} - {self.reason}"
+
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    mobile = models.CharField(max_length=20)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    assigned_to = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='assigned_messages'
+    )
+
+    forwarded_to_admin = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.name} - {self.mobile}"
+

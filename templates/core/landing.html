@@ -1,0 +1,819 @@
+{% load static %}
+{% load socialaccount %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KhataPro – Smart Accounting Software for Small Businesses</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="google-site-verification" content="qgwYgM58Am4jqgwxbMwEpjkdVPX3ojtyiBytcDi3Ui4" />
+
+<meta name="description" content="KhataPro helps Indian small businesses manage billing, inventory, GST, reports and payments easily. Secure cloud accounting software.">
+
+<link rel="icon" href="{% static 'images/default-avatar.png' %}">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui,-apple-system}
+body{background:#f8fafc;color:#0f172a}
+.container{max-width:1200px;margin:auto;padding:0 20px}
+a{text-decoration:none}
+
+/* HEADER */
+header{background:#fff;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:999}
+.nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+.nav img{height:42px}
+.nav a{margin-left:18px;color:#334155;font-weight:500}
+.btn{padding:10px 18px;border-radius:6px;font-weight:600}
+.btn-primary{background:#2563eb;color:#fff}
+.btn-outline{border:1px solid #2563eb;color:#2563eb}
+
+/* HERO */
+/* Slider Container */
+.hero-slider {
+    position: relative;
+    width: 100%;
+    height: 85vh;
+    overflow: hidden;
+}
+
+/* Slides */
+.hero-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 0;
+    opacity: 0;
+    transition: opacity 1s ease;
+    background-size: cover;
+    background-position: center;
+}
+
+.hero-slide.active {
+    opacity: 1;
+}
+
+/* Overlay */
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3));
+}
+
+/* Content */
+.hero-content {
+    position: relative;
+    z-index: 5;
+    max-width: 650px;
+    color: #fff;
+    text-align: left;
+    animation: fadeUp 1.2s ease forwards;
+    opacity: 0;
+}
+
+.hero-slide.active .hero-content {
+    opacity: 1;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-content h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+/* Buttons */
+.btn-primary {
+    background: #2563EB;
+    color: white;
+    padding: 14px 28px;
+    border-radius: 10px;
+    margin-right: 10px;
+    text-decoration: none;
+}
+
+.btn-outline {
+    background: white;
+    color: #444;
+    padding: 14px 28px;
+    border-radius: 10px;
+    text-decoration: none;
+}
+
+.btn-outline:hover {
+    background: #f5f5f5;
+}
+
+/* === OPTION 2: Animated Counters === */
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.stat {
+    color: white;
+}
+
+.stat-number {
+    font-size: 2.4rem;
+    font-weight: 700;
+}
+
+.stat-label {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+.popup-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.popup-box {
+    background: white;
+    padding: 25px;
+    width: 350px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+    animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.popup-box button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #2b7cff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+@media(max-width: 768px){
+  .hero-content h1{font-size:2rem;}
+  .stats{flex-direction:column;gap:15px;}
+}
+/* TRUST */
+.trust{padding:50px 0;background:#fff;text-align:center}
+.trust span{margin:0 15px;color:#475569;font-weight:600}
+
+/* FEATURES */
+.features{padding:80px 0}
+.features h2{text-align:center;font-size:36px;margin-bottom:50px}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:30px}
+.card{background:#fff;border-radius:14px;padding:30px;box-shadow:0 15px 40px rgba(0,0,0,.06)}
+.card h3{margin-bottom:10px}
+
+/* WHY */
+.why{background:#f1f5f9;padding:80px 0}
+.why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px}
+.why h2{text-align:center;font-size:36px;margin-bottom:40px}
+
+/* PRICING */
+.pricing{padding:90px 0}
+.pricing h2{text-align:center;font-size:36px}
+.pricing p{text-align:center;color:#475569;margin:10px 0 50px}
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px}
+.price{background:#fff;border-radius:16px;padding:40px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.08)}
+.price h3{font-size:22px}
+.amount{font-size:44px;color:#2563eb;margin:20px 0}
+.price ul{list-style:none}
+.price ul li{margin:10px 0;color:#475569}
+
+/* CTA */
+.cta{background:#2563eb;color:#fff;padding:80px 0;text-align:center}
+.cta h2{font-size:36px;margin-bottom:15px}
+
+/* FOOTER */
+footer{background:#0f172a;color:#cbd5f5;padding:50px 0}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:30px}
+footer a{color:#94a3b8;display:block;margin:8px 0;font-size:14px}
+
+@media(max-width:900px){
+.hero-grid{grid-template-columns:1fr}
+.hero h1{font-size:36px}
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+<div class="container nav">
+  <img src="{% static 'images/default-avatar.png' %}" alt="KhataPro">
+  <div>
+    <a href="#pricing">Pricing</a>
+    <a href="/accounts/login/" class="btn btn-outline">Login</a>
+    <a href="/accounts/signup/" class="btn btn-primary">Sign Up</a>
+  </div>
+</div>
+</header>
+<!-- ===== HERO SLIDER START ===== -->
+<section class="hero-slider">
+
+    <!-- Slide 1 -->
+    <div class="hero-slide active" style="background-image:url('https://images.pexels.com/photos/3183171/pexels-photo-3183171.jpeg');">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <h1>Accounting & Billing Software Built for Small Businesses</h1>
+            <p>KhataPro helps shop owners, traders and service providers manage billing, GST, inventory and reports easily.</p>
+
+            <div class="hero-actions">
+                <a href="/accounts/signup/" class="btn-primary">Start Free</a>
+                 <a href="{% provider_login_url 'google' %}" class="btn btn-outline">
+                    Continue with Google
+                 </a>
+            </div>
+
+            <!-- OPTION 2 (Counters) -->
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number" data-count="45000">0</div>
+                    <div class="stat-label">Businesses Joined</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" data-count="1250000">0</div>
+                    <div class="stat-label">Invoices Created</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" data-count="98000">0</div>
+                    <div class="stat-label">GST Reports Generated</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="hero-slide" style="background-image:url('https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg');">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <h1>Smarter Billing, Faster Payments</h1>
+            <p>Share instant payment links, automate reminders, and grow your business faster.</p>
+
+            <div class="hero-actions">
+                <a href="/accounts/signup/" class="btn-primary">Start Free</a>
+                <a href="{% provider_login_url 'google' %}" class="btn-outline">
+                    Continue with Google
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="hero-slide" style="background-image:url('https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg');">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <h1>Track Business Anytime, Anywhere</h1>
+            <p>Real-time insights and advanced reports at your fingertips.</p>
+
+            <div class="hero-actions">
+                <a href="/accounts/signup/" class="btn-primary">Start Free</a>
+                <a href="{% provider_login_url 'google' %}" class="btn-outline">
+                    Continue with Google
+                </a>
+            </div>
+        </div>
+    </div>
+
+</section>
+<!-- ===== HERO SLIDER END ===== -->
+
+<!-- TRUST -->
+<section class="trust">
+  <span>✔ Made for India</span>
+  <span>✔ GST Ready</span>
+  <span>✔ Secure Cloud</span>
+  <span>✔ Small Business Friendly</span>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+<div class="container">
+<h2>Everything You Need to Run Your Business</h2>
+<div class="feature-grid">
+  <div class="card"><h3>Billing & Invoicing</h3><p>Create professional GST & non-GST invoices.</p></div>
+  <div class="card"><h3>Inventory Management</h3><p>Track stock, purchase & sales automatically.</p></div>
+  <div class="card"><h3>Khata & Ledger</h3><p>Customer & supplier account tracking.</p></div>
+  <div class="card"><h3>Reports</h3><p>Profit, loss, outstanding & GST reports.</p></div>
+</div>
+</div>
+</section>
+
+<!-- WHY -->
+<section class="why">
+<div class="container">
+<h2>Why Choose KhataPro?</h2>
+<div class="why-grid">
+  <div class="card">✔ Simple for non-accountants</div>
+  <div class="card">✔ Affordable pricing</div>
+  <div class="card">✔ Data stored securely in India</div>
+</div>
+</div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="pricing">
+<div class="container">
+<h2>Pricing Plans</h2>
+<p>Simple plans for growing businesses</p>
+
+<div class="price-grid">
+<div class="price">
+  <h3>Free</h3>
+  <div class="amount">₹0</div>
+  <ul>
+    <li>Basic Billing</li>
+    <li>1 User</li>
+  </ul>
+  <a href="/accounts/signup/" class="btn btn-outline">Start Free</a>
+</div>
+
+<div class="price">
+  <h3>Professional</h3>
+  <div class="amount">₹999 / year</div>
+  <ul>
+    <li>GST Billing</li>
+    <li>Inventory</li>
+    <li>Reports</li>
+  </ul>
+  <a href="/billing/choose-plan/" class="btn btn-primary">Buy Now</a>
+</div>
+
+<div class="price">
+  <h3>Business</h3>
+  <div class="amount">₹1999 / year</div>
+  <ul>
+    <li>Multi User</li>
+    <li>Advanced Reports</li>
+    <li>Priority Support</li>
+  </ul>
+  <a href="/billing/choose-plan/" class="btn btn-primary">Buy Now</a>
+</div>
+</div>
+</div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+<div class="container">
+<h2>Start Managing Your Business Smarter Today</h2>
+<a href="/accounts/signup/" class="btn">Create Free Account</a>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+<div class="container footer-grid">
+<div>
+  <img src="{% static 'images/default-avatar.png' %}" height="40">
+  <p>Station Road, Basti, Uttar Pradesh, India – 272002<br>📞 9555733478</p>
+</div>
+<div>
+  <h4>Legal</h4>
+  <a href="/privacy-policy/">Privacy Policy</a>
+  <a href="/terms/">Terms & Conditions</a>
+</div>
+<div>
+  <h4>Account</h4>
+  <a href="/accounts/login/">Login</a>
+  <a href="/accounts/signup/">Sign Up</a>
+</div>
+</div>
+</footer>
+<!-- ================== ALL-IN-ONE SUPPORT SYSTEM ================== -->
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+<style>
+/* WHATSAPP FLOAT */
+.wa-float{
+ position:fixed;bottom:20px;right:20px;
+ background:#25D366;color:#fff;
+ padding:14px 18px;border-radius:50px;
+ display:flex;gap:10px;align-items:center;
+ box-shadow:0 15px 30px rgba(0,0,0,.25);
+ cursor:pointer;z-index:9999;
+}
+.wa-float:hover{background:#1ebd5a}
+
+/* WHATSAPP POPUP */
+.wa-box{
+ position:fixed;bottom:90px;right:20px;
+ width:320px;background:#fff;
+ border-radius:14px;
+ box-shadow:0 20px 50px rgba(0,0,0,.25);
+ display:none;z-index:9999;
+ overflow:hidden;
+}
+.wa-header{
+ background:#25D366;color:#fff;
+ padding:14px;font-weight:600;
+}
+.wa-body{padding:15px;font-size:14px;color:#334155}
+.wa-body textarea{
+ width:100%;padding:10px;border-radius:8px;
+ border:1px solid #cbd5e1;margin-top:8px;
+}
+.wa-body button{
+ width:100%;margin-top:10px;
+ background:#25D366;color:#fff;
+ border:none;padding:10px;
+ border-radius:8px;font-weight:600;
+}
+
+/* SOCIAL BAR */
+.social-bar{
+ position:fixed;top:40%;left:0;z-index:9998;
+}
+.social-bar a{
+ display:block;padding:12px 14px;
+ color:#fff;font-size:18px;
+}
+.fb{background:#1877f2}
+.ig{background:#e4405f}
+.yt{background:#ff0000}
+.tw{background:#1da1f2}
+.li{background:#0a66c2}
+
+/* SUPPORT FORM */
+.support{
+ padding:60px 20px;background:#f8fafc;
+}
+.support h2{text-align:center;font-size:32px}
+.support p{text-align:center;color:#64748b;margin-bottom:30px}
+.support form{
+ max-width:520px;margin:auto;
+ background:#fff;padding:30px;
+ border-radius:14px;
+ box-shadow:0 20px 40px rgba(0,0,0,.08);
+}
+.support input,.support textarea{
+ width:100%;padding:12px;margin-bottom:15px;
+ border-radius:8px;border:1px solid #cbd5e1;
+}
+.support button{
+ width:100%;padding:12px;
+ background:#2563eb;color:#fff;
+ border:none;border-radius:8px;
+ font-size:16px;font-weight:600;
+}
+</style>
+
+<!-- WHATSAPP FLOAT -->
+<div class="wa-float" onclick="toggleWA()">
+ <i class="fab fa-whatsapp"></i> Chat with us
+</div>
+
+<!-- WHATSAPP POPUP -->
+<div class="wa-box" id="waBox">
+ <div class="wa-header">WhatsApp Support</div>
+ <div class="wa-body">
+  <p>Hello 👋<br>How can we help you?</p>
+  <textarea id="waMsg">Hi, I need help with KhataPro</textarea>
+  <button onclick="sendWA()">Start Chat</button>
+ </div>
+</div>
+
+<!-- SOCIAL MEDIA -->
+<div class="social-bar">
+ <a href="https://facebook.com/yourpage" class="fb" target="_blank"><i class="fab fa-facebook-f"></i></a>
+ <a href="https://instagram.com/yourpage" class="ig" target="_blank"><i class="fab fa-instagram"></i></a>
+ <a href="https://youtube.com/@yourchannel" class="yt" target="_blank"><i class="fab fa-youtube"></i></a>
+ <a href="https://twitter.com/yourhandle" class="tw" target="_blank"><i class="fab fa-twitter"></i></a>
+ <a href="https://linkedin.com/company/yourcompany" class="li" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+</div>
+
+<!-- SUPPORT FORM -->
+<section class="support" id="support">
+    <h2>Contact Support</h2>
+    <p>Station Road, Basti, Uttar Pradesh – 272002 | 📞 9555733478</p>
+
+    <form id="supportForm">
+        {% csrf_token %}
+
+        <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Your Name"
+            required
+        >
+
+        <input
+            type="text"
+            name="mobile"
+            id="mobile"
+            placeholder="Your Mobile Number"
+            required
+        >
+
+        <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Your Email"
+            required
+        >
+
+        <textarea
+            id="message"
+            name="message"
+            placeholder="Your Message"
+            required
+        ></textarea>
+
+        <button type="submit">Send Message</button>
+    </form>
+</section>
+
+<!-- POPUP SUCCESS MODAL -->
+<div id="supportPopup" class="popup-overlay">
+    <div class="popup-content">
+        <h3>Support Request Submitted</h3>
+        <p id="popupText">Your message has been sent successfully.</p>
+        <button onclick="closePopup()" class="close-btn">OK</button>
+    </div>
+</div>
+
+<style>
+.popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+.popup-content {
+    background: #fff;
+    padding: 25px;
+    width: 340px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0,0,0,.3);
+}
+.close-btn {
+    margin-top: 15px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+</style>
+
+<!-- ================== WhatsUp Support ================== -->
+<script>
+function toggleWA(){
+ let box=document.getElementById("waBox");
+ box.style.display=box.style.display==="block"?"none":"block";
+}
+function sendWA(){
+ let msg=document.getElementById("waMsg").value;
+ window.open("https://wa.me/919555733478?text="+encodeURIComponent(msg));
+}
+</script>
+
+<!-- ================== END ================== -->
+
+<!-- ============ SMART ADMIN CONTROLLED CHATBOT ============ -->
+<style>
+#bot-launch{
+  position:fixed;bottom:20px;right:20px;
+  background:#2563eb;color:#fff;
+  padding:14px 18px;border-radius:50px;
+  cursor:pointer;font-weight:600;z-index:9999
+}
+#bot-box{
+  position:fixed;bottom:90px;right:20px;
+  width:340px;background:#fff;
+  border-radius:16px;
+  box-shadow:0 20px 40px rgba(0,0,0,.3);
+  display:none;overflow:hidden;
+  font-family:Arial
+}
+#bot-head{
+  background:#111827;color:#fff;
+  padding:14px;font-weight:bold
+}
+#bot-body{
+  padding:12px;height:260px;
+  overflow-y:auto;font-size:14px
+}
+.msg{margin-bottom:10px;max-width:85%}
+.user{
+  background:#e5e7eb;padding:8px 12px;
+  border-radius:12px 12px 12px 0
+}
+.bot{
+  background:#2563eb;color:#fff;
+  padding:8px 12px;
+  border-radius:12px 12px 0 12px;
+  margin-left:auto
+}
+#bot-input{
+  display:flex;border-top:1px solid #ddd
+}
+#bot-input input{
+  flex:1;border:none;padding:10px;outline:none
+}
+#bot-input button{
+  border:none;background:#2563eb;
+  color:#fff;padding:0 16px
+}
+
+/* ADMIN PANEL */
+#admin{
+  position:fixed;top:20px;left:20px;
+  background:#fff;padding:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  border-radius:10px;width:260px;
+  font-size:13px
+}
+#admin h3{margin:0 0 8px}
+#admin textarea{
+  width:100%;height:50px;margin-bottom:6px
+}
+#admin button{
+  width:100%;background:#16a34a;
+  color:#fff;border:none;padding:8px;
+  cursor:pointer
+}
+</style>
+
+<!-- LEFT SIDE CHATBOT -->
+<div id="bot-btn">🤖</div>
+
+<div id="bot-box">
+  <div id="bot-head">KhataApp Assistant</div>
+  <div id="bot-body"></div>
+  <div id="bot-input">
+    <input id="bot-msg" placeholder="Type your question..." />
+    <button onclick="sendBot()">➤</button>
+  </div>
+</div>
+<style>
+#bot-btn{
+ position:fixed;left:20px;bottom:20px;
+ background:#020617;color:#fff;
+ padding:14px;border-radius:50%;cursor:pointer
+}
+#bot-box{
+ position:fixed;left:20px;bottom:90px;
+ width:350px;background:#fff;
+ box-shadow:0 20px 40px rgba(0,0,0,.3);
+ display:none;border-radius:14px
+}
+#bot-head{background:#020617;color:#fff;padding:12px}
+#bot-body{height:280px;overflow:auto;padding:10px}
+.user{background:#e5e7eb;padding:8px;border-radius:12px 12px 12px 0;margin:6px 0}
+.bot{background:#2563eb;color:#fff;padding:8px;border-radius:12px 12px 0 12px;margin:6px 0;text-align:right}
+#bot-input{display:flex}
+#bot-input input{flex:1;padding:10px;border:none}
+#bot-input button{background:#2563eb;color:#fff;border:none;padding:0 16px}
+</style>
+
+<script>
+document.getElementById("bot-btn").onclick=()=>{
+ let b=document.getElementById("bot-box");
+ b.style.display=b.style.display=="block"?"none":"block";
+}
+
+function sendBot(){
+ let m=document.getElementById("bot-msg").value;
+ if(!m)return;
+ addMsg(m,"user");
+
+ fetch("/chatbot/reply/",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({message:m})
+ })
+ .then(r=>r.json())
+ .then(d=>addMsg(d.reply,"bot"));
+
+ document.getElementById("bot-msg").value="";
+}
+
+function addMsg(t,c){
+ let b=document.getElementById("bot-body");
+ b.innerHTML+=`<div class="${c}">${t}</div>`;
+ b.scrollTop=b.scrollHeight;
+}
+</script>
+
+<script>
+let socket = new WebSocket("wss://" + window.location.host + "/ws/chat/");
+
+socket.onmessage = function(e){
+ let data = JSON.parse(e.data);
+ if(data.typing){
+   document.getElementById("bot-body")
+     .innerHTML += `<div class="bot">Typing...</div>`;
+ }
+ if(data.reply){
+   addMsg(data.reply,"bot");
+ }
+}
+
+// Slider Auto Switch
+let slides = document.querySelectorAll('.hero-slide');
+let index = 0;
+
+setInterval(() => {
+    slides[index].classList.remove('active');
+    index = (index + 1) % slides.length;
+    slides[index].classList.add('active');
+}, 6000);
+
+// Animation Counter
+const counters = document.querySelectorAll(".stat-number");
+const animateCounters = () => {
+  counters.forEach(counter => {
+    const target = +counter.getAttribute("data-count");
+    const speed = 50;
+    let count = 0;
+
+    const update = () => {
+      count += Math.ceil(target / speed);
+      if(count < target){
+        counter.innerText = count.toLocaleString();
+        setTimeout(update, 30);
+      } else {
+        counter.innerText = target.toLocaleString();
+      }
+    };
+    update();
+  });
+};
+setTimeout(animateCounters, 1500);
+</script>
+
+<!-- ========== FIXED AJAX SUBMISSION + POPUP ========== -->
+<script>
+document.getElementById("supportForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch("/contact/submit/", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("popupText").innerText = data.message;
+        document.getElementById("supportPopup").style.display = "flex";
+        if (data.status === "success") {
+            this.reset();
+        }
+    })
+    .catch(() => {
+        document.getElementById("popupText").innerText = "Something went wrong.";
+        document.getElementById("supportPopup").style.display = "flex";
+    });
+});
+
+function closePopup() {
+    document.getElementById("supportPopup").style.display = "none";
+}
+</script>
+
+</body>
+</html>

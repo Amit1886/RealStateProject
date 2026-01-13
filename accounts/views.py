@@ -20,7 +20,7 @@ from datetime import timedelta
 from accounts.services.snapshot import build_business_snapshot
 from .models import Expense, ExpenseCategory
 import uuid
-
+from khataapp.models import UserProfile as KhataProfile
 
 
 
@@ -590,8 +590,10 @@ def signup_view(request):
                 user.save()
 
                 # ✅ SAFE PROFILE HANDLING
-                profile, created = UserProfile.objects.get_or_create(user=user)
-
+                profile, created = KhataProfile.objects.get_or_create(
+                user=user,
+                defaults={"created_from": "signup"}
+                )
                 profile.mobile = form.cleaned_data.get("mobile")
                 profile.save()
 
@@ -632,7 +634,7 @@ def login_view(request):
             use_otp = form.cleaned_data.get("use_otp", True)
 
             # Find user by mobile
-            profile = UserProfile.objects.filter(mobile=identifier).select_related("user").first()
+            profile = KhataProfile.objects.filter(mobile=identifier).select_related("user").first()
             if not profile:
                 messages.error(request, "User not found")
                 return render(request, "accounts/login.html", {"form": form})
@@ -661,9 +663,10 @@ def login_view(request):
 
             # ---- NORMAL PASSWORD LOGIN ----
             user_auth = authenticate(username=user.username, password=password)
-            if user_auth:
-                login(request, user_auth)
-                return redirect("accounts:dashboard")
+            if user_auth and not user_auth.is_active:
+                messages.error(request, "Verify OTP first")
+                request.session["otp_user_id"] = user.id
+                return redirect("accounts:verify_otp")
             else:
                 messages.error(request, "Invalid credentials")
 
@@ -675,7 +678,9 @@ def login_view(request):
 
 # ----------------- OTP VERIFY -----------------
 def verify_otp_view(request):
+
     user_id = request.session.get("otp_user_id")
+
     if not user_id:
         messages.error(request, "Session expired. Please login again.")
         return redirect("accounts:login")
@@ -684,28 +689,50 @@ def verify_otp_view(request):
 
     if request.method == "POST":
         form = OTPForm(request.POST)
+
         if form.is_valid():
             code = form.cleaned_data["code"]
-            otp = OTP.objects.filter(user=user, code=code, verified=False).last()
 
-            if otp and otp.is_valid(code):
-                otp.mark_verified()
-                user.is_active = True
-                user.save()
+            otp = OTP.objects.filter(
+                user=user,
+                verified=False,
+                expires_at__gte=timezone.now()
+            ).order_by("-created_at").first()
 
-                login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+            if not otp:
+                messages.error(request, "OTP expired. Please resend.")
+                return redirect("accounts:verify_otp")
 
-                messages.success(request, "OTP verified successfully.")
-                request.session.pop("otp_user_id", None)
-                request.session.pop("otp_purpose", None)
-                return redirect("accounts:dashboard")
-            else:
-                messages.error(request, "Invalid or expired OTP.")
+            if otp.code != code:
+                messages.error(request, "Invalid OTP.")
+                return redirect("accounts:verify_otp")
+
+            # ✅ OTP SUCCESS
+            otp.verified = True
+            otp.save(update_fields=["verified"])
+
+            # ✅ Activate user AND mark OTP verified
+            user.is_active = True
+            user.is_otp_verified = True  # <-- NEW
+            user.save(update_fields=["is_active", "is_otp_verified"])
+
+            # ✅ Login only AFTER OTP
+            login(request, user)
+
+            # ✅ Clean session
+            request.session.pop("otp_user_id", None)
+            request.session.pop("otp_purpose", None)
+
+            messages.success(request, "Account verified successfully.")
+            return redirect("/accounts/dashboard/")
+
     else:
         form = OTPForm()
 
-    return render(request, "accounts/verify_otp.html", {"form": form})
-
+    return render(request, "accounts/verify_otp.html", {
+        "form": form,
+        "user": user
+    })
 
 # ----------------- LOGOUT -----------------
 def logout_view(request):

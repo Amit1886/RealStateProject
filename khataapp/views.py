@@ -16,6 +16,13 @@ from .models import UserProfile, Party, CreditEntry, EMI, CreditSettings, Transa
 from django.contrib.auth.models import User
 from commerce.models import SalesVoucher, Invoice
 from django.utils import timezone
+from .forms import ContactForm
+from django.core.mail import send_mail
+from django.conf import settings
+from django.http import JsonResponse
+from .models import ContactMessage
+from django.views.decorators.csrf import csrf_exempt
+
 
 
 # ----------------- Dashboard (Profile + Settings) -----------------
@@ -300,3 +307,74 @@ def transaction_delete(request, id):
     messages.success(request, "Transaction deleted successfully")
 
     return redirect("khataapp:transaction_list")
+
+
+def contact_submit(request):
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            obj = form.save()
+
+            # 1. Auto-select admin user to forward message
+            admin_user = User.objects.filter(is_superuser=True).first()
+            if admin_user:
+                obj.assigned_to = admin_user
+                obj.forwarded_to_admin = True
+                obj.save()
+
+                # 2. Email notification to admin
+                send_mail(
+                    subject="New Contact Inquiry",
+                    message=f"""
+New contact request received:
+
+Name: {obj.name}
+Mobile: {obj.mobile}
+Email: {obj.email}
+Message:
+{obj.message}
+""",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[admin_user.email],
+                )
+
+            # 3. Auto-reply email to Customer
+            send_mail(
+                subject="Thank you for contacting us",
+                message="Thank you for contacting support. Our team will respond shortly.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[obj.email],
+            )
+
+            return render(request, "core/contact_form.html", {"form": form})
+
+    else:
+        form = ContactForm()
+
+    return render(request, "core/contact_form.html", {"form": form})
+
+
+@csrf_exempt
+def submit_contact(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        mobile = request.POST.get("mobile")
+        email = request.POST.get("email")
+        message_text = request.POST.get("message")
+
+        if not name or not mobile or not email or not message_text:
+            return JsonResponse({"status": "error", "message": "Missing fields"})
+
+        ContactMessage.objects.create(
+            name=name,
+            mobile=mobile,
+            email=email,
+            message=message_text
+        )
+
+        return JsonResponse({
+            "status": "success",
+            "message": "Your message has been received successfully."
+        })
+
+    return JsonResponse({"status": "error", "message": "Invalid request"})

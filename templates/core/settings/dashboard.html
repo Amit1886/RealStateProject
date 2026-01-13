@@ -1,0 +1,51 @@
+{% extends "core/base_ui.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white shadow-xl rounded-xl p-8">
+
+<h2 class="text-2xl font-bold mb-6">⚙️ My Business Settings</h2>
+
+<form method="POST">
+{% csrf_token %}
+
+<div class="grid grid-cols-2 gap-6">
+
+  <div>
+    <label>Company Name</label>
+    <input type="text" name="company_name" value="{{ company.company_name }}"
+           class="w-full border p-2 rounded">
+  </div>
+
+  <div>
+    <label>Phone</label>
+    <input type="text" name="phone" value="{{ company.phone }}"
+           class="w-full border p-2 rounded">
+  </div>
+
+  <div class="col-span-2">
+    <label>Address</label>
+    <textarea name="address" class="w-full border p-2 rounded">{{ company.address }}</textarea>
+  </div>
+
+  <div>
+    <label>Theme</label>
+    <select name="theme" class="w-full border p-2 rounded">
+      <option value="light" {% if ui.theme == "light" %}selected{% endif %}>Light</option>
+      <option value="dark" {% if ui.theme == "dark" %}selected{% endif %}>Dark</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Sidebar Color</label>
+    <input type="color" name="sidebar_color" value="{{ ui.sidebar_color }}">
+  </div>
+
+</div>
+
+<button class="mt-6 bg-blue-600 text-white px-6 py-2 rounded">
+  Save Settings
+</button>
+
+</form>
+</div>
+{% endblock %}

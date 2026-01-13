@@ -1,0 +1,50 @@
+{% extends "socialaccount/base_entrance.html" %}
+{% load i18n widget_tweaks socialaccount %}
+
+{% block head_title %}{% trans "Signup" %}{% endblock %}
+
+{% block content %}
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <div class="auth-title">{% trans "Sign Up" %}</div>
+
+    {% if provider %}
+      <div class="auth-subtitle">
+        {% blocktrans with provider_name=provider.name site_name=site.name %}
+          You are about to use your {{ provider_name }} account to log in to {{ site_name }}.
+          Please complete the following details.
+        {% endblocktrans %}
+      </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <!-- Username -->
+      <input type="text" name="username" placeholder="Username" value="{{ form.username.value|default_if_none:'' }}">
+      <!-- Email -->
+      <input type="email" name="email" placeholder="Email" value="{{ form.email.value|default_if_none:'' }}">
+      <!-- Mobile -->
+      <input type="text" name="mobile" placeholder="Mobile" value="{{ form.mobile.value|default_if_none:'' }}">
+      <!-- Password -->
+      <input type="password" name="password" placeholder="Password">
+      <button type="submit">{% trans "Sign Up" %}</button>
+    </form>
+
+    <!-- OR Divider -->
+    <div class="flex items-center my-6">
+      <hr class="flex-grow border-gray-300">
+      <span class="px-3 text-gray-500 text-sm">OR</span>
+      <hr class="flex-grow border-gray-300">
+    </div>
+
+    <!-- Google Signup Button -->
+    <a href="{% provider_login_url 'google' %}">
+        Signup with Google
+    </a>
+
+  </div>
+</div>
+
+{% endblock %}

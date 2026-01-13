@@ -130,6 +130,9 @@ class User(AbstractUser):
 
     email_verified = models.BooleanField(default=False)
     mobile_verified = models.BooleanField(default=False)
+    is_social_login = models.BooleanField(default=False)
+    is_otp_verified = models.BooleanField(default=False)
+
 
     groups = models.ManyToManyField(
         Group,
@@ -206,6 +209,7 @@ class OTP(models.Model):
 # ----------------- USER PROFILE MODEL -----------------
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    company = models.CharField(max_length=255, blank=True, null=True)  # add this
 
     full_name = models.CharField(max_length=150)
     mobile = models.CharField(max_length=15)
@@ -230,7 +234,8 @@ class UserProfile(models.Model):
 
 # ----------------- AUTO CREATE PROFILE ON USER CREATION -----------------
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
+def create_staff_profile(sender, instance, created, **kwargs):
+    # Disabled – handled by khataapp
     pass
 
 class DailySummary(models.Model):

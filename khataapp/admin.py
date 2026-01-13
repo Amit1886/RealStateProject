@@ -9,6 +9,7 @@ import requests
 from django.http import FileResponse
 from .utils.credit_report import generate_credit_report_pdf, generate_credit_report_pdf_for_party
 from .models import CreditSettings, CreditAccount, CreditEntry, EMI, Penalty
+from .models import ContactMessage
 
 
 
@@ -267,3 +268,10 @@ class EMIAdmin(admin.ModelAdmin):
 class PenaltyAdmin(admin.ModelAdmin):
     list_display = ("entry", "amount", "reason", "applied_at")
     search_fields = ("entry__account__party__name",)
+
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display = ("name", "mobile", "email", "created_at", "assigned_to", "forwarded_to_admin")
+    search_fields = ("name", "mobile", "email")
+    list_filter = ("created_at",)

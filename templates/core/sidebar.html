@@ -97,11 +97,13 @@
             </ul>
         </li>
 
-        <li>
-            <a href="/admin/">
-                <span class="icon">⚙</span>
-                <span class="label">Settings</span>
-            </a>
-        </li>
+        {% if request.user.is_authenticated %}
+    <li>
+    <a href="{% url 'settings' %}" class="sidebar-link">
+        ⚙️ Settings
+    </a>
+    </li>
+{% endif %}
+
     </ul>
 </div>

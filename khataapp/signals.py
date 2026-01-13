@@ -75,26 +75,26 @@ def handle_transaction_delete(sender, instance, **kwargs):
     transaction.on_commit(lambda: _recalculate_and_save(instance.party))
 
 
-@receiver(post_save, sender=User)
-def create_default_profile(sender, instance, created, **kwargs):
-    """Create default UserProfile when new user registers."""
-    if not created:
-        return
-
-    try:
-        basic_plan = Plan.objects.filter(name__iexact="Basic").first()
-    except Exception:
-        basic_plan = None
-
-    # Prevent duplicate profile
-    try:
-        if not UserProfile.objects.filter(user=instance).exists():
-            UserProfile.objects.create(
-                user=instance,
-                plan=basic_plan,
-                created_from="signup",
-            )
-    except Exception:
-        logger.exception(
-            "Failed to create UserProfile for user %s", getattr(instance, "username", None)
-        )
+#@receiver(post_save, sender=User)
+######def create_default_profile(sender, instance, created, **kwargs):
+#####    """Create default UserProfile when new user registers."""
+####    if not created:
+###        return
+##
+#    try:
+###        basic_plan = Plan.objects.filter(name__iexact="Basic").first()
+###    except Exception:
+#        basic_plan = None
+#
+#    # Prevent duplicate profile
+#    try:
+#        if not UserProfile.objects.filter(user=instance).exists():
+#            UserProfile.objects.create(
+#                user=instance,
+##                plan=basic_plan,
+#                created_from="signup",
+#            )
+#    except Exception:
+#        logger.exception(
+#            "Failed to create UserProfile for user %s", getattr(instance, "username", None)
+#        )

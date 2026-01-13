@@ -23,10 +23,14 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
+    'django.contrib.sites',
+    # django-allauth
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
 
     # Third-party apps
-    "social_django",   # for Google login etc.
     'widget_tweaks',
 
     # Your apps
@@ -36,7 +40,35 @@ INSTALLED_APPS = [
     "commerce",
     'mathfilters',
     'core_settings',
+    'rest_framework',
+    'mobileapi',
+    'chatbot',
 ]
+
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": "941752724711-s6j8a0l7vj0dujnd1lnue7tf6ll7r8st.apps.googleusercontent.com",
+            "secret": "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",
+            "key": ""
+        },
+        "SCOPE": [
+            "email",
+            "profile",
+            "openid",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+    }
+}
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -50,6 +82,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     'khataapp.middleware.RestrictAdminMiddleware',
+    # REQUIRED FOR ALLAUTH
+    "allauth.account.middleware.AccountMiddleware",
+
 ]
 
 # ---------------- ROOT URL ----------------
@@ -75,6 +110,13 @@ TEMPLATES = [
 
 # ---------------- WSGI ----------------
 WSGI_APPLICATION = "khatapro.wsgi.application"
+
+# ---------------- Mobile APP Auth ----------------
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+}
 
 # ---------------- DATABASE ----------------
 DATABASES = {
@@ -112,28 +154,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ---------------- AUTH SETTINGS ----------------
 LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "/accounts/dashboard/"
+LOGIN_REDIRECT_URL = "/accounts/verify-otp/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
-# ---------------- GOOGLE OAUTH ----------------
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+ACCOUNT_ADAPTER = "accounts.adapters.OTPAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "accounts.adapters.OTPSocialAdapter"
 
-AUTHENTICATION_BACKENDS = (
-    "social_core.backends.google.GoogleOAuth2",
-    "django.contrib.auth.backends.ModelBackend",
-)
-
-AUTH_USER_MODEL = "accounts.User"
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
 
 
-# ---------------- SOCIAL AUTH ----------------
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = GOOGLE_CLIENT_ID
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = GOOGLE_CLIENT_SECRET
-
-# ---------------- EMAIL (optional: for password reset, etc.) ----------------
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
+OPENAI_API_KEY = "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"
 
 
 # ---------------- Logs ----------------

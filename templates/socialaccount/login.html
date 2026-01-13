@@ -1,0 +1,143 @@
+{% extends "socialaccount/base_entrance.html" %}
+{% load i18n %}
+{% load allauth %}
+
+{% block head_title %}
+    {% trans "Sign In" %}
+{% endblock head_title %}
+
+{% block content %}
+
+<style>
+    body {
+        background: #f5f7fa;
+    }
+    .auth-wrapper {
+        max-width: 480px;
+        margin: 40px auto;
+        background: #ffffff;
+        padding: 35px 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        font-family: Arial, sans-serif;
+        border: 1px solid #e6e6e6;
+    }
+    .auth-title {
+        font-size: 26px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #222;
+    }
+    .auth-subtitle {
+        font-size: 15px;
+        color: #555;
+        margin-bottom: 25px;
+        line-height: 22px;
+    }
+    .auth-details-box {
+        background: #f1f3f5;
+        padding: 15px 18px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        font-size: 14px;
+        color: #333;
+        border: 1px solid #e1e1e1;
+    }
+    .auth-details-box span {
+        font-weight: 600;
+        color: #000;
+    }
+    .auth-btn {
+        background: #0d6efd;
+        width: 100%;
+        padding: 12px 0;
+        border-radius: 8px;
+        font-size: 16px;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    .auth-btn:hover {
+        background: #0b5ed7;
+    }
+</style>
+
+<div class="auth-wrapper">
+
+{% with p=provider %}
+    {% if process == "connect" %}
+
+        <div class="auth-title">
+            {% if p %}
+                {% blocktrans with p.name as provider %}Connect {{ provider }}{% endblocktrans %}
+            {% else %}
+                {% blocktrans %}Connect Google{% endblocktrans %}
+            {% endif %}
+        </div>
+
+        <div class="auth-subtitle">
+            {% if p %}
+                {% blocktrans with p.name as provider %}
+                    You are about to connect a new account from <b>{{ provider }}</b>.
+                {% endblocktrans %}
+            {% else %}
+                {% blocktrans %}
+                    You are about to connect a new account from <b>Google</b>.
+                {% endblocktrans %}
+            {% endif %}
+        </div>
+
+    {% else %}
+
+        <div class="auth-title">
+            {% if p %}
+                {% blocktrans with p.name as provider %}Sign In With {{ provider }}{% endblocktrans %}
+            {% else %}
+                {% blocktrans %}Sign In With Google{% endblocktrans %}
+            {% endif %}
+        </div>
+
+        <div class="auth-subtitle">
+            {% if p %}
+                {% blocktrans with p.name as provider %}
+                    You are about to sign in using your <b>{{ provider }}</b> account.
+                {% endblocktrans %}
+            {% else %}
+                {% blocktrans %}
+                    You are about to sign in using your <b>Google</b> account.
+                {% endblocktrans %}
+            {% endif %}
+        </div>
+
+    {% endif %}
+{% endwith %}
+
+    <div class="auth-details-box">
+        <div>
+            Provider:
+            <span>
+                {% if provider %}
+                    {{ provider.name }}
+                {% else %}
+                    Google
+                {% endif %}
+            </span>
+        </div>
+        <div>
+            After sign-in, your account will be created or linked automatically.
+        </div>
+    </div>
+
+    {% element form method="post" no_visible_fields=True %}
+        {% slot actions %}
+            {% csrf_token %}
+            <button type="submit" class="auth-btn">
+                {% trans "Continue" %}
+            </button>
+        {% endslot %}
+    {% endelement %}
+
+</div>
+
+{% endblock content %}

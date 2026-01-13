@@ -1,76 +1,86 @@
-# accounts/signals.py
-
+from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.db.models import Sum
 
-from .models import UserProfile
-from billing.models import Plan
+from accounts.models import UserProfile, DailySummary
+from billing.models import Plan, Subscription
+from core_settings.models import CompanySettings
 from khataapp.models import Transaction
-from accounts.models import DailySummary
 
 User = get_user_model()
 
 
-# -------------------------------
-# Auto-create UserProfile
-# -------------------------------
+# ------------------------------------------------
+# CREATE USER PROFILE + COMPANY + SUBSCRIPTION
+# ------------------------------------------------
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        free_plan = Plan.objects.filter(price=0).first()
-        UserProfile.objects.get_or_create(
-            user=instance,
-            defaults={"plan": free_plan}
+def create_user_business(sender, instance, created, **kwargs):
+    """
+    Create UserProfile, CompanySettings & Subscription
+    when user becomes ACTIVE (OTP verified)
+    """
+
+    # Only when user is active
+    if not instance.is_active:
+        return
+
+    # Already created → do nothing
+    if UserProfile.objects.filter(user=instance).exists():
+        return
+
+    def _create():
+        company = CompanySettings.objects.create(
+            company_name=instance.username or instance.email
         )
 
+        UserProfile.objects.create(
+            user=instance,
+            company=company
+        )
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    try:
-        instance.userprofile.save()
-    except UserProfile.DoesNotExist:
-        free_plan = Plan.objects.filter(price=0).first()
-        UserProfile.objects.create(user=instance, plan=free_plan)
+        plan = Plan.objects.filter(is_default=True).first() or Plan.objects.filter(price=0).first()
+        if plan:
+            Subscription.objects.create(
+                company=company,
+                plan=plan,
+                active=True
+            )
 
+    transaction.on_commit(_create)
 
-# -------------------------------
-# DAILY SUMMARY UPDATE
-# -------------------------------
+# ------------------------------------------------
+# UPDATE DAILY SUMMARY WHEN A TRANSACTION IS CREATED
+# ------------------------------------------------
 @receiver(post_save, sender=Transaction)
 def update_daily_summary(sender, instance, created, **kwargs):
-
     if not created:
         return
 
-    # PARTY MUST HAVE OWNER
-    if not hasattr(instance.party, "owner"):
+    # Ignore if transaction has no owner
+    if not hasattr(instance.party, "owner") or not instance.party.owner:
         return
 
     user = instance.party.owner
+
+    # Ignore inactive users
+    if not user.is_active:
+        return
+
     today = timezone.now().date()
 
-    # Get all today's transactions for this user
-    txns = Transaction.objects.filter(
-        party__owner=user,
-        date=today
-    )
-
+    # Aggregate today's transactions
+    txns = Transaction.objects.filter(party__owner=user, date=today)
     total_credit = txns.filter(txn_type="credit").aggregate(total=Sum("amount"))["total"] or 0
     total_debit = txns.filter(txn_type="debit").aggregate(total=Sum("amount"))["total"] or 0
-
     balance = total_debit - total_credit
 
-    summary, _ = DailySummary.objects.get_or_create(
-        user=user,
-        date=today
-    )
-
+    # Update or create daily summary
+    summary, _ = DailySummary.objects.get_or_create(user=user, date=today)
     summary.total_credit = total_credit
     summary.total_debit = total_debit
     summary.balance = balance
     summary.total_transactions = txns.count()
-
     summary.save()

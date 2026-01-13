@@ -22,8 +22,7 @@ class SignupForm(forms.ModelForm):
             user.save()
             mobile = self.cleaned_data.get("mobile")
             if mobile:
-                UserProfile.objects.create(user=user, mobile=mobile)
-        return user
+                return user
 
 
 # ----------------- LOGIN FORM -----------------
