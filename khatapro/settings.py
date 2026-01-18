@@ -23,7 +23,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'django.contrib.sites',
+    "django.contrib.sites",
+
     # django-allauth
     "allauth",
     "allauth.account",
@@ -31,42 +32,40 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
 
     # Third-party apps
-    'widget_tweaks',
+    "widget_tweaks",
+    "solo",
+    'mathfilters',
+
 
     # Your apps
     "accounts.apps.AccountsConfig",
     "khataapp",
     "billing",
     "commerce",
-    'mathfilters',
-    'core_settings',
-    'rest_framework',
-    'mobileapi',
-    'chatbot',
+    "core_settings",
+    "rest_framework",
+    "mobileapi",
+    "chatbot",
 ]
 
 SITE_ID = 1
 
+# ---------------- AUTH BACKENDS ----------------
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
+# ---------------- GOOGLE SOCIAL LOGIN ----------------
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
-            "client_id": "941752724711-s6j8a0l7vj0dujnd1lnue7tf6ll7r8st.apps.googleusercontent.com",
-            "secret": "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",
-            "key": ""
+            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+            "secret": os.getenv("GOOGLE_SECRET"),
+            "key": "",
         },
-        "SCOPE": [
-            "email",
-            "profile",
-            "openid",
-        ],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-        },
+        "SCOPE": ["email", "profile", "openid"],
+        "AUTH_PARAMS": {"access_type": "online"},
     }
 }
 
@@ -81,10 +80,10 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'khataapp.middleware.RestrictAdminMiddleware',
+    "khataapp.middleware.RestrictAdminMiddleware",
+
     # REQUIRED FOR ALLAUTH
     "allauth.account.middleware.AccountMiddleware",
-
 ]
 
 # ---------------- ROOT URL ----------------
@@ -93,15 +92,15 @@ ROOT_URLCONF = "khatapro.urls"
 # ---------------- TEMPLATES ----------------
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
                 "core_settings.context_processors.global_settings",
             ],
         },
@@ -111,17 +110,17 @@ TEMPLATES = [
 # ---------------- WSGI ----------------
 WSGI_APPLICATION = "khatapro.wsgi.application"
 
-# ---------------- Mobile APP Auth ----------------
+# ---------------- REST FRAMEWORK ----------------
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.SessionAuthentication",
     ),
 }
 
 # ---------------- DATABASE ----------------
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",   # You can switch to MySQL/Postgres if needed
+        "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
@@ -133,7 +132,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
-
 
 # ---------------- LANGUAGE + TIME ----------------
 LANGUAGE_CODE = "en-us"
@@ -154,8 +152,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ---------------- AUTH SETTINGS ----------------
 LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "/accounts/verify-otp/"
-LOGOUT_REDIRECT_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
 ACCOUNT_ADAPTER = "accounts.adapters.OTPAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "accounts.adapters.OTPSocialAdapter"
@@ -164,50 +162,51 @@ ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
 ACCOUNT_EMAIL_VERIFICATION = "none"
 
 
-OPENAI_API_KEY = "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"
+import os
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_API_KEY = "your-real-api-key"
 
 
-# ---------------- Logs ----------------
+# ---------------- LOGGING ----------------
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
+    "version": 1,
+    "disable_existing_loggers": False,
 
-    'formatters': {
-        'verbose': {
-            'format': '[{asctime}] {levelname} {name}: {message}',
-            'style': '{',
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname} {name}: {message}",
+            "style": "{",
         },
-        'simple': {
-            'format': '{levelname}: {message}',
-            'style': '{',
+        "simple": {
+            "format": "{levelname}: {message}",
+            "style": "{",
         },
     },
 
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'django_debug.log'),
-            'formatter': 'verbose',
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "django_debug.log"),
+            "formatter": "verbose",
         },
-        'error_file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'django_error.log'),
-            'formatter': 'verbose',
+        "error_file": {
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "django_error.log"),
+            "formatter": "verbose",
         },
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
     },
 
-    'loggers': {
-        'django': {
-            'handlers': ['file', 'console', 'error_file'],
-            'level': 'DEBUG',
-            'propagate': True,
+    "loggers": {
+        "django": {
+            "handlers": ["file", "console", "error_file"],
+            "level": "DEBUG",
+            "propagate": True,
         },
     },
 }
-

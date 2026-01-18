@@ -9,7 +9,7 @@ User = get_user_model()
 # ----------------- SIGNUP FORM -----------------
 class SignupForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput, label="Password")
-    mobile = forms.CharField(max_length=15, required=False, label="Mobile Number")
+    mobile = forms.CharField(max_length=15, required=True, label="Mobile Number")
 
     class Meta:
         model = User
@@ -20,9 +20,19 @@ class SignupForm(forms.ModelForm):
         user.set_password(self.cleaned_data["password"])
         if commit:
             user.save()
-            mobile = self.cleaned_data.get("mobile")
-            if mobile:
-                return user
+        return user
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email is already registered.")
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
 
 
 # ----------------- LOGIN FORM -----------------
