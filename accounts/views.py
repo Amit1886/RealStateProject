@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, get_user_model, logout
 from django.contrib.auth import get_backends
+from django.db import transaction
 from django.db.models import Sum
 from django.core.paginator import Paginator, EmptyPage
 from django.http import JsonResponse, HttpResponse
@@ -584,26 +585,27 @@ def signup_view(request):
 
         if form.is_valid():
             try:
-                user = form.save(commit=False)
-                user.set_password(form.cleaned_data["password"])
-                user.is_active = False
-                user.save()
+                with transaction.atomic():
+                    user = form.save(commit=False)
+                    user.is_active = False
+                    user.save()
 
-                # ✅ SAFE PROFILE HANDLING
-                profile, created = KhataProfile.objects.get_or_create(
-                user=user,
-                defaults={"created_from": "signup"}
-                )
-                profile.mobile = form.cleaned_data.get("mobile")
-                profile.save()
-
-                otp = OTP.create_for(
+                    # ✅ SAFE PROFILE HANDLING
+                    profile, created = KhataProfile.objects.get_or_create(
                     user=user,
-                    purpose="signup",
-                    email=user.email,
-                    mobile=profile.mobile,
-                )
+                    defaults={"created_from": "signup"}
+                    )
+                    profile.mobile = form.cleaned_data.get("mobile")
+                    profile.save()
 
+                    otp = OTP.create_for(
+                        user=user,
+                        purpose="signup",
+                        email=user.email,
+                        mobile=profile.mobile,
+                    )
+
+                # OTP sending outside transaction to avoid rollback on delivery failure
                 if user.email:
                     send_email_otp(user.email, otp.code)
                 if profile.mobile:

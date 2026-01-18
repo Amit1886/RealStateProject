@@ -18,7 +18,7 @@ from accounts.models import DailySummary
 def send_email_otp(to_email, code):
     subject = "Your OTP Code"
     body = f"Your verification code is: {code}"
-    send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [to_email], fail_silently=False)
+    send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [to_email], fail_silently=True)
 
 def send_sms_otp(mobile, code, api_key=None):
     if not mobile:
