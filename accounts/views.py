@@ -639,13 +639,21 @@ def login_view(request):
             password = form.cleaned_data["password"]
             use_otp = form.cleaned_data.get("use_otp", True)
 
-            # Find user by mobile
+            # Find user by mobile or email
             profile = KhataProfile.objects.filter(mobile=identifier).select_related("user").first()
-            if not profile:
-                messages.error(request, "User not found")
-                return render(request, "accounts/login.html", {"form": form})
-
-            user = profile.user
+            if profile:
+                user = profile.user
+                mobile_for_otp = profile.mobile
+            else:
+                # Try to find user by email
+                try:
+                    user = User.objects.get(email__iexact=identifier)
+                    # Get mobile from user's profile if exists
+                    user_profile = KhataProfile.objects.filter(user=user).first()
+                    mobile_for_otp = user_profile.mobile if user_profile else None
+                except User.DoesNotExist:
+                    messages.error(request, "User not found")
+                    return render(request, "accounts/login.html", {"form": form})
 
             # ---- OTP LOGIN ----
             if use_otp:
@@ -653,13 +661,13 @@ def login_view(request):
                     user=user,
                     purpose="login",
                     email=user.email,
-                    mobile=profile.mobile,
+                    mobile=mobile_for_otp,
                 )
 
                 if user.email:
                     send_email_otp(user.email, otp.code)
-                if profile.mobile:
-                    send_sms_otp(profile.mobile, otp.code)
+                if mobile_for_otp:
+                    send_sms_otp(mobile_for_otp, otp.code)
 
                 request.session["otp_user_id"] = user.id
                 request.session["otp_purpose"] = "login"
