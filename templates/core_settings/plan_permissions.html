@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modern-app.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid" style="padding: 2rem;">
+
+    <!-- Header -->
+    <div class="card">
+        <div class="card-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3 class="mb-0">📋 Plan Permissions Management</h3>
+                <a href="{% url 'admin:billing_plan_change' %}" target="_blank" class="btn btn-primary btn-sm">
+                    ⚙️ Manage Plans in Admin
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if plans %}
+    <div style="margin-top: 2rem;">
+        <!-- Tabs for Plans -->
+        <div class="nav nav-tabs" role="tablist" style="border-bottom: 2px solid var(--border-color); margin-bottom: 0;">
+            {% for plan in plans %}
+            <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                    id="plan-{{ plan.id }}-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#plan-{{ plan.id }}" 
+                    type="button" 
+                    role="tab"
+                    style="padding: 1rem 1.5rem; color: var(--dark); border: none; border-bottom: 3px solid transparent; transition: var(--transition); cursor: pointer;">
+                📋 {{ plan.name }} 
+                <span class="badge" style="background: {% if plan.active %}#10b981{% else %}#ef4444{% endif %}; color: white; margin-left: 0.5rem;">
+                    {% if plan.active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </button>
+            {% endfor %}
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" style="border: 1px solid var(--border-color); border-top: none; padding: 2rem;">
+            {% for plan in plans %}
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                 id="plan-{{ plan.id }}" 
+                 role="tabpanel">
+
+                <!-- Plan Details Card -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h4 class="mb-0">{{ plan.name }} - Plan Details</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <p style="margin-bottom: 0.5rem; color: #6b7280;">Plan Name</p>
+                                <p class="font-semibold">{{ plan.name }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p style="margin-bottom: 0.5rem; color: #6b7280;">Price</p>
+                                <p class="font-semibold">₹{{ plan.price }}/month</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p style="margin-bottom: 0.5rem; color: #6b7280;">Active</p>
+                                <p class="font-semibold">
+                                    {% if plan.active %}
+                                    <span class="badge bg-success">✓ Yes</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">✗ No</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{% url 'admin:billing_planpermissions_change' plan.permissions.id %}" 
+                                   class="btn btn-primary btn-sm" target="_blank">
+                                   ✏️ Edit Permissions
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permissions Grid -->
+                {% if plan.permissions %}
+                <div class="row">
+                    <!-- Dashboard & Reports -->
+                    <div class="col-md-6">
+                        <div style="padding: 1.5rem; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 1rem;">
+                            <p class="font-semibold mb-3">📊 Dashboard & Reports</p>
+                            <div style="display: grid; gap: 0.8rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Dashboard Access</span>
+                                    <span class="badge {% if plan.permissions.allow_dashboard %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_dashboard %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Reports</span>
+                                    <span class="badge {% if plan.permissions.allow_reports %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_reports %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>PDF Export</span>
+                                    <span class="badge {% if plan.permissions.allow_pdf_export %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_pdf_export %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Excel Export</span>
+                                    <span class="badge {% if plan.permissions.allow_excel_export %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_excel_export %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Analytics</span>
+                                    <span class="badge {% if plan.permissions.allow_analytics %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_analytics %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Party Management -->
+                    <div class="col-md-6">
+                        <div style="padding: 1.5rem; background: #f0fdf4; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 1rem;">
+                            <p class="font-semibold mb-3">👥 Party Management</p>
+                            <div style="display: grid; gap: 0.8rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Add Party</span>
+                                    <span class="badge {% if plan.permissions.allow_add_party %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_add_party %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Edit Party</span>
+                                    <span class="badge {% if plan.permissions.allow_edit_party %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_edit_party %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Delete Party</span>
+                                    <span class="badge {% if plan.permissions.allow_delete_party %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_delete_party %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Max Parties</span>
+                                    <span class="badge bg-info">{{ plan.permissions.max_parties }} parties</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transactions -->
+                    <div class="col-md-6">
+                        <div style="padding: 1.5rem; background: #eff6ff; border-radius: 8px; border-left: 4px solid #0ea5e9; margin-bottom: 1rem;">
+                            <p class="font-semibold mb-3">💰 Transactions</p>
+                            <div style="display: grid; gap: 0.8rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Add Transaction</span>
+                                    <span class="badge {% if plan.permissions.allow_add_transaction %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_add_transaction %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Edit Transaction</span>
+                                    <span class="badge {% if plan.permissions.allow_edit_transaction %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_edit_transaction %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Delete Transaction</span>
+                                    <span class="badge {% if plan.permissions.allow_delete_transaction %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_delete_transaction %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Bulk Transaction</span>
+                                    <span class="badge {% if plan.permissions.allow_bulk_transaction %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_bulk_transaction %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Commerce & Warehouse -->
+                    <div class="col-md-6">
+                        <div style="padding: 1.5rem; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 1rem;">
+                            <p class="font-semibold mb-3">📦 Commerce & Warehouse</p>
+                            <div style="display: grid; gap: 0.8rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Commerce</span>
+                                    <span class="badge {% if plan.permissions.allow_commerce %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_commerce %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Warehouse</span>
+                                    <span class="badge {% if plan.permissions.allow_warehouse %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_warehouse %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Orders</span>
+                                    <span class="badge {% if plan.permissions.allow_orders %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_orders %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Inventory</span>
+                                    <span class="badge {% if plan.permissions.allow_inventory %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_inventory %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Communication -->
+                    <div class="col-md-6">
+                        <div style="padding: 1.5rem; background: #fee2e2; border-radius: 8px; border-left: 4px solid #ef4444; margin-bottom: 1rem;">
+                            <p class="font-semibold mb-3">📱 Communication</p>
+                            <div style="display: grid; gap: 0.8rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>WhatsApp</span>
+                                    <span class="badge {% if plan.permissions.allow_whatsapp %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_whatsapp %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>SMS</span>
+                                    <span class="badge {% if plan.permissions.allow_sms %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_sms %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Email</span>
+                                    <span class="badge {% if plan.permissions.allow_email %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_email %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ledger & Credit -->
+                    <div class="col-md-6">
+                        <div style="padding: 1.5rem; background: #fce7f3; border-radius: 8px; border-left: 4px solid #ec4899; margin-bottom: 1rem;">
+                            <p class="font-semibold mb-3">📊 Ledger & Credit</p>
+                            <div style="display: grid; gap: 0.8rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Ledger</span>
+                                    <span class="badge {% if plan.permissions.allow_ledger %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_ledger %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Credit Report</span>
+                                    <span class="badge {% if plan.permissions.allow_credit_report %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_credit_report %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin & Settings -->
+                    <div class="col-md-6">
+                        <div style="padding: 1.5rem; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #6b7280; margin-bottom: 1rem;">
+                            <p class="font-semibold mb-3">🔧 Admin & Settings</p>
+                            <div style="display: grid; gap: 0.8rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Settings</span>
+                                    <span class="badge {% if plan.permissions.allow_settings %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_settings %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Users</span>
+                                    <span class="badge {% if plan.permissions.allow_users %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_users %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>API Access</span>
+                                    <span class="badge {% if plan.permissions.allow_api_access %}bg-success{% else %}bg-danger{% endif %}">
+                                        {% if plan.permissions.allow_api_access %}✓ Allowed{% else %}✗ Disabled{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Button -->
+                <div style="margin-top: 2rem;">
+                    <a href="{% url 'admin:billing_planpermissions_change' plan.permissions.id %}" 
+                       class="btn btn-primary btn-lg" target="_blank">
+                       ✏️ Edit {{ plan.name }} Permissions in Admin
+                    </a>
+                </div>
+                {% else %}
+                <div style="padding: 2rem; text-align: center; background: #fef3c7; border-radius: 8px;">
+                    <p style="color: #92400e; font-weight: 600; margin-bottom: 1rem;">⚠️ No Permissions Configured</p>
+                    <p style="color: #b45309;">This plan doesn't have permissions configured yet. Please create it in the Django admin panel.</p>
+                    <a href="{% url 'admin:billing_planpermissions_add' %}" class="btn btn-warning mt-3" target="_blank">
+                        ➕ Create Permissions
+                    </a>
+                </div>
+                {% endif %}
+
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- No Plans Message -->
+    <div style="margin-top: 2rem; padding: 3rem; text-align: center; background: var(--light); border-radius: 8px;">
+        <p style="font-size: 1.5rem; color: #6b7280; margin-bottom: 1rem;">📋 No Plans Found</p>
+        <p style="color: #9ca3af; margin-bottom: 2rem;">Create plans in the Django admin panel to manage their permissions.</p>
+        <a href="{% url 'admin:billing_plan_add' %}" class="btn btn-primary" target="_blank">
+            ➕ Create New Plan
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+// Add hover effects to permission cards
+document.querySelectorAll('[id^="plan-"]').forEach(tab => {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('[role="tab"]').forEach(t => {
+            t.style.borderBottomColor = 'transparent';
+            t.style.color = 'var(--dark)';
+        });
+        this.style.borderBottomColor = 'var(--primary-color)';
+        this.style.color = 'var(--primary-color)';
+    });
+});
+
+// Initialize first tab as active
+const firstTab = document.querySelector('[role="tab"]');
+if (firstTab) {
+    firstTab.style.borderBottomColor = 'var(--primary-color)';
+    firstTab.style.color = 'var(--primary-color)';
+}
+</script>
+
+{% endblock %}

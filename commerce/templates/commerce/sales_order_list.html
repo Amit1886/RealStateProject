@@ -1,63 +1,82 @@
-{% extends "commerce/order_list.html" %}
+{% extends "base.html" %}
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
-<link rel="stylesheet" href="{% static 'css/sales_order_list.css' %}">
+<link rel="stylesheet" href="{% static 'css/modern-app.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="page-header d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">🧾 Sales Orders</h3>
-    <a href="{% url 'commerce:add_order' %}" class="btn btn-add">
-        ➕ Add Sale Order
-    </a>
-</div>
 
-<div class="card smart-card">
-    <div class="card-body">
+<div class="container-fluid order-container">
 
-        <div class="table-responsive">
-            <table id="salesOrderTable" class="table smart-table table-hover w-100">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Party</th>
-                        <th>Total</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th class="text-center">Action</th>
-                    </tr>
-                </thead>
+    <div class="card">
+        <div class="card-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3 class="mb-0">🧾 Sales Orders</h3>
+                <a href="{% url 'commerce:add_order' %}" class="btn btn-primary-small">
+                    ➕ Add Sale Order
+                </a>
+            </div>
+        </div>
 
-                <tbody>
-                {% for order in orders %}
-                    <tr>
-                        <td>{{ order.id }}</td>
-                        <td>{{ order.party.name }}</td>
-                        <td>₹ {{ order.total_amount }}</td>
-                        <td>{{ order.created_at|date:"d M Y" }}</td>
+        <!-- Filter Section -->
+        <div class="filter-row">
+            <input type="text" id="searchParty" class="form-control form-control-sm" placeholder="🔍 Search by party name..." style="flex: 1;">
+            
+            <select id="filterStatus" class="form-control form-control-sm" style="flex: 0.8;">
+                <option value="">📊 All Status</option>
+                <option value="pending">⏳ Pending</option>
+                <option value="accepted">✅ Accepted</option>
+                <option value="rejected">❌ Rejected</option>
+                <option value="fulfilled">🎉 Fulfilled</option>
+            </select>
 
-                        <td>
-                            <span class="badge status-{{ order.status|lower }}">
-                                {{ order.status|title }}
-                            </span>
-                        </td>
+            <button onclick="resetFilters()" class="btn btn-dark-small">♻️ Reset</button>
+        </div>
 
-                        <td class="text-center text-nowrap">
+        <!-- Table -->
+        <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+                <table id="salesOrderTable" class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>👤 Party</th>
+                            <th class="text-right">💰 Total</th>
+                            <th>📅 Date</th>
+                            <th>📊 Status</th>
+                            <th class="text-center">⚙️ Actions</th>
+                        </tr>
+                    </thead>
 
-                            <a href="{% url 'commerce:order_detail' order.id %}"
-                               class="btn btn-view btn-sm">
-                                View
-                            </a>
+                    <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td><span class="font-semibold">{{ order.party.name }}</span></td>
+                            <td class="text-right font-semibold">₹{{ order.total_amount|floatformat:2 }}</td>
+                            <td>{{ order.created_at|date:"d M Y" }}</td>
 
-                            {% if order.status|lower == "pending" %}
-                                <a href="{% url 'commerce:order_action' order.id 'accept' %}"
-                                   class="btn btn-accept btn-sm">
-                                    Accept
-                                </a>
-                                <a href="{% url 'commerce:order_action' order.id 'reject' %}"
+                            <td>
+                                {% if order.status|lower == "pending" %}
+                                    <span class="badge pending">⏳ Pending</span>
+                                {% elif order.status|lower == "accepted" %}
+                                    <span class="badge" style="background-color: rgba(16, 185, 129, 0.1); color: var(--success-color);">✅ Accepted</span>
+                                {% elif order.status|lower == "rejected" %}
+                                    <span class="badge" style="background-color: rgba(239, 68, 68, 0.1); color: var(--danger-color);">❌ Rejected</span>
+                                {% else %}
+                                    <span class="badge completed">🎉 Fulfilled</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center" style="white-space: nowrap;">
+                                <a href="{% url 'commerce:order_detail' order.id %}"
+                                   class="btn btn-table view btn-sm" title="View">👁️</a>
+
+                                {% if order.status|lower == "pending" %}
+                                    <a href="{% url 'commerce:order_action' order.id 'accept' %}"
+                                       class="btn btn-table" style="background-color: var(--success-color); color: white;" title="Accept" class="btn-sm">✅</a>
+                                    <a href="{% url 'commerce:order_action' order.id 'reject' %}"
                                    class="btn btn-reject btn-sm">
                                     Reject
                                 </a>

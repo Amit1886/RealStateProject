@@ -22,12 +22,76 @@ class FeatureToggle(models.Model):
 
 
 # =========================
+# � PLAN PERMISSIONS MODEL
+# =========================
+class PlanPermissions(models.Model):
+    """Plan-wise feature and module permissions"""
+    plan = models.OneToOneField(
+        "Plan",
+        on_delete=models.CASCADE,
+        related_name="permissions"
+    )
+    
+    # 📊 Dashboard & Reports
+    allow_dashboard = models.BooleanField(default=True)
+    allow_reports = models.BooleanField(default=True)
+    allow_pdf_export = models.BooleanField(default=False)
+    allow_excel_export = models.BooleanField(default=False)
+    
+    # 👥 Party Management
+    allow_add_party = models.BooleanField(default=True)
+    allow_edit_party = models.BooleanField(default=True)
+    allow_delete_party = models.BooleanField(default=False)
+    max_parties = models.PositiveIntegerField(default=100)
+    
+    # 💰 Transactions
+    allow_add_transaction = models.BooleanField(default=True)
+    allow_edit_transaction = models.BooleanField(default=True)
+    allow_delete_transaction = models.BooleanField(default=False)
+    allow_bulk_transaction = models.BooleanField(default=False)
+    
+    # 📦 Commerce/Warehouse
+    allow_commerce = models.BooleanField(default=False)
+    allow_warehouse = models.BooleanField(default=False)
+    allow_orders = models.BooleanField(default=False)
+    allow_inventory = models.BooleanField(default=False)
+    
+    # 📱 Communication
+    allow_whatsapp = models.BooleanField(default=False)
+    allow_sms = models.BooleanField(default=False)
+    allow_email = models.BooleanField(default=False)
+    
+    # 🔧 Admin & Settings
+    allow_settings = models.BooleanField(default=False)
+    allow_users = models.BooleanField(default=False)
+    allow_api_access = models.BooleanField(default=False)
+    
+    # 📊 Analytics & Ledger
+    allow_ledger = models.BooleanField(default=True)
+    allow_credit_report = models.BooleanField(default=False)
+    allow_analytics = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Permissions for {self.plan.name}"
+    
+    class Meta:
+        verbose_name = "Plan Permission"
+        verbose_name_plural = "Plan Permissions"
+
+
+# =========================
 # 💎 PLAN MODEL
 # =========================
 class Plan(models.Model):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     slug = models.SlugField(max_length=50, unique=True, blank=True)
+    
+    # 📝 Description
+    description = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -53,10 +117,19 @@ class Plan(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+        
+        # Auto-create permissions if not exists
+        if not hasattr(self, 'permissions'):
+            PlanPermissions.objects.get_or_create(plan=self)
 
     @property
     def is_free(self):
         return self.price == Decimal("0.00")
+    
+    def get_permissions(self):
+        """Get or create permissions for this plan"""
+        perm, _ = PlanPermissions.objects.get_or_create(plan=self)
+        return perm
 
 
 # =========================

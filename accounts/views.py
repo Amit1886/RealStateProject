@@ -640,6 +640,9 @@ def login_view(request):
             use_otp = form.cleaned_data.get("use_otp", True)
 
             # Find user by mobile or email
+            user = None
+            mobile_for_otp = None
+            
             profile = KhataProfile.objects.filter(mobile=identifier).select_related("user").first()
             if profile:
                 user = profile.user
@@ -654,6 +657,11 @@ def login_view(request):
                 except User.DoesNotExist:
                     messages.error(request, "User not found")
                     return render(request, "accounts/login.html", {"form": form})
+
+            # Ensure user is not None before proceeding
+            if not user:
+                messages.error(request, "User not found")
+                return render(request, "accounts/login.html", {"form": form})
 
             # ---- OTP LOGIN ----
             if use_otp:
@@ -731,14 +739,20 @@ def verify_otp_view(request):
             user.save(update_fields=["is_active", "is_otp_verified"])
 
             # ✅ Login only AFTER OTP
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
 
             # ✅ Clean session
             request.session.pop("otp_user_id", None)
             request.session.pop("otp_purpose", None)
 
             messages.success(request, "Account verified successfully.")
-            return redirect("/accounts/dashboard/")
+
+            # ✅ Redirect superusers to admin
+            if user.is_superuser:
+                return redirect("/superadmin/")
+            else:
+                return redirect("/accounts/dashboard/")
 
     else:
         form = OTPForm()

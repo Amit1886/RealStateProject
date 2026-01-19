@@ -2,62 +2,44 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
-<link rel="stylesheet" href="{% static 'css/product_list.css' %}">
+<link rel="stylesheet" href="{% static 'css/modern-app.css' %}">
 {% endblock %}
 
 {% block content %}
 
-<div class="page-header d-flex justify-content-between align-items-center mb-3">
-    <h3>🛍️ Products</h3>
-    <a href="{% url 'commerce:add_product' %}" class="btn btn-add">
-        ➕ Add Product
-    </a>
-</div>
+<div class="container-fluid product-container">
 
-<!-- FILTER BAR -->
-<div class="card filter-card mb-3">
-    <div class="card-body row g-2">
-        <div class="col-md-3">
-            <input type="text" id="filterName" class="form-control" placeholder="🔍 Product Name">
+    <div class="card">
+        <div class="card-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3 class="mb-0">🛍️ Product Inventory</h3>
+                <a href="{% url 'commerce:add_product' %}" class="btn btn-primary-small">
+                    ➕ Add New Product
+                </a>
+            </div>
         </div>
 
-        <div class="col-md-2">
-            <input type="text" id="filterCategory" class="form-control" placeholder="Category">
+        <!-- FILTER BAR -->
+        <div class="filter-row">
+            <input type="text" id="filterName" class="form-control form-control-sm" placeholder="🔍 Search by Product Name..." style="flex: 1;">
+            <input type="text" id="filterCategory" class="form-control form-control-sm" placeholder="📂 Category..." style="flex: 1;">
+            <input type="text" id="filterSKU" class="form-control form-control-sm" placeholder="📌 SKU..." style="flex: 0.5;">
+            <button id="resetFilters" class="btn btn-dark-small">♻️ Reset</button>
         </div>
 
-        <div class="col-md-2">
-            <input type="text" id="filterSKU" class="form-control" placeholder="SKU">
-        </div>
-
-        <div class="col-md-2">
-            <input type="text" id="filterGST" class="form-control" placeholder="GST %">
-        </div>
-
-        <div class="col-md-3 text-end">
-            <button id="resetFilters" class="btn btn-secondary">
-                ♻ Reset
-            </button>
-        </div>
-    </div>
-</div>
-
-
-<!-- TABLE -->
-<div class="card smart-card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table id="productTable" class="table smart-table table-hover w-100">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Category</th>
-                        <th>Product Name</th>
-                        <th>Price (₹)</th>
-                        <th>Stock</th>
-                        <th>SKU</th>
-                        <th>Unit</th>
+        <!-- TABLE -->
+        <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+                <table id="productTable" class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>📂 Category</th>
+                            <th>🏷️ Product Name</th>
+                            <th class="text-right">💵 Price</th>
+                            <th class="text-center">📦 Stock</th>
+                            <th>📌 SKU</th>
+                            <th>🎯 Unit</th>
                         <th>HSN</th>
                         <th>GST %</th>
                         <th>Description</th>

@@ -2,81 +2,104 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/order_list.css' %}">
+<link rel="stylesheet" href="{% static 'css/modern-app.css' %}">
 {% endblock %}
 
 {% block content %}
 
-<div class="container-fluid py-4">
+<div class="container-fluid order-container">
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="fw-bold">
-      {% if page_type == "SALE" %}
-        📤 Sales Orders
-      {% elif page_type == "PURCHASE" %}
-        📥 Purchase Orders
-      {% else %}
-        📦 Orders
-      {% endif %}
-    </h4>
+  <div class="card">
+    <div class="card-header">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <h3 class="mb-0">
+          {% if page_type == "SALE" %}
+            📤 Sales Orders
+          {% elif page_type == "PURCHASE" %}
+            📥 Purchase Orders
+          {% else %}
+            📦 Order Management
+          {% endif %}
+        </h3>
 
-    <a href="{% url 'commerce:add_order' %}" class="btn btn-sm btn-primary shadow-sm">
-      ➕ Add Order
-    </a>
-  </div>
+        <a href="{% url 'commerce:add_order' %}" class="btn btn-primary-small">
+          ➕ Add New Order
+        </a>
+      </div>
+    </div>
 
-  <div class="card shadow-sm">
-    <div class="card-body table-responsive">
+    <!-- Filter Section -->
+    <div class="filter-row">
+      <input type="text" id="searchParty" class="form-control form-control-sm" placeholder="🔍 Search by party name..." style="flex: 1;">
+      
+      <select id="filterType" class="form-control form-control-sm" style="flex: 0.8;">
+        <option value="">📌 All Types</option>
+        <option value="SALE">📤 Sale</option>
+        <option value="PURCHASE">📥 Purchase</option>
+      </select>
 
-      <table id="orderTable" class="table table-bordered align-middle table-hover w-100">
-        <thead class="table-light">
-          <tr>
-            <th>#</th>
-            <th>Party</th>
-            <th>Type</th>
-            <th>Total</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th class="text-center">Action</th>
-          </tr>
-        </thead>
+      <select id="filterStatus" class="form-control form-control-sm" style="flex: 0.8;">
+        <option value="">📊 All Status</option>
+        <option value="pending">⏳ Pending</option>
+        <option value="accepted">✅ Accepted</option>
+        <option value="rejected">❌ Rejected</option>
+        <option value="cancelled">🚫 Cancelled</option>
+        <option value="fulfilled">🎉 Fulfilled</option>
+      </select>
 
-        <tbody>
-          {% for order in orders %}
-          <tr>
-            <td>{{ forloop.counter }}</td>
+      <button onclick="resetFilters()" class="btn btn-dark-small">♻️ Reset</button>
+    </div>
 
-            <td>
-              <strong>{{ order.party.name }}</strong>
-            </td>
+    <!-- Table -->
+    <div class="card-body" style="padding: 0;">
+      <div class="table-responsive">
+        <table id="orderTable" class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>👤 Party</th>
+              <th>📋 Type</th>
+              <th class="text-right">💰 Total</th>
+              <th>📅 Date</th>
+              <th>📊 Status</th>
+              <th class="text-center">⚙️ Action</th>
+            </tr>
+          </thead>
 
-            <td>
-              {% if order.order_type == "SALE" %}
-                <span class="badge bg-success">Sale</span>
-              {% elif order.order_type == "PURCHASE" %}
-                <span class="badge bg-warning text-dark">Purchase</span>
-              {% else %}
-                <span class="badge bg-secondary">{{ order.order_type }}</span>
-              {% endif %}
-            </td>
+          <tbody>
+            {% for order in orders %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
 
-            <td class="fw-bold">₹ {{ order.total_amount }}</td>
+              <td><span class="font-semibold">{{ order.party.name }}</span></td>
 
-            <td>{{ order.created_at|date:"d M Y" }}</td>
+              <td>
+                {% if order.order_type == "SALE" %}
+                  <span class="badge" style="background-color: rgba(16, 185, 129, 0.1); color: var(--success-color);">📤 Sale</span>
+                {% elif order.order_type == "PURCHASE" %}
+                  <span class="badge" style="background-color: rgba(245, 158, 11, 0.1); color: var(--warning-color);">📥 Purchase</span>
+                {% else %}
+                  <span class="badge" style="background-color: rgba(107, 114, 128, 0.1); color: #6b7280;">{{ order.order_type }}</span>
+                {% endif %}
+              </td>
 
-            <td>
-              {% if order.status == "pending" %}
-                <span class="badge bg-secondary">Pending</span>
-              {% elif order.status == "accepted" %}
-                <span class="badge bg-success">Accepted</span>
-              {% elif order.status == "rejected" %}
-                <span class="badge bg-danger">Rejected</span>
-              {% elif order.status == "cancelled" %}
-                <span class="badge bg-dark">Cancelled</span>
-              {% else %}
-                <span class="badge bg-info">Fulfilled</span>
-              {% endif %}
-            </td>
+              <td class="text-right font-semibold">₹{{ order.total_amount|floatformat:2 }}</td>
+
+              <td>{{ order.created_at|date:"d M Y" }}</td>
+
+              <td>
+                {% if order.status == "pending" %}
+                  <span class="badge pending">⏳ Pending</span>
+                {% elif order.status == "accepted" %}
+                  <span class="badge" style="background-color: rgba(16, 185, 129, 0.1); color: var(--success-color);">✅ Accepted</span>
+                {% elif order.status == "rejected" %}
+                  <span class="badge" style="background-color: rgba(239, 68, 68, 0.1); color: var(--danger-color);">❌ Rejected</span>
+                {% elif order.status == "cancelled" %}
+                  <span class="badge" style="background-color: rgba(17, 24, 39, 0.1); color: var(--dark);">🚫 Cancelled</span>
+                {% else %}
+                  <span class="badge completed">🎉 Fulfilled</span>
+                {% endif %}
+              </td>
 
             <td class="text-center text-nowrap">
 

@@ -20,11 +20,11 @@ class RestrictAdminMiddleware:
         # Admin access protection
         # --------------------------------
         if request.path.startswith('/admin/') and request.user.is_authenticated:
-            if not request.user.is_superuser:
+            if not (request.user.is_superuser or request.user.is_staff):
                 return redirect(reverse('billing:commerce_dashboard'))
 
         if request.path.startswith('/superadmin/') and request.user.is_authenticated:
-            if not request.user.is_superuser:
+            if not (request.user.is_superuser or request.user.is_staff):
                 return redirect(reverse('billing:commerce_dashboard'))
 
         return self.get_response(request)

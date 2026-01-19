@@ -7,7 +7,10 @@ import urllib.parse
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from django.template.loader import get_template
-from xhtml2pdf import pisa
+try:
+    from xhtml2pdf import pisa
+except ImportError:
+    pisa = None
 from khataapp.models import Transaction
 from django.utils import timezone
 from django.db.models import Sum

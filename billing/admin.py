@@ -1,8 +1,45 @@
 from django.contrib import admin
 from .models import (
     Plan, BillingInvoice, Subscription, PaymentGateway,
-    Commerce, Payment
+    Commerce, Payment, PlanPermissions
 )
+
+
+# =========================
+# 🔐 PLAN PERMISSIONS ADMIN
+# =========================
+@admin.register(PlanPermissions)
+class PlanPermissionsAdmin(admin.ModelAdmin):
+    list_display = ('plan', 'allow_dashboard', 'allow_commerce', 'allow_reports', 'allow_settings')
+    list_editable = ('allow_dashboard', 'allow_commerce', 'allow_reports', 'allow_settings')
+    list_filter = ('plan',)
+    
+    fieldsets = (
+        ("📋 Plan Info", {
+            "fields": ("plan",)
+        }),
+        ("📊 Dashboard & Reports", {
+            "fields": ("allow_dashboard", "allow_reports", "allow_pdf_export", "allow_excel_export", "allow_analytics")
+        }),
+        ("👥 Party Management", {
+            "fields": ("allow_add_party", "allow_edit_party", "allow_delete_party", "max_parties")
+        }),
+        ("💰 Transactions", {
+            "fields": ("allow_add_transaction", "allow_edit_transaction", "allow_delete_transaction", "allow_bulk_transaction")
+        }),
+        ("📦 Commerce & Warehouse", {
+            "fields": ("allow_commerce", "allow_warehouse", "allow_orders", "allow_inventory")
+        }),
+        ("📱 Communication", {
+            "fields": ("allow_whatsapp", "allow_sms", "allow_email")
+        }),
+        ("📊 Ledger & Credit", {
+            "fields": ("allow_ledger", "allow_credit_report")
+        }),
+        ("🔧 Admin & Settings", {
+            "fields": ("allow_settings", "allow_users", "allow_api_access")
+        }),
+    )
 
 
 # =========================
@@ -14,6 +51,19 @@ class PlanAdmin(admin.ModelAdmin):
     list_filter = ('active',)
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name',)
+    fieldsets = (
+        ("🎯 Plan Info", {
+            "fields": ("name", "slug", "price", "description")
+        }),
+        ("🔧 Settings", {
+            "fields": ("active", "groups", "feature_toggle")
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # Auto-create permissions
+        PlanPermissions.objects.get_or_create(plan=obj)
 
 
 # =========================
@@ -23,6 +73,7 @@ class PlanAdmin(admin.ModelAdmin):
 class BillingInvoiceAdmin(admin.ModelAdmin):
     list_display = ("invoice_number", "user", "plan", "amount", "status", "created_at")
     search_fields = ("invoice_number", "user__username")
+
 
 # =========================
 # 📦 SUBSCRIPTION ADMIN

@@ -2,81 +2,82 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
-<link rel="stylesheet" href="{% static 'css/transaction.css' %}">
+<link rel="stylesheet" href="{% static 'css/modern-app.css' %}">
 {% endblock %}
 
 {% block content %}
 
-<div class="container-fluid py-4">
+<div class="container-fluid transaction-container">
 
-    <div class="card txn-card">
+    <div class="card">
 
         <!-- Header -->
-        <div class="card-header txn-header">
-            <h4 class="mb-0">Transaction List</h4>
-            <div class="txn-actions">
-                <button class="btn btn-dark btn-sm" id="btnPrint">Print</button>
-                <button class="btn btn-success btn-sm" id="btnExcel">Excel</button>
-                <button class="btn btn-danger btn-sm" id="btnPdf">PDF</button>
+        <div class="card-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 1rem;">
+                <h3 class="mb-0">💳 Transaction History</h3>
+                <div class="txn-actions" style="gap: 0.5rem; background: none; border: none; padding: 0;">
+                    <button class="btn btn-dark btn-sm" id="btnPrint">🖨️ Print</button>
+                    <button class="btn btn-success btn-sm" id="btnExcel">📊 Excel</button>
+                    <button class="btn btn-danger btn-sm" id="btnPdf">📄 PDF</button>
+                </div>
             </div>
         </div>
 
         <!-- Filters -->
-        <div class="card-body border-bottom">
-            <div class="row g-2">
-                <div class="col-md-3">
-                    <input type="text" id="partyFilter" class="form-control form-control-sm" placeholder="Search Party">
-                </div>
-                <div class="col-md-3">
-                    <select id="typeFilter" class="form-select form-select-sm">
-                        <option value="">All Types</option>
-                        <option value="credit">Credit</option>
-                        <option value="debit">Debit</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <input type="date" id="fromDate" class="form-control form-control-sm">
-                </div>
-                <div class="col-md-3">
-                    <input type="date" id="toDate" class="form-control form-control-sm">
-                </div>
-            </div>
+        <div class="filter-row" style="margin-bottom: 0; border-radius: 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+            <input type="text" id="partyFilter" class="form-control form-control-sm" placeholder="🔍 Search Party Name..." style="flex: 1; min-width: 200px;">
+            
+            <select id="typeFilter" class="form-select form-select-sm" style="min-width: 150px;">
+                <option value="">📌 All Types</option>
+                <option value="credit">✅ Credit (Received)</option>
+                <option value="debit">❌ Debit (Paid)</option>
+            </select>
+            
+            <input type="date" id="fromDate" class="form-control form-control-sm" placeholder="From Date" style="min-width: 150px;">
+            <input type="date" id="toDate" class="form-control form-control-sm" placeholder="To Date" style="min-width: 150px;">
+            
+            <button class="btn btn-primary-small" onclick="applyFilters()">🔎 Apply</button>
         </div>
 
         <!-- Table -->
-        <div class="card-body">
-            <div class="table-responsive">
-                <table id="transactionTable" class="table txn-table w-100">
+        <div class="card-body" style="padding: 0;">
+            <div class="table-responsive" style="border-radius: 0;">
+                <table id="transactionTable" class="table">
                     <thead>
                         <tr>
-                            <th>Party</th>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Date</th>
-                            <th>Notes</th>
-                            <th class="text-center">Actions</th>
+                            <th>👤 Party</th>
+                            <th>💰 Type</th>
+                            <th>💵 Amount</th>
+                            <th>📅 Date</th>
+                            <th>📝 Notes</th>
+                            <th class="text-center">⚙️ Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for txn in transactions %}
                         <tr>
-                            <td>{{ txn.party.name }}</td>
+                            <td><span class="font-semibold">{{ txn.party.name }}</span></td>
                             <td>
-                                <span class="badge {{ txn.txn_type }}">
-                                    {{ txn.txn_type|title }}
-                                </span>
+                                {% if txn.txn_type == 'credit' %}
+                                    <span class="badge credit">✅ Credit</span>
+                                {% else %}
+                                    <span class="badge debit">❌ Debit</span>
+                                {% endif %}
                             </td>
-                            <td>₹ {{ txn.amount }}</td>
-                            <td>{{ txn.date }}</td>
-                            <td>{{ txn.notes|default:"-" }}</td>
+                            <td class="text-right"><strong>₹{{ txn.amount|floatformat:2 }}</strong></td>
+                            <td>{{ txn.date|date:"d M Y" }}</td>
+                            <td>{{ txn.notes|default:"—" }}</td>
                             <td class="text-center">
-                                <a href="{% url 'khataapp:transaction_view' txn.id %}" class="btn btn-view btn-sm">View</a>
-                                <a href="{% url 'khataapp:transaction_edit' txn.id %}" class="btn btn-edit btn-sm">Edit</a>
-                                <a href="{% url 'khataapp:transaction_delete' txn.id %}"onclick="return confirm('Are you sure you want to delete this transaction?')"class="btn btn-delete btn-sm">Delete</a>
+                                <a href="{% url 'khataapp:transaction_view' txn.id %}" class="btn btn-table view btn-sm" title="View">👁️</a>
+                                <a href="{% url 'khataapp:transaction_edit' txn.id %}" class="btn btn-table edit btn-sm" title="Edit">✏️</a>
+                                <a href="{% url 'khataapp:transaction_delete' txn.id %}" onclick="return confirm('Are you sure?')" class="btn btn-table delete btn-sm" title="Delete">🗑️</a>
                             </td>
                         </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted" style="padding: 2rem;">
+                            <p style="font-size: 1.1rem; margin: 0;">📭 No transactions found</p>
+                            <p style="font-size: 0.9rem; margin: 0.5rem 0 0 0; color: #9ca3af;">Create your first transaction to get started</p>
+                        </td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -91,8 +92,11 @@
 {% block extra_js %}
 <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+<script>
+function applyFilters() {
+    // Filter logic can be added here
+    console.log('Filters applied');
+}
+</script>
 <script src="{% static 'js/transaction.js' %}"></script>
 {% endblock %}

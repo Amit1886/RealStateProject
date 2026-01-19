@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modern-app.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid" style="padding: 2rem;">
+
+    <!-- Header -->
+    <div class="card">
+        <div class="card-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h3 class="mb-0">⚙️ Settings & Configuration</h3>
+                {% if user_plan %}
+                <span class="badge" style="background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem;">
+                    📋 Plan: {{ user_plan.name }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row" style="gap: 1.5rem; margin-top: 1.5rem;">
+
+        <!-- Left Sidebar - Menu -->
+        <div class="col-md-3">
+            <div class="card" style="position: sticky; top: 20px;">
+                <div class="card-body" style="padding: 0;">
+                    <div style="list-style: none; padding: 0; margin: 0;">
+                        <a href="#general" class="settings-menu-item" style="display: block; padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--dark); text-decoration: none; transition: var(--transition);">
+                            🏢 General Settings
+                        </a>
+                        <a href="#ui" class="settings-menu-item" style="display: block; padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--dark); text-decoration: none; transition: var(--transition);">
+                            🎨 UI & Theme
+                        </a>
+                        <a href="#permissions" class="settings-menu-item" style="display: block; padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--dark); text-decoration: none; transition: var(--transition);">
+                            🔐 My Permissions
+                        </a>
+                        {% if user.is_staff %}
+                        <a href="{% url 'core_settings:plan_permissions' %}" class="settings-menu-item" style="display: block; padding: 1rem; color: var(--dark); text-decoration: none; transition: var(--transition);">
+                            📋 Plan Management
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Content Area -->
+        <div class="col-md-9">
+
+            <!-- 1. General Settings -->
+            <div id="general" class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">🏢 General Settings</h4>
+                </div>
+                <form method="POST" class="card-body">
+                    {% csrf_token %}
+                    
+                    <div class="row" style="gap: 1rem;">
+                        <div class="col-md-6">
+                            <label class="font-semibold mb-2">Company Name</label>
+                            <input type="text" name="company_name" class="form-control" 
+                                   value="{{ company.company_name }}" placeholder="Enter company name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="font-semibold mb-2">Mobile</label>
+                            <input type="tel" name="mobile" class="form-control" 
+                                   value="{{ company.mobile }}" placeholder="+91-9999999999">
+                        </div>
+                    </div>
+
+                    <div class="row" style="gap: 1rem; margin-top: 1rem;">
+                        <div class="col-md-6">
+                            <label class="font-semibold mb-2">Email</label>
+                            <input type="email" name="email" class="form-control" 
+                                   value="{{ company.email }}" placeholder="info@company.com">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">
+                        💾 Save General Settings
+                    </button>
+                </form>
+            </div>
+
+            <!-- 2. UI & Theme Settings -->
+            <div id="ui" class="card" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h4 class="mb-0">🎨 UI & Theme Settings</h4>
+                </div>
+                <form method="POST" class="card-body">
+                    {% csrf_token %}
+                    
+                    <div class="row" style="gap: 1rem;">
+                        <div class="col-md-6">
+                            <label class="font-semibold mb-2">Primary Color</label>
+                            <input type="color" name="primary_color" class="form-control" 
+                                   value="{{ ui.primary_color }}" style="height: 50px;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="font-semibold mb-2">Secondary Color</label>
+                            <input type="color" name="secondary_color" class="form-control" 
+                                   value="{{ ui.secondary_color }}" style="height: 50px;">
+                        </div>
+                    </div>
+
+                    <div class="row" style="gap: 1rem; margin-top: 1rem;">
+                        <div class="col-md-6">
+                            <label class="font-semibold mb-2">Theme Mode</label>
+                            <select name="theme_mode" class="form-control">
+                                <option value="light" {% if ui.theme_mode == 'light' %}selected{% endif %}>☀️ Light</option>
+                                <option value="dark" {% if ui.theme_mode == 'dark' %}selected{% endif %}>🌙 Dark</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="font-semibold mb-2">Sidebar Position</label>
+                            <select name="sidebar_position" class="form-control">
+                                <option value="left" {% if ui.sidebar_position == 'left' %}selected{% endif %}>⬅️ Left</option>
+                                <option value="right" {% if ui.sidebar_position == 'right' %}selected{% endif %}>➡️ Right</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">
+                        💾 Save UI Settings
+                    </button>
+                </form>
+            </div>
+
+            <!-- 3. My Permissions -->
+            <div id="permissions" class="card" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <h4 class="mb-0">🔐 Your Plan Permissions</h4>
+                </div>
+                <div class="card-body">
+                    {% if plan_permissions %}
+                        <div class="row" style="gap: 1rem;">
+                            <!-- Dashboard & Reports -->
+                            <div class="col-md-6">
+                                <div style="padding: 1rem; background: var(--light); border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                                    <p class="font-semibold mb-2">📊 Dashboard & Reports</p>
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li>✅ Dashboard: {% if plan_permissions.allow_dashboard %}✓{% else %}✗{% endif %}</li>
+                                        <li>✅ Reports: {% if plan_permissions.allow_reports %}✓{% else %}✗{% endif %}</li>
+                                        <li>📄 PDF Export: {% if plan_permissions.allow_pdf_export %}✓{% else %}✗{% endif %}</li>
+                                        <li>📊 Excel Export: {% if plan_permissions.allow_excel_export %}✓{% else %}✗{% endif %}</li>
+                                        <li>📈 Analytics: {% if plan_permissions.allow_analytics %}✓{% else %}✗{% endif %}</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Party Management -->
+                            <div class="col-md-6">
+                                <div style="padding: 1rem; background: var(--light); border-radius: 8px; border-left: 4px solid var(--success-color);">
+                                    <p class="font-semibold mb-2">👥 Party Management</p>
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li>➕ Add Party: {% if plan_permissions.allow_add_party %}✓{% else %}✗{% endif %}</li>
+                                        <li>✏️ Edit Party: {% if plan_permissions.allow_edit_party %}✓{% else %}✗{% endif %}</li>
+                                        <li>🗑️ Delete Party: {% if plan_permissions.allow_delete_party %}✓{% else %}✗{% endif %}</li>
+                                        <li>📊 Max Parties: <strong>{{ plan_permissions.max_parties }}</strong></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" style="gap: 1rem; margin-top: 1rem;">
+                            <!-- Transactions -->
+                            <div class="col-md-6">
+                                <div style="padding: 1rem; background: var(--light); border-radius: 8px; border-left: 4px solid var(--info-color);">
+                                    <p class="font-semibold mb-2">💰 Transactions</p>
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li>➕ Add: {% if plan_permissions.allow_add_transaction %}✓{% else %}✗{% endif %}</li>
+                                        <li>✏️ Edit: {% if plan_permissions.allow_edit_transaction %}✓{% else %}✗{% endif %}</li>
+                                        <li>🗑️ Delete: {% if plan_permissions.allow_delete_transaction %}✓{% else %}✗{% endif %}</li>
+                                        <li>📦 Bulk: {% if plan_permissions.allow_bulk_transaction %}✓{% else %}✗{% endif %}</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Commerce -->
+                            <div class="col-md-6">
+                                <div style="padding: 1rem; background: var(--light); border-radius: 8px; border-left: 4px solid var(--warning-color);">
+                                    <p class="font-semibold mb-2">📦 Commerce & Warehouse</p>
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li>🛍️ Commerce: {% if plan_permissions.allow_commerce %}✓{% else %}✗{% endif %}</li>
+                                        <li>🏭 Warehouse: {% if plan_permissions.allow_warehouse %}✓{% else %}✗{% endif %}</li>
+                                        <li>📋 Orders: {% if plan_permissions.allow_orders %}✓{% else %}✗{% endif %}</li>
+                                        <li>📦 Inventory: {% if plan_permissions.allow_inventory %}✓{% else %}✗{% endif %}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" style="gap: 1rem; margin-top: 1rem;">
+                            <!-- Communication -->
+                            <div class="col-md-6">
+                                <div style="padding: 1rem; background: var(--light); border-radius: 8px; border-left: 4px solid var(--danger-color);">
+                                    <p class="font-semibold mb-2">📱 Communication</p>
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li>💬 WhatsApp: {% if plan_permissions.allow_whatsapp %}✓{% else %}✗{% endif %}</li>
+                                        <li>📞 SMS: {% if plan_permissions.allow_sms %}✓{% else %}✗{% endif %}</li>
+                                        <li>📧 Email: {% if plan_permissions.allow_email %}✓{% else %}✗{% endif %}</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Admin Settings -->
+                            <div class="col-md-6">
+                                <div style="padding: 1rem; background: var(--light); border-radius: 8px; border-left: 4px solid var(--dark);">
+                                    <p class="font-semibold mb-2">🔧 Admin & Settings</p>
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li>⚙️ Settings: {% if plan_permissions.allow_settings %}✓{% else %}✗{% endif %}</li>
+                                        <li>👤 Users: {% if plan_permissions.allow_users %}✓{% else %}✗{% endif %}</li>
+                                        <li>🔌 API Access: {% if plan_permissions.allow_api_access %}✓{% else %}✗{% endif %}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem; padding: 1rem; background: #f0f9ff; border-left: 4px solid var(--info-color); border-radius: 8px;">
+                            <p style="margin: 0; color: var(--info-color); font-weight: 600;">
+                                ℹ️ Need more features? Upgrade your plan to unlock additional capabilities!
+                            </p>
+                        </div>
+                    {% else %}
+                        <div style="padding: 2rem; text-align: center;">
+                            <p style="color: #6b7280; font-size: 1.1rem;">❌ No plan assigned to your account</p>
+                            <p style="color: #9ca3af;">Please contact support or upgrade your plan</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

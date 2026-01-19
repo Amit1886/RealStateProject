@@ -7,9 +7,6 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from django.shortcuts import render
 from khataapp.views import submit_contact
-from core_settings import views
-
-
 
 # Import billing and commerce views for specific routes
 from billing import views as billing_views
@@ -61,8 +58,8 @@ urlpatterns = [
     # ---------------- Contact Form Home Page Landing Page  ----------------
     path("contact/submit/", submit_contact, name="contact_submit"),
 
-    # ---------------- Core Setting   ----------------
-    path("settings/", views.settings_dashboard, name="settings"),
+    # ---------------- Core Settings (Dashboard, Permissions, Plan Management) ----------------
+    path("settings/", include(("core_settings.urls", "core_settings"), namespace="core_settings")),
 ]
 
 # ---------------- Media and static files serving (only in DEBUG mode) ----------------
