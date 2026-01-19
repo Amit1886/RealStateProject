@@ -16,40 +16,16 @@ User = get_user_model()
 # ------------------------------------------------
 # CREATE USER PROFILE + COMPANY + SUBSCRIPTION
 # ------------------------------------------------
-@receiver(post_save, sender=User)
-def create_user_business(sender, instance, created, **kwargs):
-    """
-    Create UserProfile, CompanySettings & Subscription
-    when user becomes ACTIVE (OTP verified)
-    """
-
-    # Only when user is active
-    if not instance.is_active:
-        return
-
-    # Already created → do nothing
-    if UserProfile.objects.filter(user=instance).exists():
-        return
-
-    def _create():
-        company = CompanySettings.objects.create(
-            company_name=instance.username or instance.email
-        )
-
-        UserProfile.objects.create(
-            user=instance,
-            company=company
-        )
-
-        plan = Plan.objects.filter(is_default=True).first() or Plan.objects.filter(price=0).first()
-        if plan:
-            Subscription.objects.create(
-                company=company,
-                plan=plan,
-                active=True
-            )
-
-    transaction.on_commit(_create)
+# DISABLED: Causing FK constraint issues during signup
+# Profile creation is now handled in signup_view
+# ------------------------------------------------
+# @receiver(post_save, sender=User)
+# def create_user_business(sender, instance, created, **kwargs):
+#     """
+#     Create UserProfile, CompanySettings & Subscription
+#     when user becomes ACTIVE (OTP verified)
+#     """
+#     pass
 
 # ------------------------------------------------
 # UPDATE DAILY SUMMARY WHEN A TRANSACTION IS CREATED

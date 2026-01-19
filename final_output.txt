@@ -1,0 +1,55 @@
+﻿.\.venv\Scripts\python.exe : DEBUG: (0.000) PRAGMA foreign_keys = OFF; args=None; alias=default
+At line:1 char:1
++ .\.venv\Scripts\python.exe final_test.py 2>&1 | Out-File final_output ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (DEBUG: (0.000) ...; alias=default:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+DEBUG: (0.016) INSERT INTO "accounts_user" ("password", "last_login", "is_superuser", "first_name", "last_name", 
+"is_staff", "is_active", "date_joined", "username", "mobile", "email", "email_verified", "mobile_verified", 
+"is_social_login", "is_otp_verified") VALUES 
+('pbkdf2_sha256$1000000$FuenZdOe9SHGHeMHyN7QuF$xHr1bXgJnfDt3LPa8Zhpxc1F6BBKA7NDlAaLYZi9XTI=', NULL, 0, '', '', 0, 
+1, '2026-01-18 13:36:05.672116', 'testuser20260118190605', NULL, 'testuser20260118190605@example.com', 0, 0, 0, 0) 
+RETURNING "accounts_user"."id"; 
+args=('pbkdf2_sha256$1000000$FuenZdOe9SHGHeMHyN7QuF$xHr1bXgJnfDt3LPa8Zhpxc1F6BBKA7NDlAaLYZi9XTI=', None, False, '', 
+'', False, True, '2026-01-18 13:36:05.672116', 'testuser20260118190605', None, 
+'testuser20260118190605@example.com', False, False, False, False); alias=default
+
+DEBUG: (0.000) SELECT 1 AS "a" FROM "accounts_userprofile" WHERE "accounts_userprofile"."user_id" = 42 LIMIT 1; 
+args=(1, 42); alias=default
+
+DEBUG: (0.016) INSERT INTO "core_settings_companysettings" ("company_name", "logo", "mobile", "email") VALUES 
+('testuser20260118190605', '', '', '') RETURNING "core_settings_companysettings"."id"; 
+args=('testuser20260118190605', '', '', ''); alias=default
+DEBUG: (0.015) INSERT INTO "accounts_userprofile" ("user_id", "company_id", "full_name", "mobile", "business_name", 
+"business_type", "gst_number", "address", "profile_picture", "plan_id") VALUES (42, 28, 'testuser20260118190605', 
+'', NULL, NULL, NULL, NULL, '', NULL) RETURNING "accounts_userprofile"."id"; args=(42, 28, 
+'testuser20260118190605', '', None, None, None, None, '', None); alias=default
+DEBUG: (0.000) SELECT "billing_plan"."id", "billing_plan"."name", "billing_plan"."price", "billing_plan"."slug", 
+"billing_plan"."created_at", "billing_plan"."updated_at", "billing_plan"."active", 
+"billing_plan"."feature_toggle_id" FROM "billing_plan" WHERE "billing_plan"."price" = '0' ORDER BY 
+"billing_plan"."price" ASC LIMIT 1; args=(Decimal('0'),); alias=default
+DEBUG: (0.000) SELECT "billing_plan"."id", "billing_plan"."name", "billing_plan"."price", "billing_plan"."slug", 
+"billing_plan"."created_at", "billing_plan"."updated_at", "billing_plan"."active", 
+"billing_plan"."feature_toggle_id" FROM "billing_plan" ORDER BY "billing_plan"."price" ASC LIMIT 1; args=(); 
+alias=default
+
+DEBUG: (0.000) SELECT "accounts_userprofile"."id", "accounts_userprofile"."user_id", 
+"accounts_userprofile"."company_id", "accounts_userprofile"."full_name", "accounts_userprofile"."mobile", 
+"accounts_userprofile"."business_name", "accounts_userprofile"."business_type", 
+"accounts_userprofile"."gst_number", "accounts_userprofile"."address", "accounts_userprofile"."profile_picture", 
+"accounts_userprofile"."plan_id" FROM "accounts_userprofile" WHERE "accounts_userprofile"."user_id" = 42 ORDER BY 
+"accounts_userprofile"."id" ASC LIMIT 1; args=(42,); alias=default
+
+DEBUG: (0.000) SELECT "core_settings_companysettings"."id", "core_settings_companysettings"."company_name", 
+"core_settings_companysettings"."logo", "core_settings_companysettings"."mobile", 
+"core_settings_companysettings"."email" FROM "core_settings_companysettings" WHERE 
+"core_settings_companysettings"."id" = 28 LIMIT 21; args=(28,); alias=default
+
+Creating user: testuser20260118190605 / testuser20260118190605@example.com
+SUCCESS: User created with ID 42
+
+=== Checking created records ===
+
+SUCCESS: UserProfile found with ID 8
+  Company: testuser20260118190605 (ID: 28)

@@ -27,7 +27,7 @@ def login_user(request):
         user = authenticate(username=username, password=password)
 
         if user:
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             # ✅ Role-based redirect
             if user.is_superuser:
                 return redirect("/admin/")  # Full admin

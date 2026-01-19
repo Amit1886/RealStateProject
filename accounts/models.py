@@ -209,7 +209,13 @@ class OTP(models.Model):
 # ----------------- USER PROFILE MODEL -----------------
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    company = models.CharField(max_length=255, blank=True, null=True)  # add this
+    company = models.ForeignKey(
+        "core_settings.CompanySettings",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='user_profiles'
+    )
 
     full_name = models.CharField(max_length=150)
     mobile = models.CharField(max_length=15)

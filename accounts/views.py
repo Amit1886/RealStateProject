@@ -590,22 +590,26 @@ def signup_view(request):
                     user.is_active = False
                     user.save()
 
-                    # ✅ SAFE PROFILE HANDLING
-                    profile, created = KhataProfile.objects.get_or_create(
-                    user=user,
-                    defaults={"created_from": "signup"}
-                    )
-                    profile.mobile = form.cleaned_data.get("mobile")
-                    profile.save()
-
                     otp = OTP.create_for(
                         user=user,
                         purpose="signup",
                         email=user.email,
-                        mobile=profile.mobile,
+                        mobile=form.cleaned_data.get("mobile"),
                     )
 
-                # OTP sending outside transaction to avoid rollback on delivery failure
+                # Create khataapp profile OUTSIDE transaction to avoid FK constraint issues
+                try:
+                    profile = KhataProfile.objects.get(user=user)
+                except KhataProfile.DoesNotExist:
+                    profile = KhataProfile.objects.create(
+                        user=user,
+                        created_from="signup",
+                        plan=None,
+                        mobile=form.cleaned_data.get("mobile"),
+                        full_name=user.get_full_name() or user.username
+                    )
+
+                # OTP sending outside transaction
                 if user.email:
                     send_email_otp(user.email, otp.code)
                 if profile.mobile:
@@ -719,7 +723,7 @@ def verify_otp_view(request):
             user.save(update_fields=["is_active", "is_otp_verified"])
 
             # ✅ Login only AFTER OTP
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
             # ✅ Clean session
             request.session.pop("otp_user_id", None)
