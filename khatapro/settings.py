@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ---------------- SECURITY ----------------
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "default-secret-key")
-DEBUG = False
+DEBUG = True
 
 # TEMP: OTP bypass for Render free deploy
 OTP_BYPASS = True
