@@ -2,10 +2,13 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import ChatFAQ, ChatMessage
 import json
-import openai
-from django.conf import settings
 
-openai.api_key = settings.OPENAI_API_KEY
+try:
+    import openai
+    from django.conf import settings
+    openai.api_key = settings.OPENAI_API_KEY
+except ImportError:
+    openai = None
 
 
 @csrf_exempt
