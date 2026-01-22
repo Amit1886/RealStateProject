@@ -5,7 +5,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('billing', '0009_alter_plan_description'),  # Adjust based on your last migration
+        ('billing', '0002_initial'),
     ]
 
     operations = [
