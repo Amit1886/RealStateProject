@@ -1,77 +1,238 @@
-.order-wrapper {
-    max-width: 1100px;
-    margin: auto;
-    background: white;
-    padding: 25px;
-    border-radius: 14px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+/* =========================
+   SMART ORDER UI – MODERN CSS
+   ========================= */
+
+:root {
+    --primary: #0d6efd;
+    --primary-dark: #0b5ed7;
+    --success: #198754;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --light: #f8f9fa;
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --border-radius: 16px;
+    --shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
 }
 
-.order-title {
-    font-size: 24px;
+/* =========================
+   GLASS CARD
+   ========================= */
+
+.order-card {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.glass {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+/* =========================
+   HEADER
+   ========================= */
+
+.title {
+    text-align: center;
     font-weight: 700;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #eee;
+    margin-bottom: 20px;
 }
 
-.header-flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
+/* =========================
+   FORM CONTROLS
+   ========================= */
 
-.shortcut-box {
+.form-control,
+.form-select,
+textarea {
+    border-radius: 10px;
     border: 1px solid #ddd;
-    padding: 10px;
-    border-radius: 6px;
-    background: #fafafa;
-    max-width: 200px;
-    font-size: 13px;
+    padding: 10px 12px;
+    transition: all 0.2s ease;
 }
 
-.shortcut-box h5 {
-    margin-bottom: 6px;
-    font-size: 15px;
+.form-control:focus,
+.form-select:focus,
+textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
+}
+
+/* =========================
+   BUTTONS
+   ========================= */
+
+.btn {
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-success {
+    background: var(--success);
+}
+
+.btn-danger {
+    background: var(--danger);
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: #000;
+}
+
+.btn-outline-primary {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+/* =========================
+   SCAN SECTION
+   ========================= */
+
+.scan-section {
+    background: rgba(13, 110, 253, 0.08);
+    padding: 15px;
+    border-radius: 12px;
+}
+
+/* =========================
+   TABLE
+   ========================= */
+
+.table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table thead th {
+    text-align: center;
     font-weight: 600;
 }
 
-.add-btn {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 7px 14px;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
+.item-row:hover {
+    background: rgba(13, 110, 253, 0.05);
 }
 
-.add-btn:hover {
-    background: #0056b3;
+/* =========================
+   SUMMARY CARD
+   ========================= */
+
+.summary-card {
+    border-radius: 14px;
+    background: var(--light);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
+
+/* =========================
+   ACTION BAR
+   ========================= */
+
+.card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* =========================
+   REMOVE BUTTON
+   ========================= */
 
 .remove-btn {
-    border: none;
-    background: #ff4d4d;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 5px;
-    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 50%;
+    font-size: 14px;
 }
 
-.remove-btn:hover {
-    background: #d93636;
+/* =========================
+   DROPDOWN MENU
+   ========================= */
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    min-width: 10rem;
+    padding: 0.5rem 0;
+    margin: 0;
+    font-size: 1rem;
+    color: #212529;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
 }
 
-.total-box {
-    font-weight: bold;
-    font-size: 22px;
-    text-align: right;
-    margin-top: 15px;
-    padding: 10px;
-    background: #f4f4f4;
-    border-radius: 8px;
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.375rem 1.5rem;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    text-decoration: none;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
 }
 
-.print-download-box button {
-    width: 48%;
+.dropdown-item:hover {
+    color: #1e2125;
+    background-color: #f8f9fa;
+}
+
+/* =========================
+   CARD STYLES
+   ========================= */
+
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+    .card-footer {
+        flex-direction: column;
+    }
+
+    .summary-card {
+        margin-top: 15px;
+    }
+
+    .dropdown-menu {
+        min-width: 100%;
+    }
 }

@@ -23,27 +23,34 @@
 
         <!-- ORDER BASIC INFO -->
         <div class="row g-3 mb-3">
-
           <div class="col-md-4">
-            <label for="orderType" class="form-label">Order Type</label>
-            <select id="orderType" name="order_type" class="form-select" required title="Order Type">
-              <option value="">Select</option>
-              <option value="sale">Sale</option>
-              <option value="purchase">Purchase</option>
-            </select>
+            <div class="card">
+              <div class="card-body">
+                <label for="orderType" class="form-label">Order Type</label>
+                <select id="orderType" name="order_type" class="form-select" required title="Order Type">
+                  <option value="">Select</option>
+                  <option value="sale">Sale</option>
+                  <option value="purchase">Purchase</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div class="col-md-8">
-            <label for="partySelect" class="form-label">Party</label>
-            <input type="text" id="partySearch" class="form-control mb-1" placeholder="🔍 Search Party">
-            <select id="partySelect" name="party" class="form-select" required title="Select Party">
-              <option value="">Select Party</option>
-              {% for p in parties %}
-              <option value="{{ p.id }}">{{ p.name }}</option>
-              {% endfor %}
-            </select>
+            <div class="card">
+              <div class="card-body">
+                <label for="partySelect" class="form-label">Party</label>
+                <input type="text" id="partySearch" class="form-control mb-1" placeholder="🔍 Search Party" autocomplete="off">
+                <div id="partyDropdown" class="dropdown-menu" style="display: none;"></div>
+                <select id="partySelect" name="party" class="form-select d-none" required title="Select Party">
+                  <option value="">Select Party</option>
+                  {% for p in parties %}
+                  <option value="{{ p.id }}">{{ p.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
           </div>
-
         </div>
 
         <!-- SCAN BAR -->
@@ -70,27 +77,44 @@
             <tbody id="orderBody">
               <tr class="item-row">
                 <td>
-                  <input type="text" class="form-control product-search mb-1" placeholder="Search Product">
-                  <select name="product[]" class="form-select product" required title="Select Product">
-                    <option value="">Select</option>
-                    {% for prod in products %}
-                    <option value="{{ prod.id }}" data-price="{{ prod.price }}">
-                      {{ prod.name }}
-                    </option>
-                    {% endfor %}
-                  </select>
+                  <div class="card">
+                    <div class="card-body">
+                      <input type="text" class="form-control product-search mb-1" placeholder="Search Product" autocomplete="off">
+                      <div class="product-dropdown dropdown-menu" style="display: none;"></div>
+                      <select name="product[]" class="form-select product d-none" required title="Select Product">
+                        <option value="">Select</option>
+                        {% for prod in products %}
+                        <option value="{{ prod.id }}" data-price="{{ prod.price }}">
+                          {{ prod.name }}
+                        </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
                 </td>
 
                 <td>
-                  <input type="number" name="qty[]" class="form-control qty text-center" value="1" min="1" aria-label="Quantity">
+                  <div class="card">
+                    <div class="card-body">
+                      <input type="number" name="qty[]" class="form-control qty text-center" value="1" min="1" aria-label="Quantity">
+                    </div>
+                  </div>
                 </td>
 
                 <td>
-                  <input type="number" name="price[]" class="form-control price text-end" step="0.01" aria-label="Price">
+                  <div class="card">
+                    <div class="card-body">
+                      <input type="number" name="price[]" class="form-control price text-end" step="0.01" aria-label="Price">
+                    </div>
+                  </div>
                 </td>
 
                 <td>
-                  <input type="number" name="amount[]" class="form-control amount text-end" readonly aria-label="Amount">
+                  <div class="card">
+                    <div class="card-body">
+                      <input type="number" name="amount[]" class="form-control amount text-end" readonly aria-label="Amount">
+                    </div>
+                  </div>
                 </td>
 
                 <td class="text-center">

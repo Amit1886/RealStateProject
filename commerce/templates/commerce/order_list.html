@@ -117,6 +117,9 @@
 
                 <a href="{% url 'commerce:order_action' order.id 'cancel' %}"
                    class="btn btn-sm btn-dark">Cancel</a>
+
+                <a href="{% url 'commerce:order_action' order.id 'hold' %}"
+                   class="btn btn-sm btn-warning">Hold</a>
               {% endif %}
 
               {% if order.status == "accepted" and not order.invoice and order.order_type == "SALE" %}
