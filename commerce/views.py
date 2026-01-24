@@ -450,6 +450,18 @@ def add_order(request):
 
                 messages.success(request, f"Order #{order.id} created successfully")
 
+                # Auto-send notifications
+                party = order.party
+                if party.email:
+                    # Send email
+                    pass  # Implement email sending
+                if party.whatsapp_number:
+                    # Send WhatsApp
+                    pass  # Implement WhatsApp sending
+                if party.mobile:
+                    # Send SMS
+                    pass  # Implement SMS sending
+
                 # Redirect to order list
                 return redirect("commerce:order_list")
 
