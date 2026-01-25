@@ -34,7 +34,7 @@ from .forms import SignupForm, LoginForm, OTPForm, UserProfileForm
 # External Models
 from khataapp.models import Party, UserProfile
 from billing.models import Plan, Subscription
-from commerce.models import Order, Payment, Invoice
+from commerce.models import Order, Payment, Invoice, Coupon, UserCoupon
 
 
 User = get_user_model()
@@ -157,12 +157,16 @@ def dashboard(request):
         p_total_credit = payment_total + party_cash_credit
         p_balance = p_total_debit - p_total_credit
 
-        party_cards.append({
+    party_cards.append({
             "party": party,
             "total_debit": p_total_debit,
             "total_credit": p_total_credit,
             "balance": p_balance,
         })
+
+    # COUPON DATA
+    active_coupons = Coupon.objects.filter(is_active=True).order_by("-created_at")[:10]
+    user_coupons = UserCoupon.objects.filter(user=request.user).select_related('coupon')
 
     context = {
         "user": user,
@@ -178,6 +182,8 @@ def dashboard(request):
         "snapshot": snapshot,
         "period": period,
         "greeting": greeting,
+        "active_coupons": active_coupons,
+        "user_coupons": user_coupons,
     }
 
     return render(request, "accounts/dashboard.html", context)

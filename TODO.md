@@ -22,6 +22,7 @@
 ## Templates
 - [x] Create coupon management templates
 - [x] Update dashboard with modern coupon slider
+- [x] Integrate coupon slider into accounts dashboard
 
 ## Followup Steps
 - [x] Run migrations for new models
