@@ -2,7 +2,7 @@ from django import forms
 from django.forms import inlineformset_factory
 from .models import (
     Product, Warehouse, OrderItem, ChatMessage,
-     Order, Invoice
+     Order, Invoice, Coupon
 )
 
 # ---------------- Product Form ----------------
