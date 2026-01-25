@@ -14,7 +14,8 @@ import os
 
 from .models import (
     Product, Warehouse, Order,                     # OrderItem removed because unused
-    Payment, Stock, Invoice,ChatThread, ChatMessage, OrderItem, Category, SalesVoucher, SalesVoucherItem
+    Payment, Stock, Invoice,ChatThread, ChatMessage, OrderItem, Category, SalesVoucher, SalesVoucherItem,
+    Coupon, UserCoupon, CouponUsage
 )
 from khataapp.models import UserProfile
 from django.db import transaction
@@ -802,3 +803,48 @@ def api_chat_send(request, thread_id):
             "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         })
     return JsonResponse({"error": "Only POST method allowed"}, status=405)
+
+
+# ---------------- Coupons ----------------
+@login_required
+def coupon_list(request):
+    """Admin view to list all coupons"""
+    coupons = Coupon.objects.all().order_by("-created_at")
+    return render(request, "commerce/coupon_list.html", {"coupons": coupons})
+
+@login_required
+def coupon_create(request):
+    """Admin view to create new coupon"""
+    if request.method == "POST":
+        form = CouponForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Coupon created successfully!")
+            return redirect("commerce:coupon_list")
+    else:
+        form = CouponForm()
+    return render(request, "commerce/coupon_form.html", {"form": form, "title": "Create Coupon"})
+
+@login_required
+def coupon_edit(request, pk):
+    """Admin view to edit coupon"""
+    coupon = get_object_or_404(Coupon, pk=pk)
+    if request.method == "POST":
+        form = CouponForm(request.POST, instance=coupon)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Coupon updated successfully!")
+            return redirect("commerce:coupon_list")
+    else:
+        form = CouponForm(instance=coupon)
+    return render(request, "commerce/coupon_form.html", {"form": form, "title": "Edit Coupon"})
+
+@login_required
+def coupon_delete(request, pk):
+    """Admin view to delete coupon"""
+    coupon = get_object_or_404(Coupon, pk=pk)
+    if request.method == "POST":
+        coupon.delete()
+        messages.success(request, "Coupon deleted successfully!")
+        return redirect("commerce:coupon_list")
+    return render(request, "commerce/coupon_confirm_delete.html", {"coupon": coupon})

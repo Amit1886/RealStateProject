@@ -313,3 +313,92 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.message[:50]
+
+
+# ---------------- Coupons ----------------
+class Coupon(models.Model):
+    COUPON_TYPES = (
+        ("discount", "Discount"),
+        ("offer", "Offer"),
+        ("spin_win", "Spin and Win"),
+        ("scratch", "Scratch Card"),
+    )
+
+    DISCOUNT_TYPES = (
+        ("percentage", "Percentage"),
+        ("fixed", "Fixed Amount"),
+    )
+
+    title = models.CharField(max_length=200)
+    code = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True, null=True)
+    coupon_type = models.CharField(max_length=20, choices=COUPON_TYPES, default="discount")
+
+    # Discount specific fields
+    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPES, blank=True, null=True)
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    max_discount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+    # Usage limits
+    usage_limit = models.PositiveIntegerField(default=1)  # Total usage limit
+    per_user_limit = models.PositiveIntegerField(default=1)  # Per user limit
+    min_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    # Validity
+    valid_from = models.DateTimeField(default=timezone.now)
+    valid_until = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    # For spin-win and scratch
+    win_probability = models.DecimalField(max_digits=5, decimal_places=2, default=0.1)  # 10% chance
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.code})"
+
+    def is_valid(self):
+        now = timezone.now()
+        return (
+            self.is_active and
+            self.valid_from <= now and
+            (self.valid_until is None or self.valid_until >= now)
+        )
+
+    def get_discount_amount(self, order_total):
+        if self.coupon_type != "discount":
+            return Decimal("0.00")
+
+        if self.discount_type == "percentage":
+            discount = (order_total * self.discount_value) / 100
+            if self.max_discount and discount > self.max_discount:
+                discount = self.max_discount
+        else:  # fixed
+            discount = self.discount_value
+
+        return min(discount, order_total)  # Never exceed order total
+
+
+class UserCoupon(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_coupons")
+    coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE, related_name="user_coupons")
+    is_used = models.BooleanField(default=False)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "coupon")
+
+    def __str__(self):
+        return f"{self.user.username} - {self.coupon.code}"
+
+
+class CouponUsage(models.Model):
+    coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE, related_name="usages")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="coupon_usages")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="coupon_usages", blank=True, null=True)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    used_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.coupon.code} used by {self.user.username} - ₹{self.discount_amount}"

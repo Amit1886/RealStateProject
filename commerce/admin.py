@@ -50,3 +50,22 @@ class ChatMessageAdmin(admin.ModelAdmin):
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ("message", "is_read", "created_at")
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display = ("title", "code", "coupon_type", "discount_value", "usage_limit", "is_active", "valid_until")
+    list_filter = ("coupon_type", "is_active", "valid_from", "valid_until")
+    search_fields = ("title", "code")
+    readonly_fields = ("created_at", "updated_at")
+
+@admin.register(UserCoupon)
+class UserCouponAdmin(admin.ModelAdmin):
+    list_display = ("user", "coupon", "is_used", "assigned_at")
+    list_filter = ("is_used", "assigned_at")
+    search_fields = ("user__username", "coupon__code")
+
+@admin.register(CouponUsage)
+class CouponUsageAdmin(admin.ModelAdmin):
+    list_display = ("coupon", "user", "order", "discount_amount", "used_at")
+    list_filter = ("used_at",)
+    search_fields = ("coupon__code", "user__username")

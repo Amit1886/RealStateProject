@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ title }}</h3>
+                    <div class="card-tools">
+                        <a href="{% url 'commerce:coupon_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.title.id_for_label }}">Title</label>
+                                    {{ form.title }}
+                                    {% if form.title.errors %}
+                                        <div class="text-danger">{{ form.title.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.code.id_for_label }}">Code</label>
+                                    {{ form.code }}
+                                    {% if form.code.errors %}
+                                        <div class="text-danger">{{ form.code.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Coupon code (will be converted to uppercase)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.coupon_type.id_for_label }}">Coupon Type</label>
+                                    {{ form.coupon_type }}
+                                    {% if form.coupon_type.errors %}
+                                        <div class="text-danger">{{ form.coupon_type.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.description.id_for_label }}">Description</label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="text-danger">{{ form.description.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="discount-fields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.discount_type.id_for_label }}">Discount Type</label>
+                                        {{ form.discount_type }}
+                                        {% if form.discount_type.errors %}
+                                            <div class="text-danger">{{ form.discount_type.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.discount_value.id_for_label }}">Discount Value</label>
+                                        {{ form.discount_value }}
+                                        {% if form.discount_value.errors %}
+                                            <div class="text-danger">{{ form.discount_value.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.max_discount.id_for_label }}">Max Discount (₹)</label>
+                                        {{ form.max_discount }}
+                                        {% if form.max_discount.errors %}
+                                            <div class="text-danger">{{ form.max_discount.errors }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">Maximum discount amount for percentage discounts</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="spin-win-fields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.win_probability.id_for_label }}">Win Probability</label>
+                                        {{ form.win_probability }}
+                                        {% if form.win_probability.errors %}
+                                            <div class="text-danger">{{ form.win_probability.errors }}</div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">Probability of winning (0.1 = 10% chance)</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.usage_limit.id_for_label }}">Usage Limit</label>
+                                    {{ form.usage_limit }}
+                                    {% if form.usage_limit.errors %}
+                                        <div class="text-danger">{{ form.usage_limit.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Total number of times this coupon can be used</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.per_user_limit.id_for_label }}">Per User Limit</label>
+                                    {{ form.per_user_limit }}
+                                    {% if form.per_user_limit.errors %}
+                                        <div class="text-danger">{{ form.per_user_limit.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">How many times each user can use this coupon</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.min_order_amount.id_for_label }}">Minimum Order Amount (₹)</label>
+                                    {{ form.min_order_amount }}
+                                    {% if form.min_order_amount.errors %}
+                                        <div class="text-danger">{{ form.min_order_amount.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.valid_until.id_for_label }}">Valid Until</label>
+                                    {{ form.valid_until }}
+                                    {% if form.valid_until.errors %}
+                                        <div class="text-danger">{{ form.valid_until.errors }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Leave empty for no expiry</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.valid_from.id_for_label }}">Valid From</label>
+                                    {{ form.valid_from }}
+                                    {% if form.valid_from.errors %}
+                                        <div class="text-danger">{{ form.valid_from.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        {{ form.is_active }}
+                                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                            {{ form.is_active.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Coupon
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const couponTypeSelect = document.getElementById('{{ form.coupon_type.id_for_label }}');
+    const discountFields = document.getElementById('discount-fields');
+    const spinWinFields = document.getElementById('spin-win-fields');
+
+    function toggleFields() {
+        const selectedType = couponTypeSelect.value;
+        discountFields.style.display = selectedType === 'discount' ? 'block' : 'none';
+        spinWinFields.style.display = selectedType === 'spin_win' ? 'block' : 'none';
+    }
+
+    couponTypeSelect.addEventListener('change', toggleFields);
+    toggleFields(); // Initial call
+});
+</script>
+{% endblock %}

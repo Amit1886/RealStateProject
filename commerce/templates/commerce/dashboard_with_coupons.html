@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Commerce Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Coupon Slider -->
+    {% if active_coupons %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-tags"></i> Active Coupons</h3>
+                </div>
+                <div class="card-body">
+                    <div id="coupon-slider" class="coupon-slider">
+                        <div class="coupon-track">
+                            {% for coupon in active_coupons %}
+                            <div class="coupon-item">
+                                <div class="coupon-card">
+                                    <div class="coupon-header">
+                                        <h5>{{ coupon.title }}</h5>
+                                        <span class="coupon-code">{{ coupon.code }}</span>
+                                    </div>
+                                    <div class="coupon-body">
+                                        <p>{{ coupon.description|truncatechars:50 }}</p>
+                                        {% if coupon.coupon_type == 'discount' %}
+                                        <div class="coupon-discount">
+                                            {% if coupon.discount_type == 'percentage' %}
+                                                <span class="discount-badge">{{ coupon.discount_value }}% OFF</span>
+                                            {% else %}
+                                                <span class="discount-badge">₹{{ coupon.discount_value }} OFF</span>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                        <div class="coupon-details">
+                                            <small>Min Order: ₹{{ coupon.min_order_amount }}</small>
+                                            {% if coupon.valid_until %}
+                                            <small>Valid till: {{ coupon.valid_until|date:"M d" }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="coupon-footer">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="applyCoupon('{{ coupon.code }}')">
+                                            Apply
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="slider-controls mt-3">
+                        <button class="btn btn-sm btn-outline-secondary" id="prev-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" id="next-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Dashboard Stats -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ products.count }}</h3>
+                    <p>Total Products</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <a href="{% url 'commerce:product_list' %}" class="small-box-footer">
+                    More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>{{ orders.count }}</h3>
+                    <p>Total Orders</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <a href="{% url 'commerce:order_list' %}" class="small-box-footer">
+                    More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ invoices.count }}</h3>
+                    <p>Total Invoices</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <a href="#" class="small-box-footer">
+                    More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3>{{ payments.count }}</h3>
+                    <p>Total Payments</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <a href="#" class="small-box-footer">
+                    More info <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Recent Orders</h3>
+                    <div class="card-tools">
+                        <a href="{% url 'commerce:order_list' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body table-responsive p-0">
+                    <table class="table table-hover text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Party</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders|slice:":5" %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.party.name }}</td>
+                                <td>
+                                    <span class="badge badge-{% if order.status == 'pending' %}warning{% elif order.status == 'accepted' %}success{% elif order.status == 'rejected' %}danger{% else %}secondary{% endif %}">
+                                        {{ order.status|title }}
+                                    </span>
+                                </td>
+                                <td>₹{{ order.total_amount }}</td>
+                                <td>{{ order.created_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No orders found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Quick Actions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'commerce:add_order' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> New Order
+                        </a>
+                        <a href="{% url 'commerce:add_product' %}" class="btn btn-success">
+                            <i class="fas fa-box"></i> Add Product
+                        </a>
+                        <a href="{% url 'commerce:user_coupon_list' %}" class="btn btn-warning">
+                            <i class="fas fa-tags"></i> My Coupons
+                        </a>
+                        <a href="{% url 'commerce:coupon_list' %}" class="btn btn-info">
+                            <i class="fas fa-cog"></i> Manage Coupons
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">Recent Activity</h3>
+                </div>
+                <div class="card-body">
+                    <div class="timeline timeline-inverse">
+                        {% for order in orders|slice:":3" %}
+                        <div class="time-label">
+                            <span class="bg-success">{{ order.created_at|date:"M d" }}</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-shopping-cart bg-primary"></i>
+                            <div class="timeline-item">
+                                <span class="time"><i class="fas fa-clock"></i> {{ order.created_at|timesince }}</span>
+                                <h3 class="timeline-header">New order from {{ order.party.name }}</h3>
+                                <div class="timeline-body">
+                                    Order #{{ order.id }} - ₹{{ order.total_amount }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function applyCoupon(code) {
+    // Simple coupon application - in real implementation, this would integrate with order form
+    alert(`Coupon ${code} applied! (Integration with order form needed)`);
+}
+
+// Coupon Slider Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const track = document.querySelector('.coupon-track');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    if (track && prevBtn && nextBtn) {
+        let currentIndex = 0;
+        const items = document.querySelectorAll('.coupon-item');
+        const itemWidth = 320; // Approximate width of each coupon item
+
+        function updateSlider() {
+            track.style.transform = `translateX(-${currentIndex * itemWidth}px)`;
+        }
+
+        prevBtn.addEventListener('click', function() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateSlider();
+            }
+        });
+
+        nextBtn.addEventListener('click', function() {
+            if (currentIndex < items.length - 3) { // Show 3 items at a time
+                currentIndex++;
+                updateSlider();
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.coupon-slider {
+    overflow: hidden;
+    width: 100%;
+}
+
+.coupon-track {
+    display: flex;
+    transition: transform 0.3s ease;
+}
+
+.coupon-item {
+    flex: 0 0 300px;
+    margin-right: 20px;
+}
+
+.coupon-card {
+    border: 2px solid #007bff;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.coupon-header {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.coupon-header h5 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.coupon-code {
+    background: rgba(255,255,255,0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.coupon-body {
+    flex: 1;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.coupon-discount {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.discount-badge {
+    background: #ff6b6b;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.coupon-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.coupon-footer {
+    padding: 10px 15px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    text-align: center;
+}
+
+.slider-controls {
+    text-align: center;
+}
+</style>
+{% endblock %}

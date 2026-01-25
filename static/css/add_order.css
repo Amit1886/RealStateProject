@@ -236,3 +236,11 @@ textarea:focus {
         min-width: 100%;
     }
 }
+
+/* =========================
+   INLINE STYLE REPLACEMENTS
+   ========================= */
+
+.dropdown-hidden {
+    display: none;
+}

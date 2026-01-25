@@ -11,7 +11,7 @@
 
   <div class="card">
     <div class="card-header">
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div class="order-header-flex">
         <h3 class="mb-0">
           {% if page_type == "SALE" %}
             📤 Sales Orders
@@ -30,28 +30,34 @@
 
     <!-- Filter Section -->
     <div class="filter-row">
-      <input type="text" id="searchParty" class="form-control form-control-sm" placeholder="🔍 Search by party name..." style="flex: 1;">
-      
-      <select id="filterType" class="form-control form-control-sm" style="flex: 0.8;">
-        <option value="">📌 All Types</option>
-        <option value="SALE">📤 Sale</option>
-        <option value="PURCHASE">📥 Purchase</option>
-      </select>
+      <input type="text" id="searchParty" class="form-control form-control-sm filter-input-flex" placeholder="🔍 Search by party name...">
 
-      <select id="filterStatus" class="form-control form-control-sm" style="flex: 0.8;">
-        <option value="">📊 All Status</option>
-        <option value="pending">⏳ Pending</option>
-        <option value="accepted">✅ Accepted</option>
-        <option value="rejected">❌ Rejected</option>
-        <option value="cancelled">🚫 Cancelled</option>
-        <option value="fulfilled">🎉 Fulfilled</option>
-      </select>
+      <div>
+        <label for="filterType" class="visually-hidden">Filter by Type</label>
+        <select id="filterType" class="form-control form-control-sm filter-select-flex">
+          <option value="">📌 All Types</option>
+          <option value="SALE">📤 Sale</option>
+          <option value="PURCHASE">📥 Purchase</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="filterStatus" class="visually-hidden">Filter by Status</label>
+        <select id="filterStatus" class="form-control form-control-sm filter-select-flex">
+          <option value="">📊 All Status</option>
+          <option value="pending">⏳ Pending</option>
+          <option value="accepted">✅ Accepted</option>
+          <option value="rejected">❌ Rejected</option>
+          <option value="cancelled">🚫 Cancelled</option>
+          <option value="fulfilled">🎉 Fulfilled</option>
+        </select>
+      </div>
 
       <button onclick="resetFilters()" class="btn btn-dark-small">♻️ Reset</button>
     </div>
 
     <!-- Table -->
-    <div class="card-body" style="padding: 0;">
+    <div class="card-body card-body-no-padding">
       <div class="table-responsive">
         <table id="orderTable" class="table">
           <thead>
@@ -91,11 +97,11 @@
                 {% if order.status == "pending" %}
                   <span class="badge pending">⏳ Pending</span>
                 {% elif order.status == "accepted" %}
-                  <span class="badge" style="background-color: rgba(16, 185, 129, 0.1); color: var(--success-color);">✅ Accepted</span>
+                  <span class="badge badge-accepted">✅ Accepted</span>
                 {% elif order.status == "rejected" %}
-                  <span class="badge" style="background-color: rgba(239, 68, 68, 0.1); color: var(--danger-color);">❌ Rejected</span>
+                  <span class="badge badge-rejected">❌ Rejected</span>
                 {% elif order.status == "cancelled" %}
-                  <span class="badge" style="background-color: rgba(17, 24, 39, 0.1); color: var(--dark);">🚫 Cancelled</span>
+                  <span class="badge badge-cancelled">🚫 Cancelled</span>
                 {% else %}
                   <span class="badge completed">🎉 Fulfilled</span>
                 {% endif %}
