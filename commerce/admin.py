@@ -2,7 +2,8 @@ from django.contrib import admin
 from .models import (
     Warehouse, Category, Product, Stock,
     ChatThread, ChatMessage,
-    Order, OrderItem, Invoice, Payment, Notification
+    Order, OrderItem, Invoice, Payment, Notification,
+    Coupon, UserCoupon, CouponUsage
 )
 
 @admin.register(Warehouse)
