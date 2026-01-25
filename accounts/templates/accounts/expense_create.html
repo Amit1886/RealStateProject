@@ -1,69 +1,154 @@
 {% extends "accounts/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modern-app.css' %}">
+{% endblock %}
+
 {% block content %}
 
-<div class="container mt-4">
-  <div class="card shadow-sm border-0" style="border-radius:14px;">
-    <div class="card-header bg-white">
-      <h5 class="mb-0 fw-bold">➕ Create an Expense</h5>
+<div class="container-fluid py-4">
+  <div class="card shadow-lg border-0">
+
+    <!-- HEADER -->
+    <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">💸 Create Expense</h4>
+      <span class="badge bg-light text-warning">Financial Management</span>
     </div>
 
     <div class="card-body">
-      <form method="post">
-        {% csrf_token %}
 
-        <!-- Expense Number -->
-        <div class="mb-3">
-          <label class="form-label">Expense Number</label>
-          <input type="text" class="form-control" value="Auto Generated" disabled>
+      {% if messages %}
+        <div class="mb-4">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- EXPENSE FORM -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <label for="expense_number" class="form-label">Expense Number</label>
+              <input type="text" id="expense_number" class="form-control" value="Auto Generated" disabled readonly>
+              <small class="text-muted">Automatically generated</small>
+            </div>
+          </div>
         </div>
 
-        <!-- Expense Date -->
-        <div class="mb-3">
-          <label class="form-label">Expense Date</label>
-          <input type="date" name="expense_date" class="form-control" value="{{ today }}" required>
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <label for="expense_date" class="form-label">Expense Date</label>
+              <input type="date" name="expense_date" id="expense_date" class="form-control" value="{{ today }}" required>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <label for="category" class="form-label">Expense Category</label>
+              <select name="category" id="category" class="form-select">
+                <option value="">-- Select Category --</option>
+                {% for cat in categories %}
+                  <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
         </div>
 
-        <!-- Category -->
-        <div class="mb-3">
-          <label class="form-label">Expense Category</label>
-          <select name="category" class="form-select">
-            {% for cat in categories %}
-              <option value="{{ cat.id }}">{{ cat.name }}</option>
-            {% endfor %}
-          </select>
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <label for="new_category" class="form-label">Or Add New Category</label>
+              <input type="text" name="new_category" id="new_category" class="form-control" placeholder="e.g. Office Rent, Electricity">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <label for="amount_paid" class="form-label">Amount Paid (₹)</label>
+              <input type="number" step="0.01" name="amount_paid" id="amount_paid" class="form-control" placeholder="0.00" required>
+            </div>
+          </div>
         </div>
 
-        <!-- Add New Category -->
-        <div class="mb-3">
-          <label class="form-label">Add new category name</label>
-          <input type="text" name="new_category" class="form-control" placeholder="e.g. Office Rent, Electricity">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <label for="description" class="form-label">Expense Details</label>
+              <textarea name="description" id="description" class="form-control" rows="3" placeholder="Describe the expense..."></textarea>
+              <small class="text-muted">
+                ℹ️ Expense items will not affect your regular inventory items
+              </small>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Expense Details -->
-        <div class="mb-3">
-          <label class="form-label">Expense Item Details</label>
-          <textarea name="description" class="form-control" rows="3"></textarea>
-          <small class="text-muted">
-            ℹ Expense items will not affect your regular inventory items
-          </small>
-        </div>
-
-        <!-- Amount Paid -->
-        <div class="mb-3">
-          <label class="form-label">Amount Paid</label>
-          <input type="number" step="0.01" name="amount_paid" class="form-control" required>
-        </div>
-
-        <!-- Button -->
-        <div class="text-end">
-          <button class="btn btn-primary px-4">
-            Save Expense
-          </button>
-        </div>
-
-      </form>
     </div>
+
+    <!-- FOOTER ACTIONS -->
+    <div class="card-footer bg-light d-flex flex-wrap gap-2 justify-content-between">
+      <div class="d-flex gap-2">
+        <button type="submit" form="expenseForm" class="btn btn-warning px-4">
+          💾 Save Expense
+        </button>
+        <a href="{% url 'accounts:expense_list' %}" class="btn btn-outline-secondary">
+          📋 View All Expenses
+        </a>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" onclick="window.print()" class="btn btn-secondary" aria-label="Print expense form">🖨 Print</button>
+        <button type="button" id="downloadPDF" class="btn btn-danger" aria-label="Download PDF">⬇ PDF</button>
+        <button type="button" class="btn btn-success" aria-label="Share via WhatsApp">📤 WhatsApp</button>
+        <button type="button" class="btn btn-info" aria-label="Send SMS">📩 SMS</button>
+      </div>
+    </div>
+
   </div>
 </div>
+
+<form id="expenseForm" method="post" style="display: none;">
+  {% csrf_token %}
+  <input type="date" name="expense_date" id="hiddenExpenseDate">
+  <select name="category" id="hiddenCategory"></select>
+  <input type="text" name="new_category" id="hiddenNewCategory">
+  <input type="number" name="amount_paid" id="hiddenAmountPaid">
+  <textarea name="description" id="hiddenDescription"></textarea>
+</form>
+
+<script>
+  // Sync form inputs to hidden form
+  document.getElementById('expense_date').addEventListener('input', function() {
+    document.getElementById('hiddenExpenseDate').value = this.value;
+  });
+  document.getElementById('category').addEventListener('change', function() {
+    document.getElementById('hiddenCategory').value = this.value;
+  });
+  document.getElementById('new_category').addEventListener('input', function() {
+    document.getElementById('hiddenNewCategory').value = this.value;
+  });
+  document.getElementById('amount_paid').addEventListener('input', function() {
+    document.getElementById('hiddenAmountPaid').value = this.value;
+  });
+  document.getElementById('description').addEventListener('input', function() {
+    document.getElementById('hiddenDescription').value = this.value;
+  });
+</script>
 
 {% endblock %}

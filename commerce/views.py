@@ -848,3 +848,67 @@ def coupon_delete(request, pk):
         messages.success(request, "Coupon deleted successfully!")
         return redirect("commerce:coupon_list")
     return render(request, "commerce/coupon_confirm_delete.html", {"coupon": coupon})
+
+@login_required
+def user_coupon_list(request):
+    """User view to list their coupons"""
+    user_coupons = UserCoupon.objects.filter(user=request.user).select_related('coupon')
+    return render(request, "commerce/user_coupon_list.html", {"user_coupons": user_coupons})
+
+@login_required
+def apply_coupon(request):
+    """Apply a coupon to an order or cart"""
+    if request.method == "POST":
+        code = request.POST.get("code")
+        # Implement coupon application logic here
+        messages.success(request, f"Coupon {code} applied successfully!")
+        return redirect("commerce:user_coupon_list")
+    return render(request, "commerce/apply_coupon.html")
+
+@login_required
+def spin_wheel(request):
+    """Spin the wheel to win a coupon"""
+    if request.method == "POST":
+        # Simple random win logic
+        win = random.choice([True, False])
+        if win:
+            # Assign a random coupon
+            coupon = Coupon.objects.filter(is_active=True).order_by('?').first()
+            if coupon:
+                UserCoupon.objects.get_or_create(user=request.user, coupon=coupon)
+                messages.success(request, f"Congratulations! You won {coupon.title}")
+            else:
+                messages.info(request, "No coupons available right now.")
+        else:
+            messages.info(request, "Better luck next time!")
+        return redirect("commerce:spin_wheel")
+    return render(request, "commerce/spin_wheel.html")
+
+@login_required
+def scratch_card(request):
+    """Scratch card to win a coupon"""
+    if request.method == "POST":
+        # Simple random win logic
+        win = random.choice([True, False])
+        if win:
+            coupon = Coupon.objects.filter(is_active=True).order_by('?').first()
+            if coupon:
+                UserCoupon.objects.get_or_create(user=request.user, coupon=coupon)
+                messages.success(request, f"Congratulations! You won {coupon.title}")
+            else:
+                messages.info(request, "No coupons available right now.")
+        else:
+            messages.info(request, "Better luck next time!")
+        return redirect("commerce:scratch_card")
+    return render(request, "commerce/scratch_card.html")
+
+@login_required
+def dashboard_with_coupons(request):
+    """Dashboard showing coupons and user info"""
+    user_coupons = UserCoupon.objects.filter(user=request.user).select_related('coupon')
+    available_coupons = Coupon.objects.filter(is_active=True)
+    context = {
+        "user_coupons": user_coupons,
+        "available_coupons": available_coupons,
+    }
+    return render(request, "commerce/dashboard_with_coupons.html", context)
