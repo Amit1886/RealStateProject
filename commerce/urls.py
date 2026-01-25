@@ -57,4 +57,15 @@ urlpatterns = [
     path("api/chat/<int:thread_id>/messages/", views.api_chat_messages, name="api_chat_messages"),
     path("api/chat/<int:thread_id>/send/", views.api_chat_send, name="api_chat_send"),
 
+    # ------------------- Coupons -------------------
+    path("coupons/", views.coupon_list, name="coupon_list"),
+    path("coupons/create/", views.coupon_create, name="coupon_create"),
+    path("coupons/<int:pk>/edit/", views.coupon_edit, name="coupon_edit"),
+    path("coupons/<int:pk>/delete/", views.coupon_delete, name="coupon_delete"),
+    path("user-coupons/", views.user_coupon_list, name="user_coupon_list"),
+    path("apply-coupon/", views.apply_coupon, name="apply_coupon"),
+    path("spin-wheel/", views.spin_wheel, name="spin_wheel"),
+    path("scratch-card/", views.scratch_card, name="scratch_card"),
+    path("dashboard-with-coupons/", views.dashboard_with_coupons, name="dashboard_with_coupons"),
+
    ]

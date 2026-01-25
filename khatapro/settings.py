@@ -180,45 +180,27 @@ OPENAI_API_KEY = "your-real-api-key"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-
-    "formatters": {
-        "verbose": {
-            "format": "[{asctime}] {levelname} {name}: {message}",
-            "style": "{",
-        },
-        "simple": {
-            "format": "{levelname}: {message}",
-            "style": "{",
-        },
-    },
-
     "handlers": {
-        "file": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": os.path.join(BASE_DIR, "django_debug.log"),
-            "formatter": "verbose",
-        },
-        "error_file": {
-            "level": "ERROR",
-            "class": "logging.FileHandler",
-            "filename": os.path.join(BASE_DIR, "django_error.log"),
-            "formatter": "verbose",
-        },
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "simple",
         },
     },
-
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
     "loggers": {
         "django": {
-            "handlers": ["file", "console", "error_file"],
-            "level": "DEBUG",
-            "propagate": True,
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.utils.autoreload": {
+            "level": "WARNING",
         },
     },
 }
+
 
 # ---------------- JAZZMIN ADMIN UI CONFIGURATION ----------------
 JAZZMIN_SETTINGS = {
