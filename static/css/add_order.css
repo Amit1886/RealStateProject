@@ -12,6 +12,120 @@
     --glass-bg: rgba(255, 255, 255, 0.25);
     --border-radius: 16px;
     --shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+
+    /* Theme Variables */
+    --theme-bg: #ffffff;
+    --theme-text: #212529;
+    --theme-card-bg: #ffffff;
+    --theme-border: #dee2e6;
+}
+
+/* =========================
+   THEME CLASSES
+   ========================= */
+
+.theme-dark {
+    --theme-bg: #1a1a1a;
+    --theme-text: #ffffff;
+    --theme-card-bg: #2d2d2d;
+    --theme-border: #404040;
+}
+
+.theme-blue {
+    --primary: #007bff;
+    --primary-dark: #0056b3;
+}
+
+.theme-green {
+    --primary: #28a745;
+    --primary-dark: #1e7e34;
+}
+
+.theme-red {
+    --primary: #dc3545;
+    --primary-dark: #bd2130;
+}
+
+/* =========================
+   MODE CLASSES
+   ========================= */
+
+.mode-pos {
+    --border-radius: 8px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mode-pos .card {
+    margin-bottom: 10px;
+}
+
+.mode-pos .summary-card {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 1000;
+}
+
+.mode-mobile {
+    --border-radius: 12px;
+    font-size: 14px;
+}
+
+.mode-mobile .card-body {
+    padding: 0.75rem;
+}
+
+.mode-mobile .btn {
+    padding: 0.5rem 1rem;
+    font-size: 14px;
+}
+
+/* =========================
+   AI SUGGESTIONS
+   ========================= */
+
+.ai-suggestions {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.suggestion-item {
+    margin-bottom: 8px;
+}
+
+.suggestion-item:last-child {
+    margin-bottom: 0;
+}
+
+/* =========================
+   GLOBAL SEARCH
+   ========================= */
+
+#globalSearchResults {
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid var(--theme-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.search-result-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-result-item:hover {
+    background: #f8f9fa;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
 }
 
 /* =========================
