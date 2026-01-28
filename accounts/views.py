@@ -180,7 +180,6 @@ def dashboard(request):
         "party_cards": party_cards,
         "summary": summary,
         "snapshot": snapshot,
-        "snapshot": snapshot,
         "period": period,
         "greeting": greeting,
         "active_coupons": active_coupons,
