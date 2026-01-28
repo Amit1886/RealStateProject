@@ -8,12 +8,38 @@
 <script src="{% static 'js/add_order_search.js' %}" defer></script>
 
 <div class="container-fluid py-4">
-  <div class="card shadow-lg border-0 order-card">
+  <div class="card shadow-lg border-0 order-card" id="mainOrderCard">
 
-    <!-- HEADER -->
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-      <h4 class="mb-0">🚀 Smart Order System</h4>
-      <span class="badge bg-light text-primary">AI Ready</span>
+    <!-- HEADER WITH MODE SWITCHER -->
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center flex-wrap">
+      <div class="d-flex align-items-center gap-3">
+        <h4 class="mb-0">🚀 Smart Order System</h4>
+        <span class="badge bg-light text-primary">AI Ready</span>
+      </div>
+
+      <!-- MODE SWITCHER -->
+      <div class="mode-switcher d-flex gap-2">
+        <button type="button" class="btn btn-sm btn-outline-light active" data-mode="pc" id="pcMode">
+          💻 PC Mode
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-light" data-mode="pos" id="posMode">
+          🏪 POS Mode
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-light" data-mode="mobile" id="mobileMode">
+          📱 Mobile Mode
+        </button>
+      </div>
+
+      <!-- THEME SELECTOR -->
+      <div class="theme-selector">
+        <select id="themeSelect" class="form-select form-select-sm">
+          <option value="default">🎨 Default Theme</option>
+          <option value="dark">🌙 Dark Theme</option>
+          <option value="blue">🔵 Blue Theme</option>
+          <option value="green">🟢 Green Theme</option>
+          <option value="red">🔴 Red Theme</option>
+        </select>
+      </div>
     </div>
 
     <form method="POST" action="{% url 'commerce:add_order' %}">
@@ -49,6 +75,15 @@
                   {% endfor %}
                 </select>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI SUGGESTIONS -->
+        <div class="ai-suggestions-section mb-4">
+          <div class="ai-suggestions">
+            <div class="suggestion-item">
+              🤖 <strong>AI Assistant:</strong> Start by selecting a party or scanning a product barcode. I'll help you optimize your order!
             </div>
           </div>
         </div>
@@ -160,18 +195,25 @@
 
       </div>
 
-      <!-- FOOTER ACTIONS -->
-      <div class="card-footer bg-light d-flex flex-wrap gap-2 justify-content-between">
-
-        <button type="submit" class="btn btn-success px-4">
-          💾 Save Order
-        </button>
+      <!-- ENHANCED FOOTER ACTIONS -->
+      <div class="card-footer bg-light d-flex flex-wrap gap-2 justify-content-between align-items-center">
 
         <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success px-4">
+            💾 Save Order
+          </button>
+          <button type="button" id="saveDraft" class="btn btn-outline-secondary">
+            📝 Save Draft
+          </button>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
           <button type="button" onclick="window.print()" class="btn btn-secondary">🖨 Print</button>
           <button type="button" id="downloadPDF" class="btn btn-danger">⬇ PDF</button>
-          <button type="button" class="btn btn-success">📤 WhatsApp</button>
-          <button type="button" class="btn btn-warning">📩 SMS</button>
+          <button type="button" id="downloadExcel" class="btn btn-success">📊 Excel</button>
+          <button type="button" id="shareWhatsApp" class="btn btn-success">📤 WhatsApp</button>
+          <button type="button" id="shareEmail" class="btn btn-warning">📧 Email</button>
+          <button type="button" id="shareSMS" class="btn btn-info">💬 SMS</button>
         </div>
 
       </div>

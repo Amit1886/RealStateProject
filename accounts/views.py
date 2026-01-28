@@ -82,6 +82,7 @@ def users_list(request):
 # ----------------- DASHBOARD -----------------
 @login_required
 def dashboard(request):
+    party = None 
     user = request.user
     # 🔥 BUSINESS SNAPSHOT (TODAY)
     snapshot = build_business_snapshot(request.user, now().date())
@@ -112,81 +113,102 @@ def dashboard(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
 
-    # Daily Summary Update
-    summary = update_daily_summary(user)
+    # =========================
+# DAILY SUMMARY UPDATE
+# =========================
+summary = update_daily_summary(user)
 
-    profile = UserProfile.objects.filter(user=user).first()
+profile = UserProfile.objects.filter(user=user).first()
 
-    recent_parties = Party.objects.filter(owner=user).order_by("-id")[:5]
-    recent_transactions = Transaction.objects.filter(
-        party__owner=user
-    ).order_by("-id")[:5]
+recent_parties = Party.objects.filter(owner=user).order_by("-id")[:5]
+recent_transactions = Transaction.objects.filter(
+    party__owner=user
+).order_by("-id")[:5]
 
-    total_credit_all = Transaction.objects.filter(
-        party__owner=user, txn_type="credit"
-    ).aggregate(total=Sum("amount"))["total"] or 0
+# ---- Overall Credit & Debit ----
+total_credit_all = Transaction.objects.filter(
+    party__owner=user, txn_type="credit"
+).aggregate(total=Sum("amount")).get("total") or Decimal("0.00")
 
-    total_debit_all = Transaction.objects.filter(
-        party__owner=user, txn_type="debit"
-    ).aggregate(total=Sum("amount"))["total"] or 0
+total_debit_all = Transaction.objects.filter(
+    party__owner=user, txn_type="debit"
+).aggregate(total=Sum("amount")).get("total") or Decimal("0.00")
 
-    net_balance = total_debit_all - total_credit_all
+net_balance = total_debit_all - total_credit_all
 
-    # PARTY CARDS
-    party_cards = []
-    parties = Party.objects.filter(owner=user).order_by("name")
 
-    for party in parties:
+# =========================
+# PARTY CARDS (ADVANCED)
+# =========================
+party_cards = []
 
-        party_cash_credit = Transaction.objects.filter(
-            party=party, txn_type='credit'
-        ).aggregate(total=Sum('amount'))['total'] or 0
+parties = Party.objects.filter(owner=user).order_by("name")
 
-        party_cash_debit = Transaction.objects.filter(
-            party=party, txn_type='debit'
-        ).aggregate(total=Sum('amount'))['total'] or 0
+for party in parties:
 
-        invoice_total = Invoice.objects.filter(
-            order__party=party
-        ).aggregate(total=Sum('amount'))['total'] or 0
+    # ---- Default values (CRITICAL) ----
+    party_cash_credit = Decimal("0.00")
+    party_cash_debit = Decimal("0.00")
+    invoice_total = Decimal("0.00")
+    payment_total = Decimal("0.00")
 
-        payment_total = Payment.objects.filter(
-            invoice__order__party=party
-        ).aggregate(total=Sum('amount'))['total'] or 0
+    # ---- Party Cash Credit ----
+    party_cash_credit = Transaction.objects.filter(
+        party=party, txn_type="credit"
+    ).aggregate(total=Sum("amount")).get("total") or Decimal("0.00")
 
-        p_total_debit = invoice_total + party_cash_debit
-        p_total_credit = payment_total + party_cash_credit
-        p_balance = p_total_debit - p_total_credit
+    # ---- Party Cash Debit ----
+    party_cash_debit = Transaction.objects.filter(
+        party=party, txn_type="debit"
+    ).aggregate(total=Sum("amount")).get("total") or Decimal("0.00")
 
+    # ---- Invoice Total ----
+    invoice_total = Invoice.objects.filter(
+        order__party=party,
+        status="confirmed"
+    ).aggregate(total=Sum("total_amount")).get("total") or Decimal("0.00")
+
+    # ---- Payment Total ----
+    payment_total = Payment.objects.filter(
+        invoice__order__party=party
+    ).aggregate(total=Sum("amount")).get("total") or Decimal("0.00")
+
+    # ---- Party Final Calculations ----
+    p_total_debit = invoice_total + party_cash_debit
+    p_total_credit = payment_total + party_cash_credit
+    p_balance = p_total_debit - p_total_credit
+
+    # ---- Append Card ----
     party_cards.append({
-            "party": party,
-            "total_debit": p_total_debit,
-            "total_credit": p_total_credit,
-            "balance": p_balance,
-        })
+        "party": party,
+        "total_debit": p_total_debit,
+        "total_credit": p_total_credit,
+        "balance": p_balance,
+    })
 
-    # COUPON DATA
-    active_coupons = Coupon.objects.filter(is_active=True).order_by("-created_at")[:10]
-    user_coupons = UserCoupon.objects.filter(user=request.user).select_related('coupon')
+# COUPON DATA
+active_coupons = Coupon.objects.filter(is_active=True).order_by("-created_at")[:10]
+user_coupons = UserCoupon.objects.filter(user=request.user).select_related('coupon')
 
-    context = {
-        "user": user,
-        "profile": profile,
-        "recent_parties": recent_parties,
-        "recent_transactions": recent_transactions,
-        "total_credit": total_credit_all,
-        "total_debit": total_debit_all,
-        "net_balance": net_balance,
-        "party_cards": party_cards,
-        "summary": summary,
-        "snapshot": snapshot,
-        "period": period,
-        "greeting": greeting,
-        "active_coupons": active_coupons,
-        "user_coupons": user_coupons,
-    }
+context = {
+    "user": user,
+    "profile": profile,
+    "recent_parties": recent_parties,
+    "recent_transactions": recent_transactions,
+    "total_credit": total_credit_all,
+    "total_debit": total_debit_all,
+    "net_balance": net_balance,
+    "party_cards": party_cards,
+    "summary": summary,
+    "snapshot": snapshot,
+    "period": period,
+    "greeting": greeting,
+    "active_coupons": active_coupons,
+    "user_coupons": user_coupons,
+}
 
-    return render(request, "accounts/dashboard.html", context)
+return render(request, "accounts/dashboard.html", context)
+    
 
 # -----------------------------------------
 # Party ledger: main view (with filters)

@@ -1,5 +1,131 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    // Global search functionality
+    const globalSearchInput = document.createElement('input');
+    globalSearchInput.type = 'text';
+    globalSearchInput.id = 'globalSearch';
+    globalSearchInput.className = 'form-control mb-3';
+    globalSearchInput.placeholder = '🔍 Global Search (Products, Parties, Orders...)';
+
+    const searchResultsDiv = document.createElement('div');
+    searchResultsDiv.id = 'globalSearchResults';
+    searchResultsDiv.style.display = 'none';
+
+    // Insert global search at the top of the card body
+    const cardBody = document.querySelector('.card-body');
+    cardBody.insertBefore(globalSearchInput, cardBody.firstChild);
+    cardBody.insertBefore(searchResultsDiv, globalSearchInput.nextSibling);
+
+    /* ==========================
+       GLOBAL SEARCH
+    ========================== */
+    let searchTimeout;
+    globalSearchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performGlobalSearch, 300);
+    });
+
+    function performGlobalSearch() {
+        const query = globalSearchInput.value.toLowerCase().trim();
+        if (query.length < 2) {
+            searchResultsDiv.style.display = 'none';
+            return;
+        }
+
+        const results = [];
+
+        // Search products
+        document.querySelectorAll('.product option').forEach(option => {
+            if (option.value && option.text.toLowerCase().includes(query)) {
+                results.push({
+                    type: 'Product',
+                    text: option.text,
+                    action: () => addProductToOrder(option.value)
+                });
+            }
+        });
+
+        // Search parties
+        document.querySelectorAll('#partySelect option').forEach(option => {
+            if (option.value && option.text.toLowerCase().includes(query)) {
+                results.push({
+                    type: 'Party',
+                    text: option.text,
+                    action: () => selectParty(option.value)
+                });
+            }
+        });
+
+        // Mock order history search
+        if (query.includes('order') || query.includes('history')) {
+            results.push({
+                type: 'Order History',
+                text: 'View recent orders',
+                action: () => window.location.href = '/commerce/order_list/'
+            });
+        }
+
+        displaySearchResults(results);
+    }
+
+    function displaySearchResults(results) {
+        if (results.length === 0) {
+            searchResultsDiv.style.display = 'none';
+            return;
+        }
+
+        searchResultsDiv.innerHTML = results.map(result =>
+            `<div class="search-result-item" onclick="this.action()">
+                <strong>${result.type}:</strong> ${result.text}
+            </div>`
+        ).join('');
+
+        // Add click handlers
+        searchResultsDiv.querySelectorAll('.search-result-item').forEach((item, index) => {
+            item.action = results[index].action;
+        });
+
+        searchResultsDiv.style.display = 'block';
+    }
+
+    function addProductToOrder(productId) {
+        // Find first empty row or add new
+        let emptyRow = null;
+        document.querySelectorAll('.item-row').forEach(row => {
+            const select = row.querySelector('.product');
+            if (!select.value) {
+                emptyRow = row;
+                return;
+            }
+        });
+
+        if (!emptyRow) {
+            document.getElementById('addRow').click();
+            emptyRow = document.querySelector('.item-row:last-child');
+        }
+
+        const select = emptyRow.querySelector('.product');
+        select.value = productId;
+        select.dispatchEvent(new Event('change'));
+
+        // Hide search results
+        searchResultsDiv.style.display = 'none';
+        globalSearchInput.value = '';
+    }
+
+    function selectParty(partyId) {
+        document.getElementById('partySelect').value = partyId;
+        searchResultsDiv.style.display = 'none';
+        globalSearchInput.value = '';
+    }
+
+    // Hide search results when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!globalSearchInput.contains(e.target) && !searchResultsDiv.contains(e.target)) {
+            searchResultsDiv.style.display = 'none';
+        }
+    });
+
     /* ==========================
        PARTY SEARCH
     ========================== */
