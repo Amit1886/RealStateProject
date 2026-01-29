@@ -631,3 +631,15 @@ textarea:focus {
 .dropdown-hidden {
     display: none;
 }
+
+#partyDropdown {
+    display: none;
+}
+
+#step-2, #step-3 {
+    display: none;
+}
+
+.transaction-card {
+    max-width: 720px;
+}
