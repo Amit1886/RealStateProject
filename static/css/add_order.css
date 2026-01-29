@@ -18,6 +18,279 @@
     --theme-text: #212529;
     --theme-card-bg: #ffffff;
     --theme-border: #dee2e6;
+
+    /* Bold and Colorful Variables */
+    --btn-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-success: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    --gradient-danger: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    --gradient-warning: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    --gradient-info: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+}
+
+/* =========================
+   KEYBOARD HELP MODAL
+   ========================= */
+
+.keyboard-help-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.keyboard-help-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+}
+
+.shortcut-item kbd {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* =========================
+   STEP WIZARD
+   ========================= */
+
+.wizard-steps {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.step-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    margin: 0 10px;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.step-circle.active {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
+}
+
+.step-circle.completed {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.step-number {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.step-text {
+    position: absolute;
+    top: 55px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+.step-arrow {
+    font-size: 20px;
+    color: #6c757d;
+}
+
+/* =========================
+   BOLD AND COLORFUL BUTTONS
+   ========================= */
+
+.btn {
+    font-weight: 900 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease !important;
+}
+
+.btn-xl {
+    padding: 15px 30px;
+    font-size: 16px;
+    border-radius: 15px;
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 14px;
+    border-radius: 12px;
+}
+
+.btn-primary {
+    background: var(--gradient-primary) !important;
+    box-shadow: var(--btn-shadow);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-success {
+    background: var(--gradient-success) !important;
+    box-shadow: var(--btn-shadow);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.btn-danger {
+    background: var(--gradient-danger) !important;
+    box-shadow: var(--btn-shadow);
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+}
+
+.btn-warning {
+    background: var(--gradient-warning) !important;
+    color: white !important;
+    box-shadow: var(--btn-shadow);
+}
+
+.btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.4);
+}
+
+.btn-info {
+    background: var(--gradient-info) !important;
+    box-shadow: var(--btn-shadow);
+}
+
+.btn-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+}
+
+.btn-outline-light {
+    border: 3px solid white !important;
+    color: white !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+}
+
+.btn-outline-light.active {
+    background: white !important;
+    color: var(--primary) !important;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+/* =========================
+   PULSE ANIMATIONS
+   ========================= */
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.pulse-button {
+    animation: pulse 2s infinite;
+}
+
+.pulse-badge {
+    animation: pulse 1.5s infinite;
+}
+
+/* =========================
+   TEXT SHADOWS AND BOLD TEXT
+   ========================= */
+
+.fw-bold, .font-weight-bold {
+    font-weight: 900 !important;
+    text-shadow: var(--text-shadow);
+}
+
+.text-shadow {
+    text-shadow: var(--text-shadow);
+}
+
+/* =========================
+   RAINBOW BORDER
+   ========================= */
+
+.rainbow-border {
+    background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+    background-size: 400% 400%;
+    animation: rainbow 3s ease infinite;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+}
+
+@keyframes rainbow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* =========================
+   GRADIENT BACKGROUNDS
+   ========================= */
+
+.bg-gradient-primary {
+    background: var(--gradient-primary) !important;
+}
+
+.bg-gradient-light {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
 }
 
 /* =========================
