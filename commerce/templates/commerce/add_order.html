@@ -8,7 +8,7 @@
 <script src="{% static 'js/add_order_search.js' %}" defer></script>
 
 <!-- KEYBOARD SHORTCUTS HELP MODAL -->
-<div id="keyboardHelp" class="keyboard-help-modal" style="display: none;">
+<div id="keyboardHelp" class="keyboard-help-modal">
   <div class="keyboard-help-content">
     <h3 class="fw-bold text-primary mb-4">⌨️ Keyboard Shortcuts (PC Mode)</h3>
     <div class="shortcuts-grid">
@@ -61,7 +61,7 @@
 
       <!-- THEME SELECTOR -->
       <div class="theme-selector">
-        <select id="themeSelect" class="form-select form-select-lg fw-bold rainbow-border">
+        <select id="themeSelect" class="form-select form-select-lg fw-bold rainbow-border" aria-label="Theme Selector">
           <option value="default">🎨 Default Theme</option>
           <option value="dark">🌙 Dark Theme</option>
           <option value="blue">🔵 Blue Theme</option>
@@ -124,7 +124,7 @@
             <div class="card border-primary">
               <div class="card-body">
                 <label for="orderType" class="form-label fw-bold">📋 Order Type (F2)</label>
-                <select id="orderType" name="order_type" class="form-select form-select-lg fw-bold" required title="Order Type">
+                <select id="orderType" name="order_type" class="form-select form-select-lg fw-bold" required title="Order Type" aria-label="Order Type">
                   <option value="">Select Order Type</option>
                   <option value="sale">💰 Sale Order</option>
                   <option value="purchase">🛒 Purchase Order</option>
@@ -138,8 +138,8 @@
               <div class="card-body">
                 <label for="partySelect" class="form-label fw-bold">🏢 Party Selection (F3)</label>
                 <input type="text" id="partySearch" class="form-control form-control-lg mb-2 fw-bold" placeholder="🔍 Search Party (Type to search...)" autocomplete="off">
-                <div id="partyDropdown" class="dropdown-menu w-100" style="display: none;"></div>
-                <select id="partySelect" name="party" class="form-select form-select-lg d-none fw-bold" required title="Select Party">
+                <div id="partyDropdown" class="dropdown-menu w-100 dropdown-hidden" role="listbox" aria-label="Party search results"></div>
+                <select id="partySelect" name="party" class="form-select form-select-lg d-none fw-bold" required title="Select Party" aria-label="Select Party">
                   <option value="">Select Party</option>
                   {% for p in parties %}
                   <option value="{{ p.id }}">{{ p.name }}</option>
@@ -195,7 +195,7 @@
                     <div class="card-body p-2">
                       <input type="text" class="form-control product-search mb-1 fw-bold" placeholder="🔍 Search Product (F3)" autocomplete="off">
                       <div class="product-dropdown dropdown-menu dropdown-hidden"></div>
-                      <select name="product[]" class="form-select product d-none fw-bold" required title="Select Product">
+                      <select name="product[]" class="form-select product d-none fw-bold" required title="Select Product" aria-label="Select Product">
                         <option value="">Select Product</option>
                         {% for prod in products %}
                         <option value="{{ prod.id }}" data-price="{{ prod.price }}">
@@ -328,7 +328,7 @@
             </button>
           </div>
           <div class="col-md-3 mb-3">
-            <button type="button" id="saveDraft" class="btn btn-warning btn-xl fw-bold px-4 py-4 shadow-lg w-100">
+            <button type="button" id="saveDraftStep4" class="btn btn-warning btn-xl fw-bold px-4 py-4 shadow-lg w-100">
               📝 Save Draft (F6)
             </button>
           </div>
@@ -371,18 +371,18 @@
           <button type="submit" class="btn btn-success px-4">
             💾 Save Order
           </button>
-          <button type="button" id="saveDraft" class="btn btn-outline-secondary">
+          <button type="button" id="saveDraftFooter" class="btn btn-outline-secondary">
             📝 Save Draft
           </button>
         </div>
 
         <div class="d-flex flex-wrap gap-2">
           <button type="button" onclick="window.print()" class="btn btn-secondary">🖨 Print</button>
-          <button type="button" id="downloadPDF" class="btn btn-danger">⬇ PDF</button>
-          <button type="button" id="downloadExcel" class="btn btn-success">📊 Excel</button>
-          <button type="button" id="shareWhatsApp" class="btn btn-success">📤 WhatsApp</button>
-          <button type="button" id="shareEmail" class="btn btn-warning">📧 Email</button>
-          <button type="button" id="shareSMS" class="btn btn-info">💬 SMS</button>
+          <button type="button" id="downloadPDFFooter" class="btn btn-danger">⬇ PDF</button>
+          <button type="button" id="downloadExcelFooter" class="btn btn-success">📊 Excel</button>
+          <button type="button" id="shareWhatsAppFooter" class="btn btn-success">📤 WhatsApp</button>
+          <button type="button" id="shareEmailFooter" class="btn btn-warning">📧 Email</button>
+          <button type="button" id="shareSMSFooter" class="btn btn-info">💬 SMS</button>
         </div>
 
       </div>
