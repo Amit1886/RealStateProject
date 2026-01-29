@@ -1,30 +1,13 @@
-# Coupon Management Implementation Plan
+# TODO: Enhance add_transaction.html Template
 
-## Models (commerce/models.py)
-- [x] Add Coupon model with types (discount, offer, spin-win, scratch), discount details, limits, expiry
-- [x] Add UserCoupon model for user-specific coupons
-- [x] Add CouponUsage model to track usage and prevent loss
+## Plan Overview
+Enhance the add_transaction.html template to match the modern UI of add_order.html, making it responsive, AI-powered, with modes, themes, and advanced features.
 
-## Views (commerce/views.py)
-- [x] Admin CRUD views for coupons
-- [x] User views: coupon list, apply coupon, spin/scratch logic
-- [x] Dashboard view with coupon slider
-
-## URLs (commerce/urls.py)
-- [x] Add coupon management URLs for admin and user
-
-## Forms (commerce/forms.py)
-- [x] Coupon creation/edit forms with validation
-
-## Admin (commerce/admin.py)
-- [x] Register coupon models in admin interface
-
-## Templates
-- [x] Create coupon management templates
-- [x] Update dashboard with modern coupon slider
-- [x] Integrate coupon slider into accounts dashboard
-
-## Followup Steps
-- [x] Run migrations for new models
-- [x] Test coupon application and loss prevention
-- [x] Integrate with order/payment flow
+## Steps
+- [x] Step 1: Update HTML structure with mode switcher, theme selector, and keyboard shortcuts modal
+- [x] Step 2: Add responsive card-based layout and modern form styling
+- [x] Step 3: Integrate AI suggestions and camera/scanner for receipts
+- [x] Step 4: Add action buttons for save, print, download, WhatsApp, email, search
+- [x] Step 5: Create/update CSS file for transaction styles
+- [x] Step 6: Create/update JS file for transaction functionality
+- [x] Step 7: Test and verify all features work correctly
