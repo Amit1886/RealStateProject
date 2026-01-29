@@ -1,13 +1,31 @@
-# TODO: Enhance add_transaction.html Template
+# Loyalty and Membership System Implementation
 
-## Plan Overview
-Enhance the add_transaction.html template to match the modern UI of add_order.html, making it responsive, AI-powered, with modes, themes, and advanced features.
+## Models (accounts/models.py)
+- [ ] Add LoyaltyProgram model
+- [ ] Add LoyaltyPoints model
+- [ ] Add MembershipTier model
+- [ ] Add SpecialOffer model (birthday/festival)
 
-## Steps
-- [x] Step 1: Update HTML structure with mode switcher, theme selector, and keyboard shortcuts modal
-- [x] Step 2: Add responsive card-based layout and modern form styling
-- [x] Step 3: Integrate AI suggestions and camera/scanner for receipts
-- [x] Step 4: Add action buttons for save, print, download, WhatsApp, email, search
-- [x] Step 5: Create/update CSS file for transaction styles
-- [x] Step 6: Create/update JS file for transaction functionality
-- [x] Step 7: Test and verify all features work correctly
+## Views (accounts/views.py)
+- [x] Add loyalty_dashboard view
+- [x] Add earn_points view
+- [x] Add redeem_points view
+- [x] Add membership_upgrade view
+- [x] Update dashboard view to include loyalty data
+
+## URLs (accounts/urls.py)
+- [x] Add loyalty URLs
+
+## Templates
+- [ ] Update accounts/templates/accounts/dashboard.html with loyalty section
+- [ ] Create accounts/templates/accounts/loyalty_dashboard.html
+- [ ] Create accounts/templates/accounts/membership_upgrade.html
+
+## Admin Control
+- [ ] Register models in admin.py
+
+## Followup
+- [ ] Create and run migrations
+- [ ] Test points earning on transactions/orders
+- [ ] Test automatic birthday/festival offers
+- [ ] Style with modern CSS

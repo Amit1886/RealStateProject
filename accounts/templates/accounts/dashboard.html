@@ -149,6 +149,22 @@
       <div class="title">Net Balance</div>
       <div class="value" style="color:#075985">₹{{ net_balance|default:"0" }}</div>
     </div>
+    {% if loyalty_account %}
+      <div class="summary-card loyalty-card">
+        <div class="title">
+          <i class="fas fa-star"></i> Loyalty Points
+        </div>
+        <div class="value" style="color:#f59e0b">{{ loyalty_account.available_points }}</div>
+        <div class="loyalty-tier">
+          {% if loyalty_account.current_tier %}
+            <span class="tier-badge {{ loyalty_account.current_tier.name }}">{{ loyalty_account.current_tier.display_name }}</span>
+          {% else %}
+            <span class="tier-badge bronze">Bronze</span>
+          {% endif %}
+        </div>
+        <a href="{% url 'accounts:loyalty_dashboard' %}" class="loyalty-link">View Details</a>
+      </div>
+    {% endif %}
   </div>
 
   <!-- Recent Parties and Transactions -->
