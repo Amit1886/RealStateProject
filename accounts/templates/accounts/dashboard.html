@@ -122,10 +122,10 @@
                     </div>
                 </div>
                 <div class="slider-controls mt-3">
-                    <button class="btn btn-sm btn-outline-secondary" id="prev-btn">
+                    <button class="btn btn-sm btn-outline-secondary" id="prev-btn" aria-label="Previous coupon">
                         <i class="fas fa-chevron-left"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary" id="next-btn">
+                    <button class="btn btn-sm btn-outline-secondary" id="next-btn" aria-label="Next coupon">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
@@ -410,7 +410,7 @@
       <form method="get" class="mb-3">
   <div class="row g-2 align-items-center">
     <div class="col-auto">
-      <select name="period" class="form-select" onchange="this.form.submit()">
+      <select name="period" class="form-select" onchange="this.form.submit()" aria-label="Select period">
         <option value="today" {% if period == 'today' %}selected{% endif %}>Today</option>
         <option value="yesterday" {% if period == 'yesterday' %}selected{% endif %}>Yesterday</option>
         <option value="month" {% if period == 'month' %}selected{% endif %}>This Month</option>
@@ -532,7 +532,8 @@
       </div>
 
       <button class="toggle-btn"
-              onclick="toggleActionMenu('commerceActions')">
+              onclick="toggleActionMenu('commerceActions')"
+              aria-label="Toggle menu">
         ⋮
       </button>
     </div>
@@ -657,6 +658,73 @@
 
 {% block extra_js %}
 <script>
+// Redeem Points Modal
+function openRedeemModal() {
+    const modalHtml = `
+        <div class="modal fade" id="redeemModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-exchange-alt"></i> Redeem Points</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>You have <strong>{{ loyalty_account.available_points }}</strong> available points.</p>
+                        <p>Each {{ loyalty_account.program.min_redeem_points }} points = ₹{{ loyalty_account.program.points_to_rupee_ratio }}</p>
+                        <form id="redeemForm">
+                            <div class="mb-3">
+                                <label for="points" class="form-label">Points to Redeem</label>
+                                <input type="number" class="form-control" id="points" min="{{ loyalty_account.program.min_redeem_points }}" max="{{ loyalty_account.available_points }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description (Optional)</label>
+                                <input type="text" class="form-control" id="description" placeholder="e.g., Redeemed for discount">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="redeemPoints()">Redeem</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('redeemModal'));
+    modal.show();
+}
+
+function redeemPoints() {
+    const points = document.getElementById('points').value;
+    const description = document.getElementById('description').value;
+
+    fetch('{% url "accounts:redeem_points" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            points: points,
+            description: description
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Points redeemed successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while redeeming points.');
+    });
+}
+
 function applyCoupon(code) {
     // Simple coupon application - in real implementation, this would integrate with order form
     alert(`Coupon ${code} applied! (Integration with order form needed)`);
