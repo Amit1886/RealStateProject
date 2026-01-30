@@ -170,6 +170,11 @@ class Order(models.Model):
     # ✅ New field for distinguishing Sale / Purchase
     order_type = models.CharField(max_length=10, choices=ORDER_TYPE, default="SALE")
 
+    # Purchase specific fields
+    invoice_number = models.CharField(max_length=50, blank=True, null=True, help_text="Purchase invoice number")
+    due_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Outstanding amount for purchase")
+    payment_due_date = models.DateField(blank=True, null=True, help_text="Date when payment is due")
+
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

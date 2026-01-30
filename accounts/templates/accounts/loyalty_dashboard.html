@@ -1,0 +1,178 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-star"></i> Loyalty & Membership Dashboard</h3>
+                </div>
+                <div class="card-body">
+                    {% if loyalty_account %}
+                        <div class="row">
+                            <!-- Points Summary -->
+                            <div class="col-md-4">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Available Points</h5>
+                                        <h2 class="card-text">{{ loyalty_account.available_points }}</h2>
+                                        <p class="card-text">Total Earned: {{ loyalty_account.total_points }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Current Tier -->
+                            <div class="col-md-4">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Current Tier</h5>
+                                        <h2 class="card-text">
+                                            {% if loyalty_account.current_tier %}
+                                                {{ loyalty_account.current_tier.display_name }}
+                                            {% else %}
+                                                Bronze
+                                            {% endif %}
+                                        </h2>
+                                        <p class="card-text">Total Spent: ₹{{ loyalty_account.total_earned }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Redeem Actions -->
+                            <div class="col-md-4">
+                                <div class="card bg-warning">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Quick Actions</h5>
+                                        <button class="btn btn-primary btn-block" onclick="openRedeemModal()">
+                                            <i class="fas fa-exchange-alt"></i> Redeem Points
+                                        </button>
+                                        <a href="{% url 'accounts:membership_upgrade' %}" class="btn btn-success btn-block mt-2">
+                                            <i class="fas fa-arrow-up"></i> Upgrade Membership
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Points History -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h4>Points Transaction History</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Type</th>
+                                                <th>Points</th>
+                                                <th>Amount</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for transaction in loyalty_account.transactions.all %}
+                                            <tr>
+                                                <td>{{ transaction.created_at|date:"M d, Y H:i" }}</td>
+                                                <td>
+                                                    {% if transaction.transaction_type == 'earn' %}
+                                                        <span class="badge badge-success">Earned</span>
+                                                    {% elif transaction.transaction_type == 'redeem' %}
+                                                        <span class="badge badge-danger">Redeemed</span>
+                                                    {% else %}
+                                                        <span class="badge badge-info">{{ transaction.transaction_type|title }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ transaction.points }}</td>
+                                                <td>₹{{ transaction.amount }}</td>
+                                                <td>{{ transaction.description|default:"-" }}</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="5" class="text-center">No transactions yet</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <h4>No Loyalty Account Found</h4>
+                            <p>You don't have a loyalty account yet. Please contact support to set up your account.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Redeem Modal -->
+<div class="modal fade" id="redeemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-exchange-alt"></i> Redeem Points</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {% if loyalty_account %}
+                <p>You have <strong>{{ loyalty_account.available_points }}</strong> available points.</p>
+                <p>Each {{ loyalty_account.program.min_redeem_points }} points = ₹{{ loyalty_account.program.points_to_rupee_ratio }}</p>
+                <form id="redeemForm">
+                    <div class="mb-3">
+                        <label for="points" class="form-label">Points to Redeem</label>
+                        <input type="number" class="form-control" id="points" min="{{ loyalty_account.program.min_redeem_points }}" max="{{ loyalty_account.available_points }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (Optional)</label>
+                        <input type="text" class="form-control" id="description" placeholder="e.g., Redeemed for discount">
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="redeemPoints()">Redeem</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function redeemPoints() {
+    const points = document.getElementById('points').value;
+    const description = document.getElementById('description').value;
+
+    fetch('{% url "accounts:redeem_points" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            points: points,
+            description: description
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Points redeemed successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while redeeming points.');
+    });
+}
+</script>
+{% endblock %}

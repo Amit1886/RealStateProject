@@ -328,3 +328,245 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.expense_number} - ₹{self.amount_paid}"
+
+
+# ----------------- LOYALTY AND MEMBERSHIP MODELS -----------------
+
+class LoyaltyProgram(models.Model):
+    """Main loyalty program configuration"""
+    name = models.CharField(max_length=100, default="Default Loyalty Program")
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+
+    # Points earning rules
+    points_per_rupee = models.DecimalField(max_digits=5, decimal_places=2, default=1.0)  # 1 point per rupee
+    min_transaction_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    # Points expiry
+    points_expiry_days = models.PositiveIntegerField(default=365)  # 1 year
+
+    # Redeem rules
+    points_to_rupee_ratio = models.DecimalField(max_digits=5, decimal_places=2, default=0.01)  # 100 points = 1 rupee
+    min_redeem_points = models.PositiveIntegerField(default=100)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+class MembershipTier(models.Model):
+    """Membership tiers with benefits"""
+    TIER_CHOICES = (
+        ('bronze', 'Bronze'),
+        ('silver', 'Silver'),
+        ('gold', 'Gold'),
+        ('platinum', 'Platinum'),
+    )
+
+    name = models.CharField(max_length=50, choices=TIER_CHOICES, unique=True)
+    display_name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    # Requirements
+    min_points_required = models.PositiveIntegerField(default=0)
+    min_transaction_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    # Benefits
+    points_multiplier = models.DecimalField(max_digits=3, decimal_places=2, default=1.0)  # Extra points earned
+    birthday_bonus_points = models.PositiveIntegerField(default=0)
+    festival_bonus_points = models.PositiveIntegerField(default=0)
+
+    # Pricing for upgrade
+    upgrade_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['min_points_required']
+
+    def __str__(self):
+        return f"{self.display_name} (₹{self.upgrade_price})"
+
+
+class LoyaltyPoints(models.Model):
+    """User's loyalty points"""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='loyalty_points')
+    program = models.ForeignKey(LoyaltyProgram, on_delete=models.CASCADE)
+
+    # Points balance
+    total_points = models.PositiveIntegerField(default=0)
+    available_points = models.PositiveIntegerField(default=0)  # After expiry/used
+    used_points = models.PositiveIntegerField(default=0)
+
+    # Current tier
+    current_tier = models.ForeignKey(MembershipTier, on_delete=models.SET_NULL, null=True, blank=True)
+
+    # Transaction tracking
+    total_earned = models.DecimalField(max_digits=12, decimal_places=2, default=0)  # Total amount spent
+    last_transaction_date = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['user', 'program']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.available_points} points"
+
+    def add_points(self, points, transaction_amount=None, description=""):
+        """Add points to user's account"""
+        self.total_points += points
+        self.available_points += points
+        if transaction_amount:
+            self.total_earned += transaction_amount
+        self.last_transaction_date = timezone.now()
+        self.save()
+
+        # Create transaction record
+        PointsTransaction.objects.create(
+            loyalty_account=self,
+            transaction_type='earn',
+            points=points,
+            amount=transaction_amount or 0,
+            description=description
+        )
+
+        # Check for tier upgrade
+        self.check_tier_upgrade()
+
+    def redeem_points(self, points, description=""):
+        """Redeem points"""
+        if self.available_points < points:
+            raise ValueError("Insufficient points")
+
+        self.available_points -= points
+        self.used_points += points
+        self.save()
+
+        # Create transaction record
+        PointsTransaction.objects.create(
+            loyalty_account=self,
+            transaction_type='redeem',
+            points=points,
+            description=description
+        )
+
+    def check_tier_upgrade(self):
+        """Check if user qualifies for higher tier"""
+        eligible_tiers = MembershipTier.objects.filter(
+            min_points_required__lte=self.total_points,
+            min_transaction_amount__lte=self.total_earned,
+            is_active=True
+        ).order_by('-min_points_required')
+
+        if eligible_tiers.exists():
+            new_tier = eligible_tiers.first()
+            if not self.current_tier or new_tier.min_points_required > self.current_tier.min_points_required:
+                self.current_tier = new_tier
+                self.save()
+
+
+class PointsTransaction(models.Model):
+    """Transaction history for points"""
+    TRANSACTION_TYPES = (
+        ('earn', 'Earned'),
+        ('redeem', 'Redeemed'),
+        ('bonus', 'Bonus'),
+        ('expired', 'Expired'),
+        ('adjustment', 'Adjustment'),
+    )
+
+    loyalty_account = models.ForeignKey(LoyaltyPoints, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
+    points = models.IntegerField()  # Positive for earn, negative for redeem
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)  # Transaction amount that earned points
+    description = models.CharField(max_length=255, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.loyalty_account.user.username} - {self.transaction_type} {self.points} points"
+
+
+class SpecialOffer(models.Model):
+    """Automatic special offers (birthday, festival)"""
+    OFFER_TYPES = (
+        ('birthday', 'Birthday'),
+        ('festival', 'Festival'),
+        ('anniversary', 'Anniversary'),
+        ('custom', 'Custom'),
+    )
+
+    name = models.CharField(max_length=100)
+    offer_type = models.CharField(max_length=20, choices=OFFER_TYPES)
+    description = models.TextField()
+
+    # Conditions
+    is_active = models.BooleanField(default=True)
+    auto_apply = models.BooleanField(default=True)  # Auto-apply when conditions met
+
+    # Points/Discount
+    bonus_points = models.PositiveIntegerField(default=0)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    # Validity
+    valid_from = models.DateField(null=True, blank=True)
+    valid_until = models.DateField(null=True, blank=True)
+
+    # Target users (optional filters)
+    min_tier = models.ForeignKey(MembershipTier, on_delete=models.SET_NULL, null=True, blank=True)
+    min_points = models.PositiveIntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.offer_type})"
+
+    def is_valid_for_user(self, user):
+        """Check if offer is valid for a user"""
+        if not self.is_active:
+            return False
+
+        # Date validity
+        today = timezone.now().date()
+        if self.valid_from and today < self.valid_from:
+            return False
+        if self.valid_until and today > self.valid_until:
+            return False
+
+        # Get user's loyalty account
+        try:
+            loyalty = LoyaltyPoints.objects.get(user=user)
+        except LoyaltyPoints.DoesNotExist:
+            return False
+
+        # Tier check
+        if self.min_tier and (not loyalty.current_tier or loyalty.current_tier.min_points_required < self.min_tier.min_points_required):
+            return False
+
+        # Points check
+        if loyalty.available_points < self.min_points:
+            return False
+
+        return True
+
+
+# ----------------- AUTO CREATE LOYALTY ACCOUNT -----------------
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_loyalty_account(sender, instance, created, **kwargs):
+    if created:
+        program = LoyaltyProgram.objects.filter(is_active=True).first()
+        if program:
+            LoyaltyPoints.objects.get_or_create(
+                user=instance,
+                program=program,
+                defaults={'current_tier': MembershipTier.objects.filter(is_active=True).order_by('min_points_required').first()}
+            )

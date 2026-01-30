@@ -25,5 +25,6 @@ urlpatterns = [
     path("business-snapshot/",views.business_snapshot_view,name="business_snapshot"),
     path("expenses/create/", views.create_expense, name="expense_create"),
     path("expenses/", views.expense_list, name="expense_list"),
+    path("redeem-points/", views.redeem_points, name="redeem_points"), 
 ]
 

@@ -50,6 +50,11 @@ class Party(models.Model):
     # Credit Rating
     credit_grade = models.CharField(max_length=5, default='-', blank=True)
 
+    # Supplier specific fields
+    credit_period = models.PositiveIntegerField(default=30, help_text="Credit period in days")
+    opening_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Opening balance for supplier")
+    is_active = models.BooleanField(default=True)
+
     # Helper / Computed Fields
     def get_payment_link(self):
         """Return a dynamic payment link if UPI & premium."""
@@ -409,4 +414,72 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.mobile}"
+
+
+# ---------------- SUPPLIER PAYMENT MODEL ----------------
+class SupplierPayment(models.Model):
+    PAYMENT_MODES = [
+        ("cash", "Cash"),
+        ("bank", "Bank Transfer"),
+        ("upi", "UPI"),
+        ("cheque", "Cheque"),
+        ("card", "Card"),
+    ]
+
+    supplier = models.ForeignKey(
+        Party,
+        on_delete=models.CASCADE,
+        related_name="supplier_payments",
+        limit_choices_to={'party_type': 'supplier'}
+    )
+    order = models.ForeignKey(
+        "commerce.Order",
+        on_delete=models.CASCADE,
+        related_name="supplier_payments",
+        limit_choices_to={'order_type': 'PURCHASE'}
+    )
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    payment_mode = models.CharField(max_length=20, choices=PAYMENT_MODES, default="cash")
+    reference = models.CharField(max_length=100, blank=True, null=True, help_text="Cheque number, UPI ref, etc.")
+    notes = models.TextField(blank=True, null=True)
+    payment_date = models.DateField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def owner(self):
+        return self.supplier.owner
+
+    def __str__(self):
+        return f"Payment to {self.supplier.name} - ₹{self.amount} ({self.payment_mode})"
+
+
+# ---------------- STOCK LEDGER MODEL (FIFO) ----------------
+class StockLedger(models.Model):
+    LEDGER_TYPE_CHOICES = [
+        ("in", "Stock In"),
+        ("out", "Stock Out"),
+    ]
+
+    product = models.ForeignKey("commerce.Product", on_delete=models.CASCADE, related_name="stock_ledgers")
+    order = models.ForeignKey(
+        "commerce.Order",
+        on_delete=models.CASCADE,
+        related_name="stock_ledgers",
+        help_text="Purchase order for stock in, Sale order for stock out"
+    )
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    ledger_type = models.CharField(max_length=3, choices=LEDGER_TYPE_CHOICES)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Cost price for purchases")
+    remaining_quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Remaining stock from this batch")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def owner(self):
+        return self.order.owner
+
+    def __str__(self):
+        return f"{self.product.name} - {self.ledger_type.upper()} {self.quantity} @ ₹{self.unit_price}"
+
+    class Meta:
+        ordering = ['created_at']
 

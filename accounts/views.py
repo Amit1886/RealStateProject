@@ -21,9 +21,11 @@ from datetime import timedelta
 from accounts.services.snapshot import build_business_snapshot
 from .models import Expense, ExpenseCategory
 import uuid
+import json
+from .models import LoyaltyPoints
 from khataapp.models import UserProfile as KhataProfile
-from django.conf import settings
 
+from accounts.models import UserProfile, LoyaltyPoints
 
 
 # Accounts
@@ -997,5 +999,3 @@ def expense_list(request):
     return render(request, "accounts/expense_list.html", {
         "expenses": expenses
     })
-    
-
