@@ -1,6 +1,19 @@
-=======
-    return JsonResponse({"status": "error", "message": "Invalid request"})
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.http import JsonResponse
+from django.utils import timezone
+from datetime import timedelta
+from khataapp.models import Party, Order, SupplierPayment
+from khataapp.forms import SupplierPaymentForm
+from khataapp.services.supplier_services import SupplierService
 
+def submit_contact(request):
+    if request.method == 'POST':
+        # handle contact form
+        return JsonResponse({"status": "success"})
+    else:
+        return JsonResponse({"status": "error", "message": "Invalid request"})
 
 # ---------------- Supplier Management Views ----------------
 @login_required
