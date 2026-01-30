@@ -1,8 +1,9 @@
 # full path: ~/myproject/khatapro/khataapp/forms.py
 from django import forms
-from .models import Party, Transaction
+from .models import Party, Transaction, SupplierPayment
 from khataapp.models import UserProfile
 from .models import ContactMessage
+from commerce.models import Order
 
 
 # ----------------- Party Form -----------------
@@ -56,3 +57,26 @@ class ContactForm(forms.ModelForm):
     class Meta:
         model = ContactMessage
         fields = ['name', 'email', 'mobile', 'message']
+
+
+# ----------------- Supplier Payment Form -----------------
+class SupplierPaymentForm(forms.ModelForm):
+    class Meta:
+        model = SupplierPayment
+        fields = ['order', 'amount', 'payment_mode', 'reference', 'notes', 'payment_date']
+        widgets = {
+            'payment_date': forms.DateInput(attrs={'type': 'date'}),
+            'notes': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        if user:
+            # Filter orders to show only purchase orders for this user with outstanding amounts
+            self.fields['order'].queryset = Order.objects.filter(
+                owner=user,
+                order_type='PURCHASE',
+                due_amount__gt=0
+            ).select_related('party')

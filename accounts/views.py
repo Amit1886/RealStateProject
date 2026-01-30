@@ -21,8 +21,13 @@ from datetime import timedelta
 from accounts.services.snapshot import build_business_snapshot
 from .models import Expense, ExpenseCategory
 import uuid
+import json
+from .models import LoyaltyPoints
 from khataapp.models import UserProfile as KhataProfile
+import json
+from django.views.decorators.http import require_POST
 
+from accounts.models import UserProfile, LoyaltyPoints
 
 
 # Accounts
@@ -979,4 +984,101 @@ def expense_list(request):
     expenses = Expense.objects.filter(created_by=request.user).order_by("-expense_date")
     return render(request, "accounts/expense_list.html", {
         "expenses": expenses
+    })
+
+@login_required
+@require_POST
+def redeem_points(request):
+    """
+    Redeem loyalty points securely.
+    Supports web, mobile app, API clients.
+    """
+
+    # -------------------------
+    # 1️⃣ Parse JSON safely
+    # -------------------------
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+        points = int(payload.get("points", 0))
+        description = payload.get(
+            "description",
+            "Points redeemed by user"
+        )
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"error": "Invalid JSON payload"},
+            status=400
+        )
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Points must be a valid number"},
+            status=400
+        )
+
+    # -------------------------
+    # 2️⃣ Validate points
+    # -------------------------
+    if points <= 0:
+        return JsonResponse(
+            {"error": "Points must be greater than zero"},
+            status=400
+        )
+
+    # -------------------------
+    # 3️⃣ Atomic transaction (SAFE)
+    # -------------------------
+    try:
+        with transaction.atomic():
+
+            # User profile
+            profile = UserProfile.objects.select_for_update().get(
+                user=request.user
+            )
+
+            # Loyalty account
+            loyalty = LoyaltyPoints.objects.select_for_update().get(
+                user=request.user
+            )
+
+            if loyalty.available_points < points:
+                return JsonResponse(
+                    {"error": "Insufficient reward points"},
+                    status=400
+                )
+
+            # Redeem using model method (BEST PRACTICE)
+            loyalty.redeem_points(
+                points=points,
+                description=description
+            )
+
+            # Optional sync with profile (if you use both)
+            profile.reward_points = loyalty.available_points
+            profile.save(update_fields=["reward_points"])
+
+    except UserProfile.DoesNotExist:
+        return JsonResponse(
+            {"error": "User profile not found"},
+            status=404
+        )
+
+    except LoyaltyPoints.DoesNotExist:
+        return JsonResponse(
+            {"error": "Loyalty account not found"},
+            status=404
+        )
+
+    except Exception as e:
+        return JsonResponse(
+            {"error": "Something went wrong", "details": str(e)},
+            status=500
+        )
+
+    # -------------------------
+    # 4️⃣ Success response
+    # -------------------------
+    return JsonResponse({
+        "success": True,
+        "message": f"{points} points redeemed successfully",
+        "remaining_points": loyalty.available_points,
     })

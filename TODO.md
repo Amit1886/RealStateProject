@@ -1,31 +1,23 @@
-# Loyalty and Membership System Implementation
+# SUPPLIER PURCHASE & DUE MANAGEMENT SYSTEM - Implementation Plan
 
-## Models (accounts/models.py)
-- [ ] Add LoyaltyProgram model
-- [ ] Add LoyaltyPoints model
-- [ ] Add MembershipTier model
-- [ ] Add SpecialOffer model (birthday/festival)
+## Completed Tasks
+- [x] Analyze existing codebase and create implementation plan
+- [x] Get user approval for plan
 
-## Views (accounts/views.py)
-- [x] Add loyalty_dashboard view
-- [x] Add earn_points view
-- [x] Add redeem_points view
-- [x] Add membership_upgrade view
-- [x] Update dashboard view to include loyalty data
-
-## URLs (accounts/urls.py)
-- [x] Add loyalty URLs
-
-## Templates
-- [ ] Update accounts/templates/accounts/dashboard.html with loyalty section
-- [ ] Create accounts/templates/accounts/loyalty_dashboard.html
-- [ ] Create accounts/templates/accounts/membership_upgrade.html
-
-## Admin Control
-- [ ] Register models in admin.py
-
-## Followup
-- [ ] Create and run migrations
-- [ ] Test points earning on transactions/orders
-- [ ] Test automatic birthday/festival offers
-- [ ] Style with modern CSS
+## Pending Tasks
+- [x] Extend Party model for suppliers (credit_period, opening_balance, is_active)
+- [x] Extend Order model for purchases (invoice_number, due_amount, payment_due_date)
+- [x] Create SupplierPayment model
+- [x] Create StockLedger model for FIFO inventory
+- [ ] Create business logic services (due calculation, alerts)
+- [ ] Create dashboard views with ORM annotations
+- [ ] Create templates (dashboard, supplier detail)
+- [ ] Add URLs for new views
+- [ ] Create forms for purchase and payment entry
+- [ ] Register new models in admin
+- [ ] Implement alert logic (cron job example)
+- [ ] Add sample demo data
+- [ ] Create migrations
+- [ ] Test dashboard and alerts
+- [ ] Implement reports (PDF/Excel export)
+- [ ] Add mobile responsiveness
