@@ -120,7 +120,7 @@
       </div>
     </div>
 
-    <form method="POST" enctype="multipart/form-data" action="{% url 'accounts:create_expense' %}">
+    <form method="POST" enctype="multipart/form-data" action="{% url 'accounts:expense_create' %}">
       {% csrf_token %}
 
       <!-- STEP 1: Expense Details -->
