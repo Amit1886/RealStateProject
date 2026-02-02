@@ -407,3 +407,19 @@ class CouponUsage(models.Model):
 
     def __str__(self):
         return f"{self.coupon.code} used by {self.user.username} - ₹{self.discount_amount}"
+
+
+# ---------------- Stock Entry ----------------
+class StockEntry(models.Model):
+    ENTRY_TYPE_CHOICES = [
+        ("IN", "Stock In"),
+        ("OUT", "Stock Out"),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="stockentry")
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    entry_type = models.CharField(max_length=3, choices=ENTRY_TYPE_CHOICES)
+    date = models.DateField()
+
+    def __str__(self):
+        return f"{self.product.name} - {self.entry_type} {self.quantity}"
