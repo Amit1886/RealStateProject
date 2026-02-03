@@ -22,7 +22,8 @@ def stock_summary(request):
                 default=Value(0),
                 output_field=DecimalField(max_digits=10, decimal_places=2)
             )
-        )
+        ),
+        net_stock=F('total_in') - F('total_out')
     )
 
     return render(request, 'reports/stock_summary.html', {
