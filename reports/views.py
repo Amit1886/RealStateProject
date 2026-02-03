@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Case, When, Value, DecimalField
 from django.utils.timezone import now
 
 from khataapp.models import Party, Transaction
@@ -10,12 +10,18 @@ from commerce.models import Product, StockEntry
 def stock_summary(request):
     products = Product.objects.annotate(
         total_in=Sum(
-            'stockentry__quantity',
-            filter=F('stockentry__entry_type') == 'IN'
+            Case(
+                When(stockentry__entry_type='IN', then=F('stockentry__quantity')),
+                default=Value(0),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            )
         ),
         total_out=Sum(
-            'stockentry__quantity',
-            filter=F('stockentry__entry_type') == 'OUT'
+            Case(
+                When(stockentry__entry_type='OUT', then=F('stockentry__quantity')),
+                default=Value(0),
+                output_field=DecimalField(max_digits=10, decimal_places=2)
+            )
         )
     )
 
