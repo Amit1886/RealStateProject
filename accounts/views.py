@@ -22,6 +22,7 @@ from accounts.services.snapshot import build_business_snapshot
 from .models import Expense, ExpenseCategory
 import uuid
 from khataapp.models import UserProfile as KhataProfile
+from django.conf import settings
 
 
 
@@ -709,6 +710,26 @@ def verify_otp_view(request):
 
     user = get_object_or_404(User, id=user_id)
 
+    # ✅ TEMPORARY BYPASS (Render free deploy helper)
+    if getattr(settings, "OTP_BYPASS", False):
+        user.is_active = True
+        user.is_otp_verified = True
+        user.save(update_fields=["is_active", "is_otp_verified"])
+
+        user.backend = 'django.contrib.auth.backends.ModelBackend'
+        login(request, user)
+
+        request.session.pop("otp_user_id", None)
+        request.session.pop("otp_purpose", None)
+
+        messages.warning(request, "⚠ OTP bypass mode active (temporary).")
+
+        if user.is_superuser:
+            return redirect("/superadmin/")
+        return redirect("/accounts/dashboard/")
+
+
+    # ✅ NORMAL FLOW (PRODUCTION SAFE)
     if request.method == "POST":
         form = OTPForm(request.POST)
 
@@ -729,26 +750,21 @@ def verify_otp_view(request):
                 messages.error(request, "Invalid OTP.")
                 return redirect("accounts:verify_otp")
 
-            # ✅ OTP SUCCESS
             otp.verified = True
             otp.save(update_fields=["verified"])
 
-            # ✅ Activate user AND mark OTP verified
             user.is_active = True
-            user.is_otp_verified = True  # <-- NEW
+            user.is_otp_verified = True
             user.save(update_fields=["is_active", "is_otp_verified"])
 
-            # ✅ Login only AFTER OTP
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
 
-            # ✅ Clean session
             request.session.pop("otp_user_id", None)
             request.session.pop("otp_purpose", None)
 
             messages.success(request, "Account verified successfully.")
 
-            # ✅ Redirect superusers to admin
             if user.is_superuser:
                 return redirect("/superadmin/")
             else:
@@ -761,6 +777,7 @@ def verify_otp_view(request):
         "form": form,
         "user": user
     })
+
 
 # ----------------- LOGOUT -----------------
 def logout_view(request):
