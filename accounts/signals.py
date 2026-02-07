@@ -9,9 +9,20 @@ from accounts.models import UserProfile, DailySummary
 from billing.models import Plan, Subscription
 from core_settings.models import CompanySettings
 from khataapp.models import Transaction
+from django.db.models.signals import post_migrate
 
 User = get_user_model()
 
+@receiver(post_migrate)
+def create_default_superadmin(sender, **kwargs):
+    User = get_user_model()
+    if not User.objects.filter(username="admin").exists():
+        User.objects.create_superuser(
+            username="admin",
+            email="admin@example.com",
+            password="Admin@123"
+        )
+        print("✅ Default superadmin created: admin / Admin@123")
 
 # ------------------------------------------------
 # CREATE USER PROFILE + COMPANY + SUBSCRIPTION
