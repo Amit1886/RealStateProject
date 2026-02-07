@@ -969,7 +969,4 @@ def expense_list(request):
         "expenses": expenses
     })
     
-@login_required
-def settings_view(request):
-    return render(request, "accounts/settings.html")
 
