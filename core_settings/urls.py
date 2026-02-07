@@ -11,5 +11,4 @@ urlpatterns = [
     path("user-overrides/", views.user_feature_overrides_view, name="user_feature_overrides"),
     path("api/settings/all/", views.api_settings_all, name="api_settings_all"),
     path("api/settings/update/", views.api_settings_update, name="api_settings_update"),
-    path("settings/", views.settings_view, name="site_settings")
 ]
