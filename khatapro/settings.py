@@ -12,6 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "default-secret-key")
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
+# TEMP: OTP bypass for Render free deploy
+OTP_BYPASS = True
+
 ALLOWED_HOSTS = ["*", "khataapp.pythonanywhere.com", "127.0.0.1", "localhost"]
 
 # ---------------- INSTALLED APPS ----------------
