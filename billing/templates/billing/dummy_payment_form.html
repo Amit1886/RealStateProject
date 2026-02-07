@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block billing_content %}
-<h2>Pay for {{ plan.name }} (₹{{ invoice.amount }})</h2>
+<h2>Pay for {{ plan.name }} ({{ invoice.amount }})</h2>
 <p>Using gateway: {{ gateway.name }} ({{ gateway.provider }})</p>
 
 <!-- In real gateway you redirect to provider; this dummy simulates payment -->

@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h3>Chat Room – {{ party.name }}</h3>
+    <h3>Chat Room  {{ party.name }}</h3>
 
     <!-- Messages List -->
     <div id="chat-box" class="border p-3 mb-3" style="height: 400px; overflow-y: auto;">
@@ -11,7 +11,7 @@
                 <strong>{{ msg.sender }}:</strong>
                 <span>{{ msg.text }}</span>
                 {% if msg.attachment %}
-                    <a href="{{ msg.attachment.url }}" target="_blank">📎 Attachment</a>
+                    <a href="{{ msg.attachment.url }}" target="_blank"> Attachment</a>
                 {% endif %}
                 <small class="text-muted">({{ msg.timestamp|date:"H:i" }})</small>
             </div>
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function() {
             let newMsg = document.createElement("div");
             newMsg.classList.add("mb-2");
             newMsg.innerHTML = `<strong>${data.sender}:</strong> ${data.text}
-                ${data.attachment ? `<a href="${data.attachment}" target="_blank">📎 Attachment</a>` : ""}
+                ${data.attachment ? `<a href="${data.attachment}" target="_blank"> Attachment</a>` : ""}
                 <small class="text-muted">(${data.timestamp})</small>`;
             chatBox.appendChild(newMsg);
 

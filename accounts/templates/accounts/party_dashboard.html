@@ -1,0 +1,98 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Party Dashboard{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold">Party Dashboard</h1>
+            {% if party %}
+                <p class="text-sm text-gray-500">{{ party.name }}  {{ party.mobile }}</p>
+            {% else %}
+                <p class="text-sm text-gray-500">Party not linked to this account.</p>
+            {% endif %}
+        </div>
+        {% if party %}
+            <a class="px-3 py-2 text-sm rounded-md border" href="{% url 'accounts:party_ledger' party.id %}">View Ledger</a>
+        {% endif %}
+    </div>
+
+    {% if party and summary %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="p-4 rounded-lg border bg-white">
+            <div class="text-xs text-gray-500">Total Debit</div>
+            <div class="text-2xl font-semibold">{{ summary.debit }}</div>
+        </div>
+        <div class="p-4 rounded-lg border bg-white">
+            <div class="text-xs text-gray-500">Total Credit</div>
+            <div class="text-2xl font-semibold">{{ summary.credit }}</div>
+        </div>
+        <div class="p-4 rounded-lg border bg-white">
+            <div class="text-xs text-gray-500">Outstanding</div>
+            <div class="text-2xl font-semibold">{{ summary.balance }}</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white border rounded-lg overflow-hidden">
+            <div class="px-4 py-3 border-b font-medium">Recent Invoices</div>
+            {% if invoices %}
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-left">
+                        <tr>
+                            <th class="px-4 py-2">Invoice</th>
+                            <th class="px-4 py-2">Amount</th>
+                            <th class="px-4 py-2">Status</th>
+                            <th class="px-4 py-2">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inv in invoices %}
+                        <tr class="border-t">
+                            <td class="px-4 py-2">{{ inv.number }}</td>
+                            <td class="px-4 py-2">{{ inv.amount }}</td>
+                            <td class="px-4 py-2">{{ inv.get_status_display }}</td>
+                            <td class="px-4 py-2">{{ inv.created_at|date:"d M Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="p-4 text-sm text-gray-500">No invoices found.</div>
+            {% endif %}
+        </div>
+
+        <div class="bg-white border rounded-lg overflow-hidden">
+            <div class="px-4 py-3 border-b font-medium">Recent Payments</div>
+            {% if payments %}
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-left">
+                        <tr>
+                            <th class="px-4 py-2">Amount</th>
+                            <th class="px-4 py-2">Method</th>
+                            <th class="px-4 py-2">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payments %}
+                        <tr class="border-t">
+                            <td class="px-4 py-2">{{ p.amount }}</td>
+                            <td class="px-4 py-2">{{ p.method|default:"-" }}</td>
+                            <td class="px-4 py-2">{{ p.created_at|date:"d M Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="p-4 text-sm text-gray-500">No payments found.</div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+        <div class="p-4 rounded-lg border bg-white text-sm text-gray-600">
+            We couldnt match this login to any party record. Please contact the shop to link your mobile number.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

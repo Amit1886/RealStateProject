@@ -5,7 +5,7 @@
 <div class="container mt-4" style="max-width:600px;">
   <div class="card shadow rounded-4">
     <div class="card-header bg-primary text-white">
-      <h5 class="mb-0">🛒 Create New Order</h5>
+      <h5 class="mb-0"> Create New Order</h5>
     </div>
 
     <div class="card-body">
@@ -39,7 +39,7 @@
             <option value="">-- Select Product --</option>
             {% for p in products %}
               <option value="{{ p.id }}" data-price="{{ p.price }}">
-                {{ p.name }} (₹{{ p.price }})
+                {{ p.name }} ({{ p.price }})
               </option>
             {% endfor %}
           </select>
@@ -59,7 +59,7 @@
 
         <div class="d-grid">
           <button type="submit" class="btn btn-success fw-semibold">
-            ✅ Create Order
+             Create Order
           </button>
         </div>
 

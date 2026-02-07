@@ -9,7 +9,7 @@
     <p>
       <strong>Customer:</strong> {{ order.party.name }} <br>
       <strong>Status:</strong> {{ order.status }} <br>
-      <strong>Total:</strong> ₹{{ order.total_amount }}
+      <strong>Total:</strong> {{ order.total_amount }}
     </p>
 
     {% if order.status == "pending" %}

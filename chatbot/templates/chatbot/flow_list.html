@@ -1,0 +1,46 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h3 class="fw-bold">Chatbot Flow Builder</h3>
+      <p class="text-muted mb-0">Drag-and-drop style flow designer (basic).</p>
+    </div>
+    <button class="flow-pill" onclick="createFlow()">Create New Flow</button>
+  </div>
+
+  <div class="flow-grid">
+    {% for flow in flows %}
+      <div class="flow-card">
+        <div class="flow-card-title">{{ flow.name }}</div>
+        <div class="flow-card-meta">Active: {{ flow.is_active }}</div>
+        <a href="{% url 'chatbot_flow_builder' flow.id %}" class="flow-pill">
+          Open Builder
+        </a>
+      </div>
+    {% empty %}
+      <div class="alert alert-info">No flows yet.</div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+.flow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.flow-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 14px; }
+.flow-card-title { font-weight: 700; margin-bottom: 6px; }
+.flow-card-meta { font-size: 12px; color: #6b7280; margin-bottom: 10px; }
+.flow-pill { border: 1px solid #1d4ed8; background: #eff6ff; color: #1d4ed8; padding: 8px 12px; border-radius: 999px; font-size: 12px; cursor: pointer; text-decoration: none; }
+</style>
+
+<script>
+function createFlow() {
+  fetch("{% url 'chatbot_flow_create' %}", { method: "POST", headers: { "X-CSRFToken": "{{ csrf_token }}" } })
+    .then(r => r.json())
+    .then(data => {
+      if (data.flow_id) window.location.href = `/chatbot/flows/${data.flow_id}/builder/`;
+    });
+}
+</script>
+{% endblock %}

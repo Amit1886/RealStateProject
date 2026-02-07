@@ -1,0 +1,108 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Billing History{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-8">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold">Billing History</h2>
+        <a href="{% url 'accounts:dashboard' %}" class="text-blue-600 hover:underline">Back to Dashboard</a>
+    </div>
+
+    <div class="bg-white shadow rounded-2xl p-6 mb-8">
+        <h3 class="text-lg font-semibold mb-3">Invoices</h3>
+        {% if invoices %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-sm">
+                <thead>
+                    <tr class="text-gray-600">
+                        <th class="py-2">Invoice #</th>
+                        <th class="py-2">Plan</th>
+                        <th class="py-2">Amount</th>
+                        <th class="py-2">Status</th>
+                        <th class="py-2">Paid</th>
+                        <th class="py-2">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in invoices %}
+                    <tr class="border-t">
+                        <td class="py-2">{{ inv.invoice_number }}</td>
+                        <td class="py-2">{{ inv.plan.name }}</td>
+                        <td class="py-2">Rs {{ inv.amount }}</td>
+                        <td class="py-2">{{ inv.status|title }}</td>
+                        <td class="py-2">{{ inv.paid|yesno:"Yes,No" }}</td>
+                        <td class="py-2">{{ inv.created_at|date:"d M Y, H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-500">No invoices yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white shadow rounded-2xl p-6 mb-8">
+        <h3 class="text-lg font-semibold mb-3">Subscriptions</h3>
+        {% if subscriptions %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-sm">
+                <thead>
+                    <tr class="text-gray-600">
+                        <th class="py-2">Plan</th>
+                        <th class="py-2">Status</th>
+                        <th class="py-2">Start</th>
+                        <th class="py-2">End</th>
+                        <th class="py-2">Trial End</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in subscriptions %}
+                    <tr class="border-t">
+                        <td class="py-2">{{ sub.plan.name }}</td>
+                        <td class="py-2">{{ sub.status|title }}</td>
+                        <td class="py-2">{{ sub.start_date|date:"d M Y, H:i" }}</td>
+                        <td class="py-2">{{ sub.end_date|date:"d M Y, H:i" }}</td>
+                        <td class="py-2">{{ sub.trial_end|date:"d M Y, H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-500">No subscriptions yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white shadow rounded-2xl p-6">
+        <h3 class="text-lg font-semibold mb-3">Events</h3>
+        {% if events %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-sm">
+                <thead>
+                    <tr class="text-gray-600">
+                        <th class="py-2">Event</th>
+                        <th class="py-2">Plan</th>
+                        <th class="py-2">Details</th>
+                        <th class="py-2">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in events %}
+                    <tr class="border-t">
+                        <td class="py-2">{{ e.event_type|title }}</td>
+                        <td class="py-2">{{ e.plan.name }}</td>
+                        <td class="py-2">{{ e.details }}</td>
+                        <td class="py-2">{{ e.created_at|date:"d M Y, H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-500">No events yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

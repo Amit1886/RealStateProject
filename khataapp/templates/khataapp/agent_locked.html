@@ -1,0 +1,15 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Access Locked{% endblock %}
+
+{% block content %}
+<div class="p-6">
+  <div class="bg-white border rounded-lg p-6">
+    <h2 class="text-xl font-semibold">Field Agents Locked</h2>
+    <p class="text-sm text-gray-600 mt-2">
+      This feature is available only for admin users with the correct plan.
+    </p>
+    <a href="{% url 'billing:upgrade_plan' %}" class="summary-modern-btn mt-4 inline-block">Upgrade Plan</a>
+  </div>
+</div>
+{% endblock %}

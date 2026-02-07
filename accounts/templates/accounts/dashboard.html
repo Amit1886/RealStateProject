@@ -1,5 +1,7 @@
 {% extends "accounts/base.html" %}
 {% load static %}
+{% load plan_tags %}
+{% load feature_tags %}
 
 {% block content %}
 <h1 class="text-2xl font-bold"></h1>
@@ -17,15 +19,28 @@
       </div>
     </div>
 
-    <!-- RIGHT → BUTTONS -->
+    <!-- RIGHT ' BUTTONS -->
     <div class="page-head-right">
       <div class="dashboard-actions">
-        <a href="{% url 'khataapp:add_transaction' %}" class="action-btn primary">
+        {% feature_allowed 'billing.invoices' as trans_allowed %}
+        <a href="{% if trans_allowed %}{% url 'khataapp:add_transaction' %}{% else %}{% url 'billing:upgrade_plan' %}{% endif %}"
+           class="action-btn primary {% if not trans_allowed %}locked-feature{% endif %}"
+           {% if not trans_allowed %}data-upgrade-url="{% url 'billing:upgrade_plan' %}"{% endif %}>
           <i class="fa fa-plus-circle"></i> Add Transaction
         </a>
 
-        <a href="{% url 'khataapp:add_party' %}" class="action-btn danger">
+        {% feature_allowed 'commerce.suppliers' as party_allowed %}
+        <a href="{% if party_allowed %}{% url 'khataapp:add_party' %}{% else %}{% url 'billing:upgrade_plan' %}{% endif %}"
+           class="action-btn danger {% if not party_allowed %}locked-feature{% endif %}"
+           {% if not party_allowed %}data-upgrade-url="{% url 'billing:upgrade_plan' %}"{% endif %}>
           <i class="fa fa-user-plus"></i> Add Party
+        </a>
+
+        {% feature_allowed 'settings.advanced' as settings_allowed %}
+        <a href="{% if settings_allowed %}{% url 'core_settings:settings_center' %}{% else %}{% url 'billing:upgrade_plan' %}{% endif %}"
+           class="action-btn settings-btn {% if not settings_allowed %}locked-feature{% endif %}"
+           {% if not settings_allowed %}data-upgrade-url="{% url 'billing:upgrade_plan' %}"{% endif %}>
+          <i class="fa fa-cog"></i> Settings
         </a>
       </div>
     </div>
@@ -33,6 +48,71 @@
   </div>
 </div>
 
+
+<!-- Dashboard Slider Buttons -->
+<div class="smart-card smart-card-wide">
+  <div class="smart-card-header">
+    <div>
+      <h3>Quick Centers</h3>
+      <p>Jump to settings, profile, upgrades, and usage.</p>
+    </div>
+  </div>
+  <div class="quick-slider">
+    {% feature_allowed 'settings.advanced' as settings_allowed %}
+    <a href="{% if settings_allowed %}{% url 'core_settings:settings_center' %}{% else %}{% url 'billing:upgrade_plan' %}{% endif %}"
+       class="quick-slide {% if not settings_allowed %}locked-feature{% endif %}"
+       {% if not settings_allowed %}data-upgrade-url="{% url 'billing:upgrade_plan' %}"{% endif %}>
+       Settings Center
+    </a>
+    <a href="{% url 'accounts:edit_profile' %}" class="quick-slide">
+       Profile Center
+    </a>
+    <a href="{% url 'billing:upgrade_plan' %}" class="quick-slide">
+      Upgrade Plan
+    </a>
+    <a href="{% url 'billing:billing_history' %}" class="quick-slide">
+      Billing History
+    </a>
+    {% if request.user.is_staff or request.user.is_superuser %}
+    <a href="{% url 'khataapp:field_agent_list' %}"
+       class="quick-slide {% if not feature_access|get_item:"field.agents" %}locked-feature{% endif %}"
+       data-upgrade-url="{% url 'billing:upgrade_plan' %}">
+       Field Agents
+    </a>
+    {% endif %}
+    <a href="{% url 'billing:plan_management' %}"
+       class="quick-slide {% if not feature_access|get_item:"reports.advanced" %}locked-feature{% endif %}"
+       data-upgrade-url="{% url 'billing:upgrade_plan' %}">
+       Usage Report
+    </a>
+  </div>
+</div>
+
+<!-- Plan & Usage Cards -->
+<div class="summary-grid">
+  <div class="summary-card status-card">
+    <div class="title">Current Plan</div>
+    <div class="value">{{ subscription.plan.name|default:"Free" }}</div>
+  </div>
+  <div class="summary-card status-card">
+    <div class="title">Locked Features</div>
+    <div class="value">{{ locked_features_count|default:"0" }}</div>
+  </div>
+  <div class="summary-card status-card">
+    <div class="title">Subscription Expiry</div>
+    <div class="value">
+      {% if subscription and subscription.end_date %}
+        {{ subscription.end_date|date:"Y-m-d" }}
+      {% else %}
+        
+      {% endif %}
+    </div>
+  </div>
+  <div class="summary-card status-card">
+    <div class="title">Usage vs Limit</div>
+    <div class="value">{{ usage_summary.usage }}/{{ usage_summary.limit }}</div>
+  </div>
+</div>
 
   <!-- PROFILE CARD -->
 <div class="profile-card" style="margin-top:18px;">
@@ -45,7 +125,7 @@
 
     <p class="profile-meta">
       <strong>Business:</strong> {{ profile.business_name|default:"N/A" }}
-      &nbsp; • &nbsp;
+      &nbsp;  &nbsp;
       <strong>Mobile:</strong> {{ profile.mobile|default:"N/A" }}
     </p>
 
@@ -53,7 +133,7 @@
       <strong>Plan:</strong>
       {% if profile.plan %}
         <span class="plan-badge">
-          {{ profile.plan.name }} – ₹{{ profile.plan.price }}
+          {{ profile.plan.name }}  {{ profile.plan.price }}
         </span>
       {% else %}
         <span>No plan</span>
@@ -75,63 +155,64 @@
 
 </div>
 
+
+
 <!-- Coupon Slider -->
 {% if active_coupons %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-tags"></i> Active Coupons</h3>
-            </div>
-            <div class="card-body">
-                <div id="coupon-slider" class="coupon-slider">
-                    <div class="coupon-track">
-                        {% for coupon in active_coupons %}
-                        <div class="coupon-item">
-                            <div class="coupon-card">
-                                <div class="coupon-header">
-                                    <h5>{{ coupon.title }}</h5>
-                                    <span class="coupon-code">{{ coupon.code }}</span>
-                                </div>
-                                <div class="coupon-body">
-                                    <p>{{ coupon.description|truncatechars:50 }}</p>
-                                    {% if coupon.coupon_type == 'discount' %}
-                                    <div class="coupon-discount">
-                                        {% if coupon.discount_type == 'percentage' %}
-                                            <span class="discount-badge">{{ coupon.discount_value }}% OFF</span>
-                                        {% else %}
-                                            <span class="discount-badge">₹{{ coupon.discount_value }} OFF</span>
-                                        {% endif %}
-                                    </div>
-                                    {% endif %}
-                                    <div class="coupon-details">
-                                        <small>Min Order: ₹{{ coupon.min_order_amount }}</small>
-                                        {% if coupon.valid_until %}
-                                        <small>Valid till: {{ coupon.valid_until|date:"M d" }}</small>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="coupon-footer">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="applyCoupon('{{ coupon.code }}')">
-                                        Apply
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="slider-controls mt-3">
-                    <button class="btn btn-sm btn-outline-secondary" id="prev-btn" aria-label="Previous coupon">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" id="next-btn" aria-label="Next coupon">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
+<div class="smart-card smart-card-wide">
+  <div class="smart-card-header">
+    <div>
+      <h3>Active Coupons</h3>
+      <p>Smart offers ready to boost sales.</p>
     </div>
+  </div>
+  <div class="smart-coupon-slider">
+    <div id="coupon-slider" class="coupon-slider">
+      <div class="coupon-track">
+        {% for coupon in active_coupons %}
+        <div class="coupon-item">
+          <div class="coupon-card">
+            <div class="coupon-header">
+              <h5>{{ coupon.title }}</h5>
+              <span class="coupon-code">{{ coupon.code }}</span>
+            </div>
+            <div class="coupon-body">
+              <p>{{ coupon.description|truncatechars:50 }}</p>
+              {% if coupon.coupon_type == 'discount' %}
+              <div class="coupon-discount">
+                {% if coupon.discount_type == 'percentage' %}
+                    <span class="discount-badge">{{ coupon.discount_value }}% OFF</span>
+                {% else %}
+                    <span class="discount-badge">{{ coupon.discount_value }} OFF</span>
+                {% endif %}
+              </div>
+              {% endif %}
+              <div class="coupon-details">
+                <small>Min Order: {{ coupon.min_order_amount }}</small>
+                {% if coupon.valid_until %}
+                <small>Valid till: {{ coupon.valid_until|date:"M d" }}</small>
+                {% endif %}
+              </div>
+            </div>
+            <div class="coupon-footer">
+              <button class="summary-modern-btn summary-modern-btn-ghost" onclick="applyCoupon('{{ coupon.code }}')">
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="slider-controls mt-3">
+      <button class="summary-modern-btn summary-modern-btn-ghost" id="prev-btn" aria-label="Previous coupon">
+        
+      </button>
+      <button class="summary-modern-btn summary-modern-btn-ghost" id="next-btn" aria-label="Next coupon">
+        
+      </button>
+    </div>
+  </div>
 </div>
 {% endif %}
 
@@ -139,15 +220,15 @@
   <div class="summary-grid">
     <div class="summary-card">
       <div class="title">Total Credit</div>
-      <div class="value" style="color: #15803d">₹{{ total_credit|default:"0" }}</div>
+      <div class="value" style="color: #15803d">{{ total_credit|default:"0" }}</div>
     </div>
     <div class="summary-card">
       <div class="title">Total Debit</div>
-      <div class="value" style="color:#dc2626">₹{{ total_debit|default:"0" }}</div>
+      <div class="value" style="color:#dc2626">{{ total_debit|default:"0" }}</div>
     </div>
     <div class="summary-card">
       <div class="title">Net Balance</div>
-      <div class="value" style="color:#075985">₹{{ net_balance|default:"0" }}</div>
+      <div class="value" style="color:#075985">{{ net_balance|default:"0" }}</div>
     </div>
     {% if loyalty_account %}
       <div class="summary-card loyalty-card">
@@ -167,413 +248,284 @@
     {% endif %}
   </div>
 
+  <div class="summary-grid">
+    <div class="summary-card status-card">
+      <div class="title">Company Config Status</div>
+      <div class="value">{{ settings_status_cards.company_config_status|default:"Missing" }}</div>
+    </div>
+    <div class="summary-card status-card">
+      <div class="title">Tax Setup Status</div>
+      <div class="value">{{ settings_status_cards.tax_setup_status|default:"Missing" }}</div>
+    </div>
+    <div class="summary-card status-card">
+      <div class="title">Printer Ready Status</div>
+      <div class="value">{{ settings_status_cards.printer_ready_status|default:"Not Ready" }}</div>
+    </div>
+    <div class="summary-card status-card">
+      <div class="title">WhatsApp Connected</div>
+      <div class="value">{{ settings_status_cards.whatsapp_connected_status|default:"Not Connected" }}</div>
+    </div>
+  </div>
+
+  {% include "commerce/dashboard_ai_cards.html" %}
+  {% include "commerce/dashboard_order_cards.html" %}
+  {% include "accounts/loyalty_cards.html" %}
+
+
   <!-- Recent Parties and Transactions -->
-  <div class="section" style="margin-top:18px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3>Recent Parties</h3>
-      <div>
-        <a href="{% url 'khataapp:party_list' %}" class="btn-cta btn-outline-cta" style="font-weight:700;">View All Parties →</a>
+  <div class="smart-section-grid">
+    <div class="smart-card">
+      <div class="smart-card-header">
+        <div>
+          <h3>Recent Parties</h3>
+          <p>Latest customers and suppliers added.</p>
+        </div>
+        <a href="{% url 'khataapp:party_list' %}" class="summary-modern-btn summary-modern-btn-ghost">View All Parties '</a>
+      </div>
+
+      <div class="smart-table-wrap">
+        <table class="smart-table">
+          <thead>
+            <tr><th>Name</th><th>Type</th><th>Grade</th><th>Created</th></tr>
+          </thead>
+          <tbody>
+            {% for party in recent_parties %}
+            <tr>
+              <td>{{ party.name }}</td>
+              <td>{{ party.party_type|title }}</td>
+              <td>{{ party.credit_grade|default:"-" }}</td>
+              <td>{{ party.created_at|date:"Y-m-d" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="smart-empty">No recent parties found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <div style="overflow:auto;margin-top:10px;">
-      <table class="table-min">
-        <thead>
-          <tr><th>Name</th><th>Type</th><th>Grade</th><th>Created</th></tr>
-        </thead>
-        <tbody>
-          {% for party in recent_parties %}
-          <tr>
-            <td>{{ party.name }}</td>
-            <td>{{ party.party_type|title }}</td>
-            <td>{{ party.credit_grade|default:"-" }}</td>
-            <td>{{ party.created_at|date:"Y-m-d" }}</td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px;">No recent parties found.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
+    <div class="smart-card">
+      <div class="smart-card-header">
+        <div>
+          <h3>Recent Transactions</h3>
+          <p>Latest cashflow activity tracked today.</p>
+        </div>
+        <a href="{% url 'khataapp:transaction_list' %}" class="summary-modern-btn summary-modern-btn-ghost">View All Transactions '</a>
+      </div>
 
-  <div class="section" style="margin-top:14px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h3>Recent Transactions</h3>
-      <div>
-        <a href="{% url 'khataapp:transaction_list' %}" class="btn-cta btn-outline-cta">View All Transactions →</a>
+      <div class="smart-table-wrap">
+        <table class="smart-table">
+          <thead>
+            <tr><th>Party</th><th>Type</th><th>Amount</th><th>Date</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            {% for txn in recent_transactions %}
+            <tr>
+              <td>{{ txn.party.name }}</td>
+              <td>
+                {% if txn.txn_type == 'credit' %}
+                  <span class="smart-badge smart-badge-positive">Credit</span>
+                {% else %}
+                  <span class="smart-badge smart-badge-negative">Debit</span>
+                {% endif %}
+              </td>
+              <td>{{ txn.amount }}</td>
+              <td>{{ txn.date|date:"Y-m-d" }}</td>
+              <td>{{ txn.notes|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="smart-empty">No recent transactions found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
-
-    <div style="overflow:auto;margin-top:10px;">
-      <table class="table-min">
-        <thead>
-          <tr><th>Party</th><th>Type</th><th>Amount</th><th>Date</th><th>Notes</th></tr>
-        </thead>
-        <tbody>
-          {% for txn in recent_transactions %}
-          <tr>
-            <td>{{ txn.party.name }}</td>
-            <td>
-              {% if txn.txn_type == 'credit' %}
-                <span style="color:var(--success);font-weight:700;">Credit</span>
-              {% else %}
-                <span style="color:var(--danger);font-weight:700;">Debit</span>
-              {% endif %}
-            </td>
-            <td>₹{{ txn.amount }}</td>
-            <td>{{ txn.date|date:"Y-m-d" }}</td>
-            <td>{{ txn.notes|default:"-" }}</td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px;">No recent transactions found.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
   </div>
+
 
 <!-- ======================= Party Ledger Summary ======================= -->
-<div class="section" style="margin-top:14px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
+<div class="smart-card smart-card-wide">
+  <div class="smart-card-header">
+    <div>
       <h3>Party Ledger Summary</h3>
-      <div>
-        <a href="{% url 'accounts:ledger_list' %}" class="btn-cta btn-outline-cta">View All Ledger →</a>
-      </div>
+      <p>Outstanding balances and ledger actions by party.</p>
     </div>
+    <a href="{% url 'accounts:ledger_list' %}" class="summary-modern-btn summary-modern-btn-ghost">View All Ledger '</a>
+  </div>
 
-    <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>S.No</th>
-                    <th>Party</th>
-                    <th>Business</th>
-                    <th>Mobile</th>
-                    <th>Credit (₹)</th>
-                    <th>Debit (₹)</th>
-                    <th>Balance (₹)</th>
-                    <th class="text-center">Actions</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for card in party_cards %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ card.party.name }}</td>
-                    <td>{{ card.party.business_name|default:"-" }}</td>
-                    <td>{{ card.party.mobile_number|default:"-" }}</td>
-
-                    <!-- Credit -->
-                    <td style="color: green; font-weight: 600;">
-                        ₹{{ card.total_credit|default:"0" }}
-                    </td>
-
-                    <!-- Debit -->
-                    <td style="color: red; font-weight: 600;">
-                        ₹{{ card.total_debit|default:"0" }}
-                    </td>
-
-                    <!-- Balance -->
-                    <td style="font-weight: 700;">
-                        ₹{{ card.balance }}
-                    </td>
-
-                    <!-- Buttons -->
-                    <td class="text-center">
-                        <a href="{% url 'accounts:party_ledger' card.party.id %}"
-                           class="btn btn-sm btn-primary">
-                           View Ledger
-                        </a>
-
-                        <a href="{% url 'accounts:party_ledger_pdf' card.party.id %}"
-                           class="btn btn-sm btn-success mt-1">
-                           Export PDF
-                        </a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="8" class="text-center text-muted p-3">
-                        No Party Data Found
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+  <div class="smart-table-wrap">
+    <table class="smart-table">
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Party</th>
+          <th>Business</th>
+          <th>Mobile</th>
+          <th>Credit ()</th>
+          <th>Debit ()</th>
+          <th>Balance ()</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for card in party_cards %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ card.party.name }}</td>
+          <td>{{ card.party.business_name|default:"-" }}</td>
+          <td>{{ card.party.mobile_number|default:"-" }}</td>
+          <td><span class="smart-badge smart-badge-positive">{{ card.total_credit|default:"0" }}</span></td>
+          <td><span class="smart-badge smart-badge-negative">{{ card.total_debit|default:"0" }}</span></td>
+          <td style="font-weight:700;">{{ card.balance }}</td>
+          <td class="text-center">
+            <a href="{% url 'accounts:party_ledger' card.party.id %}" class="summary-modern-btn">View</a>
+            <a href="{% url 'accounts:party_ledger_pdf' card.party.id %}" class="summary-modern-btn summary-modern-btn-ghost">PDF</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="smart-empty">No Party Data Found</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 <!-- ======================= END ======================= -->
 
-<div class="row mt-4">
-  <div class="col-md-12">
 
-    <div class="card shadow-sm">
-      <!-- HEADER -->
-      <div class="card-header bg-light">
-        <h6 class="mb-0">📊 Today Summary</h6>
-      </div>
-
-      <!-- BODY -->
-      <div class="card-body p-0">
-
-        {% if summary %}
-        <table class="table table-sm mb-0">
-          <thead class="table-secondary">
-            <tr>
-              <th>Metric</th>
-              <th class="text-end">Amount</th>
-              <th class="text-end">Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td>🟢 Total Credit</td>
-              <td class="text-end text-success fw-bold fs-6">
-                ₹ {{ summary.total_credit }}
-              </td>
-              <td class="text-end">Received</td>
-            </tr>
-
-            <tr>
-              <td>🔴 Total Debit</td>
-              <td class="text-end text-danger fw-bold fs-6">
-                ₹ {{ summary.total_debit }}
-              </td>
-              <td class="text-end">Given</td>
-            </tr>
-
-            <tr class="table-light fw-bold">
-              <td>
-                {% if summary.balance >= 0 %}
-                  🟢 Balance
-                {% else %}
-                  🔴 Balance
-                {% endif %}
-              </td>
-
-              <td class="text-end fs-6">
-                {% if summary.balance >= 0 %}
-                  <span class="text-success">
-                    ₹ {{ summary.balance }}
-                  </span>
-                {% else %}
-                  <span class="text-danger">
-                    ₹ {{ summary.balance }}
-                  </span>
-                {% endif %}
-              </td>
-
-              <td class="text-end">
-                {% if summary.balance >= 0 %}
-                  Positive
-                {% else %}
-                  Due
-                {% endif %}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        {% else %}
-        <div class="p-3 text-center text-muted">
-          No summary found for today.
-        </div>
-        {% endif %}
-
-      </div>
-
-      <!-- FOOTER -->
-      <button type="button"
-        class="btn btn-primary w-100 mt-3"
-        onclick="toggleSummaryDetails()">
-        More Details ▼
-      </button>
-
-    <div id="summaryDetails"
-     style="display:none;"
-     class="mt-3 p-3 bg-light rounded">
-     <p><b>Total Transactions:</b> {{ summary.total_transactions }}</p>
-     <p><b>Date:</b> {{ summary.date }}</p>
+<div class="summary-modern-wrap">
+  <div class="summary-modern-header">
+    <div>
+      <h3>Today Summary</h3>
+      <p>Quick view of todays cashflow performance.</p>
     </div>
+    <button type="button" class="summary-modern-btn summary-modern-btn-ghost" onclick="toggleSummaryDetails()">
+      More Details -
+    </button>
+  </div>
 
-<!-- 🔹 BUSINESS SNAPSHOT (TABLE STYLE) -->
-<div class="row mt-4">
-  <div class="col-md-12">
-
-    <div class="card shadow-sm">
-      <div class="card-header bg-light">
-        <h6 class="mb-0">📊 Today Business Snapshot</h6>
+  {% if summary %}
+  <div class="summary-modern-grid">
+    <div class="summary-modern-card positive">
+      <div class="label">Total Credit</div>
+      <div class="value"> {{ summary.total_credit }}</div>
+      <div class="meta">Received</div>
+    </div>
+    <div class="summary-modern-card negative">
+      <div class="label">Total Debit</div>
+      <div class="value"> {{ summary.total_debit }}</div>
+      <div class="meta">Given</div>
+    </div>
+    <div class="summary-modern-card accent">
+      <div class="label">Balance</div>
+      <div class="value"> {{ summary.balance }}</div>
+      <div class="meta">
+        {% if summary.balance >= 0 %}
+          Positive
+        {% else %}
+          Due
+        {% endif %}
       </div>
-      <form method="get" class="mb-3">
-  <div class="row g-2 align-items-center">
-    <div class="col-auto">
-      <select name="period" class="form-select" onchange="this.form.submit()" aria-label="Select period">
+    </div>
+  </div>
+  {% else %}
+    <div class="text-center text-muted p-3">No summary found for today.</div>
+  {% endif %}
+
+  <div id="summaryDetails" style="display:none;" class="summary-modern-details">
+    <div><strong>Total Transactions:</strong> {{ summary.total_transactions }}</div>
+    <div><strong>Date:</strong> {{ summary.date }}</div>
+  </div>
+</div>
+
+<div class="snapshot-modern-wrap">
+  <div class="summary-modern-header">
+    <div>
+      <h3>Today Business Snapshot</h3>
+      <p>Revenue, purchases, and cash movement at a glance.</p>
+    </div>
+    <form method="get" class="snapshot-period">
+      <select name="period" class="summary-modern-select" onchange="this.form.submit()" aria-label="Select period">
         <option value="today" {% if period == 'today' %}selected{% endif %}>Today</option>
         <option value="yesterday" {% if period == 'yesterday' %}selected{% endif %}>Yesterday</option>
         <option value="month" {% if period == 'month' %}selected{% endif %}>This Month</option>
       </select>
+    </form>
+  </div>
+
+  <div class="snapshot-modern-grid">
+    <div class="summary-modern-card positive">
+      <div class="label">Total Sales</div>
+      <div class="value"> {{ snapshot.sales_amount }}</div>
+      <div class="meta">Orders: {{ snapshot.sales_orders }}</div>
+    </div>
+    <div class="summary-modern-card accent">
+      <div class="label">Total Purchase</div>
+      <div class="value"> {{ snapshot.purchase_amount }}</div>
+      <div class="meta">Orders: {{ snapshot.purchase_orders }}</div>
+    </div>
+    <div class="summary-modern-card {% if snapshot.profit_loss >= 0 %}positive{% else %}negative{% endif %}">
+      <div class="label">{% if snapshot.profit_loss >= 0 %}Profit{% else %}Loss{% endif %}</div>
+      <div class="value"> {{ snapshot.profit_loss }}</div>
+      <div class="meta">Today</div>
+    </div>
+    <div class="summary-modern-card info">
+      <div class="label">Payment Received</div>
+      <div class="value"> {{ snapshot.payment_received }}</div>
+      <div class="meta">Cash In</div>
+    </div>
+    <div class="summary-modern-card warning">
+      <div class="label">Payment Given</div>
+      <div class="value"> {{ snapshot.payment_given }}</div>
+      <div class="meta">Cash Out</div>
+    </div>
+    <div class="summary-modern-card positive">
+      <div class="label">Receivable</div>
+      <div class="value"> {{ snapshot.receivable_amount }}</div>
+      <div class="meta">Pending Inflow</div>
+    </div>
+    <div class="summary-modern-card negative">
+      <div class="label">Payable</div>
+      <div class="value"> {{ snapshot.payable_amount }}</div>
+      <div class="meta">Pending Outflow</div>
     </div>
   </div>
-</form>
 
-
-      <div class="card-body p-0">
-        <table class="table table-sm mb-0">
-          <thead class="table-secondary">
-            <tr>
-              <th>Metric</th>
-              <th class="text-end">Amount</th>
-              <th class="text-end">Details</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td>🟢 Total Sales</td>
-              <td class="text-end text-success fw-bold">
-                ₹ {{ snapshot.sales_amount }}
-              </td>
-              <td class="text-end">
-                Orders: {{ snapshot.sales_orders }}
-              </td>
-            </tr>
-
-            <tr>
-              <td>🔵 Total Purchase</td>
-              <td class="text-end text-primary fw-bold">
-                ₹ {{ snapshot.purchase_amount }}
-              </td>
-              <td class="text-end">
-                Orders: {{ snapshot.purchase_orders }}
-              </td>
-            </tr>
-            <tr class="table-light fw-bold">
-  <td>
-    {% if snapshot.profit_loss >= 0 %}
-      🟢 Profit
-    {% else %}
-      🔴 Loss
-    {% endif %}
-  </td>
-
-  <td class="text-end">
-    {% if snapshot.profit_loss >= 0 %}
-      <span class="text-success">
-        ₹ {{ snapshot.profit_loss }}
-      </span>
-    {% else %}
-  <span class="text-danger">
-    ₹ {{ snapshot.profit_loss }}
-  </span>
-   {% endif %}
-  </td>
-
-  <td class="text-end">Today</td>
-</tr>
-
-
-            <tr>
-              <td>💰 Payment Received</td>
-              <td class="text-end text-info fw-bold">
-                ₹ {{ snapshot.payment_received }}
-              </td>
-              <td class="text-end">—</td>
-            </tr>
-
-            <tr>
-              <td>💸 Payment Given</td>
-              <td class="text-end text-warning fw-bold">
-                ₹ {{ snapshot.payment_given }}
-              </td>
-              <td class="text-end">—</td>
-            </tr>
-
-            <tr>
-              <td>📥 Receivable</td>
-              <td class="text-end text-success fw-bold">
-                ₹ {{ snapshot.receivable_amount }}
-              </td>
-              <td class="text-end">—</td>
-            </tr>
-
-            <tr>
-              <td>📤 Payable</td>
-              <td class="text-end text-danger fw-bold">
-                ₹ {{ snapshot.payable_amount }}
-              </td>
-              <td class="text-end">—</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="card-footer text-end bg-white">
-        <a href="{% url 'accounts:business_snapshot' %}" class="btn btn-sm btn-outline-primary">
-          View Full Report
-        </a>
-      </div>
-
-    </div>
-
+  <div class="snapshot-footer">
+    <a href="{% url 'accounts:business_snapshot' %}" class="summary-modern-btn">
+      View Full Report
+    </a>
   </div>
 </div>
 
-  <!-- Commerce quick actions -->
-<div class="col-md-4 col-sm-6 mb-3">
-
-  <div class="action-card">
-    <div class="action-card-header">
-      <div>
-        <h5>🛒 Commerce</h5>
-        <p>Quick business actions</p>
-      </div>
-
-      <button class="toggle-btn"
-              onclick="toggleActionMenu('commerceActions')"
-              aria-label="Toggle menu">
-        ⋮
-      </button>
+  <!-- Commerce quick actions (Smart card) -->
+<div class="smart-card smart-card-wide">
+  <div class="smart-card-header">
+    <div>
+      <h3>' Commerce</h3>
+      <p>Quick business actions</p>
     </div>
-
-    <div class="action-menu" id="commerceActions">
-      <a href="{% url 'commerce:add_product' %}">
-        ➕ Add Product
-      </a>
-
-      <a href="{% url 'commerce:add_order' %}">
-        ➕ Add Order
-      </a>
-
-      <!-- ✅ FIXED -->
-      <a href="{% url 'commerce:add_payment' %}">
-        ➕ Add Payment
-      </a>
-
-      <!-- ✅ FIXED -->
-      <a href="{% url 'commerce:add_invoice' %}">
-        ➕ Add Invoice
-      </a>
-
-     <!-- ✅ FIXED -->
-      <a href="{% url 'commerce:order_list' %}">
-        ➕ Create Sales Voucher
-      </a>
-
-      <!-- Expense always belongs to Accounts -->
-      <a href="{% url 'accounts:expense_create' %}" class="danger">
-        ➖ Add Expense
-      </a>
-    </div>
+    <a href="{% url 'commerce:order_list' %}" class="summary-modern-btn summary-modern-btn-ghost">Open Orders '</a>
   </div>
 
+  <div class="smart-action-grid">
+    <a href="{% url 'commerce:add_product' %}" class="smart-action-btn">- Add Product</a>
+    <a href="{% url 'commerce:add_order' %}" class="smart-action-btn">- Add Order</a>
+    <a href="{% url 'commerce:add_payment' %}" class="smart-action-btn">- Add Payment</a>
+    <a href="{% url 'commerce:add_invoice' %}" class="smart-action-btn">- Add Invoice</a>
+    <a href="{% url 'commerce:order_list' %}" class="smart-action-btn">- Create Sales Voucher</a>
+    <a href="{% url 'accounts:expense_create' %}" class="smart-action-btn danger">- Add Expense</a>
+  </div>
 </div>
 
-{% endblock %}
+
 
 <style>
+.smart-coupon-slider {
+    margin-top: 10px;
+}
+
 .coupon-slider {
     overflow: hidden;
     width: 100%;
@@ -586,42 +538,55 @@
 
 .coupon-item {
     flex: 0 0 300px;
-    margin-right: 20px;
+    margin-right: 16px;
 }
 
 .coupon-card {
-    border: 2px solid #007bff;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    color: #111827;
     height: 200px;
     display: flex;
     flex-direction: column;
 }
 
+body.dark .coupon-card {
+    border-color: #1f2937;
+    background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+    color: #e5e7eb;
+}
+
 .coupon-header {
-    padding: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding: 14px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.3);
 }
 
 .coupon-header h5 {
     margin: 0;
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .coupon-code {
-    background: rgba(255,255,255,0.2);
+    background: rgba(15, 118, 110, 0.1);
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: 6px;
     font-family: monospace;
+    color: #0f766e;
+}
+
+body.dark .coupon-code {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
 }
 
 .coupon-body {
     flex: 1;
-    padding: 15px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    font-size: 13px;
 }
 
 .coupon-discount {
@@ -630,11 +595,11 @@
 }
 
 .discount-badge {
-    background: #ff6b6b;
+    background: #0f766e;
     color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 16px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 14px;
     font-weight: bold;
     display: inline-block;
 }
@@ -642,19 +607,413 @@
 .coupon-details {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: 11px;
+    color: #6b7280;
 }
 
 .coupon-footer {
-    padding: 10px 15px;
-    border-top: 1px solid rgba(255,255,255,0.2);
+    padding: 10px 12px;
+    border-top: 1px solid rgba(148, 163, 184, 0.3);
     text-align: center;
 }
 
 .slider-controls {
     text-align: center;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.summary-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.dark .summary-card {
+    background: #0b1220;
+    border-color: #1f2937;
+}
+
+.summary-card .title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.summary-card .value {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.summary-card:hover,
+.smart-card:hover,
+.summary-modern-wrap:hover,
+.snapshot-modern-wrap:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08), 0 0 0 2px rgba(15, 118, 110, 0.14);
+}
+
+body.dark .summary-card:hover,
+body.dark .smart-card:hover,
+body.dark .summary-modern-wrap:hover,
+body.dark .snapshot-modern-wrap:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(34, 197, 94, 0.21);
+}
+
+.summary-modern-wrap,
+.snapshot-modern-wrap {
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 18px;
+    margin-top: 16px;
+}
+
+body.dark .summary-modern-wrap,
+body.dark .snapshot-modern-wrap {
+    background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+    border-color: #1f2937;
+}
+
+.summary-modern-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.summary-modern-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.summary-modern-header p {
+    margin: 4px 0 0 0;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.summary-modern-grid,
+.snapshot-modern-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+}
+
+.summary-modern-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+body.dark .summary-modern-card {
+    background: #0b1220;
+    border-color: #1f2937;
+    color: #e5e7eb;
+}
+
+.summary-modern-card .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+}
+
+.summary-modern-card .value {
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 6px;
+}
+
+.summary-modern-card .meta {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.summary-modern-card.positive .value {
+    color: #15803d;
+}
+
+.summary-modern-card.negative .value {
+    color: #dc2626;
+}
+
+.summary-modern-card.accent .value {
+    color: #0f766e;
+}
+
+.summary-modern-card.info .value {
+    color: #0284c7;
+}
+
+.summary-modern-card.warning .value {
+    color: #d97706;
+}
+
+.summary-modern-details {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    font-size: 12px;
+}
+
+body.dark .summary-modern-details {
+    background: #0f172a;
+}
+
+.snapshot-period {
+    margin-left: auto;
+}
+
+.snapshot-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.summary-modern-btn {
+    background: #0f766e;
+    color: #ffffff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.summary-modern-btn-ghost {
+    background: transparent;
+    color: #0f766e;
+    border: 1px solid #0f766e;
+}
+
+.summary-modern-btn:hover {
+    color: #ffffff;
+    opacity: 0.9;
+}
+
+.summary-modern-btn-ghost:hover {
+    color: #0f766e;
+    opacity: 0.8;
+}
+
+.summary-modern-select {
+    border: 1px solid #0f766e;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f766e;
+    background: #ffffff;
+}
+
+body.dark .summary-modern-select {
+    background: #0b1220;
+    color: #22c55e;
+    border-color: #22c55e;
+}
+
+.smart-section-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.smart-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.smart-card-wide {
+    margin-top: 18px;
+}
+
+body.dark .smart-card {
+    background: #0b1220;
+    border-color: #1f2937;
+}
+
+.smart-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.smart-card-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.smart-card-header p {
+    margin: 4px 0 0 0;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.smart-table-wrap {
+    overflow: auto;
+    border-radius: 12px;
+}
+
+.smart-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.smart-table th,
+.smart-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: left;
+}
+
+.smart-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+}
+
+.smart-empty {
+    text-align: center;
+    color: #6b7280;
+    padding: 14px;
+}
+
+.smart-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.smart-badge-positive {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.smart-badge-negative {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.smart-action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.smart-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #0f766e;
+    color: #ffffff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.18);
+}
+
+.smart-action-btn:hover {
+    color: #ffffff;
+    opacity: 0.92;
+}
+
+.smart-action-btn.danger {
+    background: #dc2626;
+}
+
+body.dark .smart-action-btn {
+    background: #22c55e;
+    color: #0b1220;
+}
+
+body.dark .smart-action-btn.danger {
+    background: #f87171;
+    color: #0b1220;
+}
+
+.quick-slider {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.quick-slide {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+}
+
+.quick-slide:hover {
+    color: #ffffff;
+    opacity: 0.9;
+}
+
+.locked-feature {
+    position: relative;
+    opacity: 0.7;
+    filter: grayscale(0.4);
+}
+
+.locked-feature::after {
+    content: "'";
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 14px;
+}
+
+.settings-btn {
+    background: #0f766e;
+    color: #ffffff;
+}
+
+.settings-btn:hover {
+    color: #ffffff;
+    opacity: 0.9;
+}
+
+.status-card .value {
+    font-size: 16px;
 }
 </style>
+
+{% endblock %}
 
 {% block extra_js %}
 <script>
@@ -670,7 +1029,7 @@ function openRedeemModal() {
                     </div>
                     <div class="modal-body">
                         <p>You have <strong>{{ loyalty_account.available_points }}</strong> available points.</p>
-                        <p>Each {{ loyalty_account.program.min_redeem_points }} points = ₹{{ loyalty_account.program.points_to_rupee_ratio }}</p>
+                        <p>Each {{ loyalty_account.program.min_redeem_points }} points = {{ loyalty_account.program.points_to_rupee_ratio }}</p>
                         <form id="redeemForm">
                             <div class="mb-3">
                                 <label for="points" class="form-label">Points to Redeem</label>
@@ -763,4 +1122,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 console.log("dashboard page loaded");
 </script>
+
 {% endblock %}
+
+
+
+

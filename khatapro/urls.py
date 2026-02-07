@@ -25,6 +25,10 @@ def terms(request):
 urlpatterns = [
     # ---------------- Mobile APP ----------------
     path("api/", include("mobileapi.urls")),
+    path("api/whatsapp/order-inbox/", commerce_views.api_whatsapp_order_inbox, name="api_whatsapp_order_inbox"),
+    path("api/orders/live-feed/", commerce_views.api_orders_live_feed, name="api_orders_live_feed"),
+    # ---------------- Admin Addons (must come before admin.site.urls) ----------------
+    path("superadmin/chatbot/", include("chatbot.urls")),
     # ---------------- Admin ----------------
     path('superadmin/', admin.site.urls),  # ✅ New admin URL
 
@@ -33,6 +37,9 @@ urlpatterns = [
     path("", landing, name="landing"),   # 👈 HOME PAGE
     path("privacy-policy/", privacy),
     path("terms/", terms),
+    
+    # ---------------- Reports ----------------
+    path('reports/', include(('reports.urls', 'reports'), namespace='reports')),
 
 
     # ---------------- Accounts (login, signup, dashboard, OTP, etc.) ----------------
@@ -53,7 +60,21 @@ urlpatterns = [
     # ---------------- Direct choose-plan routes (optional, can override) ----------------
     path("billing/choose-plan/", billing_views.choose_plan, name="billing_choose_plan"),
     path("favicon.ico", RedirectView.as_view(url="/static/favicon.ico")),
-    path("chatbot/", include("chatbot.urls")),
+    path("chatbot/flows/", RedirectView.as_view(url="/superadmin/chatbot/flows/", permanent=True)),
+    path(
+        "chatbot/flows/<int:flow_id>/builder/",
+        RedirectView.as_view(pattern_name="chatbot_flow_builder", permanent=True),
+    ),
+    path(
+        "chatbot/flows/create/",
+        RedirectView.as_view(pattern_name="chatbot_flow_create", permanent=True),
+    ),
+    path(
+        "chatbot/flows/<int:flow_id>/save/",
+        RedirectView.as_view(pattern_name="chatbot_flow_save", permanent=True),
+    ),
+    path("superadmin/chatbot/", include("chatbot.urls")),
+    path("chatbot/", RedirectView.as_view(url="/superadmin/chatbot/", permanent=True)),
 
     # ---------------- Contact Form Home Page Landing Page  ----------------
     path("contact/submit/", submit_contact, name="contact_submit"),

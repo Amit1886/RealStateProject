@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from datetime import timedelta
 from django.urls import reverse
 from django.contrib.auth.models import Group
 from django.utils.text import slugify
@@ -88,6 +89,10 @@ class PlanPermissions(models.Model):
 class Plan(models.Model):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    price_monthly = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    price_yearly = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    discount_percent = models.PositiveIntegerField(default=0)
+    trial_days = models.PositiveIntegerField(default=0)
     slug = models.SlugField(max_length=50, unique=True, blank=True)
     
     # 📝 Description
@@ -105,6 +110,12 @@ class Plan(models.Model):
         null=True,
         blank=True,
         related_name="plan"
+    )
+    features = models.ManyToManyField(
+        "billing.FeatureRegistry",
+        through="billing.PlanFeature",
+        blank=True,
+        related_name="plans"
     )
 
     class Meta:
@@ -124,7 +135,7 @@ class Plan(models.Model):
 
     @property
     def is_free(self):
-        return self.price == Decimal("0.00")
+        return self.price_monthly == Decimal("0.00") and self.price_yearly == Decimal("0.00")
     
     def get_permissions(self):
         """Get or create permissions for this plan"""
@@ -151,6 +162,8 @@ class BillingInvoice(models.Model):
     )
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     invoice_number = models.CharField(max_length=20, unique=True, blank=True)
+    paid = models.BooleanField(default=False)
+    payment_reference = models.CharField(max_length=120, blank=True, null=True)
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='unpaid'
     )
@@ -198,18 +211,24 @@ class Subscription(models.Model):
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default="pending")
     start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
+    trial_end = models.DateTimeField(null=True, blank=True)
+    auto_renew = models.BooleanField(default=False)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def activate(self):
         self.status = "active"
         self.start_date = self.start_date or timezone.now()
         if self.plan:
+            if self.plan.trial_days and not self.trial_end:
+                self.trial_end = self.start_date + timedelta(days=self.plan.trial_days)
             for g in self.plan.groups.all():
                 self.user.groups.add(g)
         self.save()
 
     def cancel(self):
         self.status = "cancelled"
+        self.cancelled_at = timezone.now()
         if self.plan:
             for g in self.plan.groups.all():
                 try:
@@ -251,6 +270,79 @@ class PaymentGateway(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.provider})"
+
+
+# =========================
+# 🔑 FEATURE REGISTRY
+# =========================
+class FeatureRegistry(models.Model):
+    key = models.SlugField(max_length=120, unique=True)
+    label = models.CharField(max_length=160)
+    group = models.CharField(max_length=80, default="General")
+    description = models.TextField(blank=True)
+    active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["group", "sort_order", "label"]
+
+    def __str__(self):
+        return f"{self.group} - {self.label}"
+
+
+class PlanFeature(models.Model):
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, related_name="plan_features")
+    feature = models.ForeignKey(FeatureRegistry, on_delete=models.CASCADE, related_name="feature_plans")
+    enabled = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ("plan", "feature")
+
+    def __str__(self):
+        return f"{self.plan.name} -> {self.feature.key}"
+
+
+class UserFeatureOverride(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="feature_overrides"
+    )
+    feature = models.ForeignKey(
+        FeatureRegistry,
+        on_delete=models.CASCADE,
+        related_name="user_overrides"
+    )
+    is_enabled = models.BooleanField(default=True)
+    note = models.CharField(max_length=200, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "feature")
+
+    def __str__(self):
+        return f"{self.user} -> {self.feature.key} ({'ON' if self.is_enabled else 'OFF'})"
+
+
+# =========================
+# 🧾 SUBSCRIPTION HISTORY
+# =========================
+class SubscriptionHistory(models.Model):
+    EVENT_CHOICES = [
+        ("created", "Created"),
+        ("activated", "Activated"),
+        ("upgraded", "Upgraded"),
+        ("cancelled", "Cancelled"),
+        ("payment", "Payment"),
+    ]
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="subscription_events")
+    plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, null=True, blank=True)
+    event_type = models.CharField(max_length=20, choices=EVENT_CHOICES)
+    details = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.event_type}"
 
 
 # =========================

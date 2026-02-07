@@ -1,0 +1,667 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-3">
+  <div class="builder-header">
+    <div>
+      <h3>Flow Builder: {{ flow.name }}</h3>
+      <p>Basic drag-and-drop style editor. Nodes are buttons; connections define flow.</p>
+      <p class="builder-hint">Quick keys: Ctrl+S to save, Esc to cancel linking.</p>
+    </div>
+    <div class="builder-actions">
+      <button class="flow-pill" onclick="addNode('message')">+ Message</button>
+      <button class="flow-pill" onclick="addNode('condition')">+ Condition</button>
+      <button class="flow-pill" onclick="addNode('action')">+ Action</button>
+      <button class="flow-pill" onclick="saveFlow()">Save</button>
+    </div>
+  </div>
+
+  <div class="builder-body">
+    <div class="builder-canvas" id="canvas">
+      <div class="canvas-inner" id="canvasInner">
+        <svg class="edge-layer" id="edgeLayer">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#1d4ed8"></path>
+            </marker>
+            <marker id="arrow-default" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#0f766e"></path>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+    </div>
+    <div class="builder-side" id="builderSide">
+      <div class="side-block">
+        <div class="side-title">Connections</div>
+        <div class="side-form">
+          <div class="hint-line">Drag from blue dot to green dot to connect.</div>
+          <div class="hint-line">Click a line to edit/delete label.</div>
+          <label>Source</label>
+          <select id="edgeSource"></select>
+          <label>Target</label>
+          <select id="edgeTarget"></select>
+          <label>Condition Text</label>
+          <input id="edgeCondition" placeholder="e.g. price, order, help">
+          <label>Default?</label>
+          <select id="edgeDefault">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
+          <button class="flow-pill" onclick="addEdge()">Add Connection</button>
+        </div>
+      </div>
+      <div class="side-block">
+        <div class="side-title">Nodes</div>
+        <div id="nodeList" class="node-list"></div>
+      </div>
+      <div class="side-block">
+        <div class="side-title">Tools</div>
+        <div class="side-tools">
+          <button class="flow-pill" onclick="autoLayout()">Auto Layout</button>
+          <button class="flow-pill" onclick="resetView()">Reset View</button>
+          <button class="flow-pill" onclick="zoomIn()">Zoom In</button>
+          <button class="flow-pill" onclick="zoomOut()">Zoom Out</button>
+        </div>
+      </div>
+      <div class="side-block">
+        <div class="side-title">Templates</div>
+        <div class="side-tools">
+          <button class="flow-pill" onclick="applyTemplate('welcome')">Welcome Flow</button>
+          <button class="flow-pill" onclick="applyTemplate('catalog')">Catalog Flow</button>
+          <button class="flow-pill" onclick="applyTemplate('order')">Order Flow</button>
+          <button class="flow-pill" onclick="applyTemplate('whatsapp')">WhatsApp Full Flow</button>
+        </div>
+      </div>
+      <div class="side-block">
+        <div class="side-title">Mini Map</div>
+        <div class="minimap-wrap">
+          <svg id="minimap" class="minimap"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script id="flow-data" type="application/json">
+{
+  "nodes": {{ nodes_json|safe }},
+  "edges": {{ edges_json|safe }}
+}
+</script>
+
+<style>
+:root {
+  --n8n-primary: #ff6d5a;
+  --n8n-primary-soft: #ffe4df;
+  --n8n-blue: #2563eb;
+  --n8n-text: #1f2937;
+  --n8n-muted: #6b7280;
+  --n8n-border: #e5e7eb;
+  --n8n-bg: #f8f9fb;
+}
+.container-fluid { font-family: "Open Sans", "Noto Sans", sans-serif; color: var(--n8n-text); }
+.builder-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #ffffff; color: #0f172a; padding: 14px 16px; border-radius: 14px; border: 1px solid #e5e7eb; box-shadow: 0 6px 16px rgba(15,23,42,0.06); }
+.builder-header h3 { margin: 0; }
+.builder-header p { margin: 4px 0 0 0; font-size: 12px; color: var(--n8n-muted); }
+.builder-hint { font-size: 11px; color: #9ca3af; }
+.builder-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.builder-body { display: grid; grid-template-columns: 1fr 320px; gap: 12px; margin-top: 12px; }
+.builder-canvas { position: relative; background: var(--n8n-bg); border: 1px solid var(--n8n-border); border-radius: 16px; min-height: 70vh; overflow: hidden; background-size: 28px 28px; background-image: linear-gradient(to right, rgba(148,163,184,0.16) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,0.16) 1px, transparent 1px); cursor: grab; box-shadow: inset 0 0 0 1px rgba(148,163,184,0.12); }
+.builder-canvas.grabbing { cursor: grabbing; }
+.canvas-inner { position: absolute; inset: 0; transform-origin: 0 0; }
+.edge-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.builder-side { background: #ffffff; border: 1px solid var(--n8n-border); border-radius: 16px; padding: 12px; position: relative; z-index: 2; color: var(--n8n-text); box-shadow: 0 10px 24px rgba(15,23,42,0.08); }
+.flow-pill { border: 1px solid var(--n8n-primary); background: var(--n8n-primary-soft); color: #7c2d12; padding: 8px 12px; border-radius: 10px; font-size: 12px; cursor: pointer; }
+.flow-pill:hover { background: #ffd4cc; }
+.node { position: absolute; background: #ffffff; color: var(--n8n-text); padding: 10px 12px; border-radius: 12px; font-size: 12px; cursor: move; min-width: 140px; user-select: none; box-shadow: 0 8px 16px rgba(15,23,42,0.12); border: 1px solid var(--n8n-border); }
+.node:after { content: ''; position: absolute; right: 6px; top: 6px; width: 6px; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.5); }
+.node .handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--n8n-blue);
+  border: 2px solid #ffffff;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: crosshair;
+}
+.node .handle.in {
+  left: -6px;
+  right: auto;
+  background: #22c55e;
+}
+.edge-hit { cursor: pointer; }
+.node.start { border-left: 6px solid #22c55e; }
+.node.message { border-left: 6px solid #3b82f6; }
+.node.condition { border-left: 6px solid #f59e0b; }
+.node.action { border-left: 6px solid #a855f7; }
+.node.end { border-left: 6px solid #14b8a6; }
+.side-block { margin-bottom: 16px; }
+.side-title { font-weight: 700; margin-bottom: 8px; color: var(--n8n-text); }
+.side-form { display: grid; gap: 6px; font-size: 12px; }
+.side-form input, .side-form select { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--n8n-border); background: #ffffff; color: var(--n8n-text); }
+.hint-line { font-size: 11px; color: var(--n8n-muted); }
+.node-list { display: grid; gap: 8px; font-size: 12px; }
+.node-list-item { padding: 8px; border: 1px solid var(--n8n-border); border-radius: 10px; background: #f9fafb; color: var(--n8n-text); }
+.side-tools { display: grid; gap: 8px; }
+.minimap-wrap { border: 1px solid var(--n8n-border); border-radius: 12px; background: #f8fafc; padding: 6px; }
+.minimap { width: 100%; height: 180px; }
+</style>
+
+<script>
+const flowData = JSON.parse(document.getElementById('flow-data').textContent);
+let nodes = flowData.nodes || [];
+let edges = flowData.edges || [];
+
+const canvas = document.getElementById('canvas');
+const canvasInner = document.getElementById('canvasInner');
+const edgeLayer = document.getElementById('edgeLayer');
+const minimap = document.getElementById('minimap');
+const builderSide = document.getElementById('builderSide');
+const nodeList = document.getElementById('nodeList');
+const edgeSource = document.getElementById('edgeSource');
+const edgeTarget = document.getElementById('edgeTarget');
+
+let panX = 0;
+let panY = 0;
+let zoom = 1;
+let saveTimer = null;
+let linking = null;
+let tempLink = null;
+
+function applyPan() {
+  canvasInner.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+}
+
+function renderNodes() {
+  canvasInner.innerHTML = '';
+  canvasInner.appendChild(edgeLayer);
+  nodes.forEach(n => {
+    const el = document.createElement('div');
+    el.className = `node ${n.node_type}`;
+    el.style.left = (n.position_x || 40) + 'px';
+    el.style.top = (n.position_y || 40) + 'px';
+    el.dataset.nodeId = n.node_id;
+    el.textContent = `${n.node_type.toUpperCase()}: ${n.data && n.data.text ? n.data.text : n.node_id}`;
+    const outHandle = document.createElement('div');
+    outHandle.className = 'handle out';
+    outHandle.title = 'Drag to connect';
+    outHandle.addEventListener('mousedown', (e) => startLink(e, n.node_id));
+    const inHandle = document.createElement('div');
+    inHandle.className = 'handle in';
+    inHandle.title = 'Drop to connect';
+    inHandle.addEventListener('mouseup', (e) => finishLink(e, n.node_id));
+    el.appendChild(outHandle);
+    el.appendChild(inHandle);
+    makeDraggable(el, n);
+    el.addEventListener('dblclick', () => {
+      const newText = prompt('Edit node text', (n.data && n.data.text) || n.node_id);
+      if (newText !== null) {
+        n.data = n.data || {};
+        n.data.text = newText;
+        el.textContent = `${n.node_type.toUpperCase()}: ${newText}`;
+        scheduleAutoSave();
+      }
+    });
+    el.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      if (confirm('Delete this node and its connections?')) {
+        nodes = nodes.filter(node => node.node_id !== n.node_id);
+        edges = edges.filter(edge => edge.source_id !== n.node_id && edge.target_id !== n.node_id);
+        renderNodes();
+        scheduleAutoSave();
+      }
+    });
+    canvasInner.appendChild(el);
+  });
+  renderSide();
+  renderEdges();
+  renderMiniMap();
+}
+
+function renderSide() {
+  nodeList.innerHTML = '';
+  edgeSource.innerHTML = '';
+  edgeTarget.innerHTML = '';
+  nodes.forEach(n => {
+    const item = document.createElement('div');
+    item.className = 'node-list-item';
+    item.textContent = `${n.node_id} (${n.node_type})`;
+    nodeList.appendChild(item);
+    const opt1 = document.createElement('option');
+    opt1.value = n.node_id; opt1.textContent = n.node_id;
+    const opt2 = opt1.cloneNode(true);
+    edgeSource.appendChild(opt1);
+    edgeTarget.appendChild(opt2);
+  });
+}
+
+function makeDraggable(el, node) {
+  let offsetX = 0, offsetY = 0, dragging = false;
+  el.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+    dragging = true;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const rect = canvasInner.getBoundingClientRect();
+    const rawX = e.clientX - rect.left - offsetX;
+    const rawY = e.clientY - rect.top - offsetY;
+    const grid = 12;
+    node.position_x = Math.round(rawX / grid) * grid;
+    node.position_y = Math.round(rawY / grid) * grid;
+    el.style.left = node.position_x + 'px';
+    el.style.top = node.position_y + 'px';
+    renderEdges();
+    renderMiniMap();
+  });
+  document.addEventListener('mouseup', () => {
+    if (dragging) scheduleAutoSave();
+    dragging = false;
+  });
+}
+
+function addNode(type) {
+  const id = prompt('Node ID?', type + '_' + (nodes.length + 1));
+  if (!id) return;
+  const text = prompt('Node text (message/response)?', type === 'condition' ? 'keyword' : 'Hello!');
+  nodes.push({
+    node_id: id,
+    node_type: type,
+    data: { text: text || '' },
+    position_x: 60,
+    position_y: 60
+  });
+  renderNodes();
+  scheduleAutoSave();
+}
+
+function addEdge() {
+  const source = edgeSource.value;
+  const target = edgeTarget.value;
+  const condition = document.getElementById('edgeCondition').value;
+  const isDefault = document.getElementById('edgeDefault').value === 'true';
+  edges.push({
+    source_id: source,
+    target_id: target,
+    condition_text: condition,
+    is_default: isDefault
+  });
+  alert('Connection added');
+  renderEdges();
+  renderMiniMap();
+  scheduleAutoSave();
+}
+
+function saveFlow() {
+  fetch("{% url 'chatbot_flow_save' flow.id %}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": "{{ csrf_token }}"
+    },
+    body: JSON.stringify({ nodes, edges })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) alert('Flow saved');
+  });
+}
+
+function autoLayout() {
+  let x = 40;
+  let y = 40;
+  const gapY = 90;
+  nodes.forEach(n => {
+    n.position_x = x;
+    n.position_y = y;
+    y += gapY;
+  });
+  renderNodes();
+  scheduleAutoSave();
+}
+
+function renderMiniMap() {
+  minimap.innerHTML = '';
+  if (!nodes.length) return;
+  const padding = 10;
+  const minX = Math.min(...nodes.map(n => n.position_x || 0)) - padding;
+  const minY = Math.min(...nodes.map(n => n.position_y || 0)) - padding;
+  const maxX = Math.max(...nodes.map(n => (n.position_x || 0) + 160)) + padding;
+  const maxY = Math.max(...nodes.map(n => (n.position_y || 0) + 60)) + padding;
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const viewW = 240;
+  const viewH = 180;
+  const scale = Math.min(viewW / width, viewH / height);
+
+  minimap.setAttribute('viewBox', `0 0 ${viewW} ${viewH}`);
+
+  edges.forEach(edge => {
+    const s = nodes.find(n => n.node_id === edge.source_id);
+    const t = nodes.find(n => n.node_id === edge.target_id);
+    if (!s || !t) return;
+    const x1 = (s.position_x - minX) * scale;
+    const y1 = (s.position_y - minY + 20) * scale;
+    const x2 = (t.position_x - minX) * scale;
+    const y2 = (t.position_y - minY + 20) * scale;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('stroke', edge.is_default ? '#0f766e' : '#1d4ed8');
+    line.setAttribute('stroke-width', '1');
+    minimap.appendChild(line);
+  });
+
+  nodes.forEach(n => {
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', (n.position_x - minX) * scale);
+    rect.setAttribute('y', (n.position_y - minY) * scale);
+    rect.setAttribute('width', 60);
+    rect.setAttribute('height', 24);
+    rect.setAttribute('rx', 4);
+    rect.setAttribute('fill', '#0f172a');
+    minimap.appendChild(rect);
+  });
+
+  // viewport indicator
+  const canvasRect = canvas.getBoundingClientRect();
+  const innerRect = canvasInner.getBoundingClientRect();
+  const viewX = (canvasRect.left - innerRect.left - minX) * scale;
+  const viewY = (canvasRect.top - innerRect.top - minY) * scale;
+  const viewportW = (canvasRect.width) * scale;
+  const viewportH = (canvasRect.height) * scale;
+  const viewRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  viewRect.setAttribute('x', viewX);
+  viewRect.setAttribute('y', viewY);
+  viewRect.setAttribute('width', viewportW);
+  viewRect.setAttribute('height', viewportH);
+  viewRect.setAttribute('fill', 'rgba(59,130,246,0.15)');
+  viewRect.setAttribute('stroke', '#1d4ed8');
+  viewRect.setAttribute('stroke-width', '1');
+  minimap.appendChild(viewRect);
+}
+
+function renderEdges() {
+  edgeLayer.innerHTML = '';
+  const nodeEls = {};
+  canvasInner.querySelectorAll('.node').forEach(el => {
+    nodeEls[el.dataset.nodeId] = el;
+  });
+
+  edges.forEach(edge => {
+    const sourceEl = nodeEls[edge.source_id];
+    const targetEl = nodeEls[edge.target_id];
+    if (!sourceEl || !targetEl) return;
+    const sRect = sourceEl.getBoundingClientRect();
+    const tRect = targetEl.getBoundingClientRect();
+    const cRect = canvasInner.getBoundingClientRect();
+
+    const x1 = sRect.left - cRect.left + sRect.width;
+    const y1 = sRect.top - cRect.top + sRect.height / 2;
+    const x2 = tRect.left - cRect.left;
+    const y2 = tRect.top - cRect.top + tRect.height / 2;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const midX = (x1 + x2) / 2;
+    path.setAttribute('d', `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`);
+    path.setAttribute('stroke', edge.is_default ? '#0f766e' : '#1d4ed8');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('marker-end', edge.is_default ? 'url(#arrow-default)' : 'url(#arrow)');
+    path.classList.add('edge-hit');
+    path.addEventListener('click', () => {
+      const next = prompt('Edit edge label (leave blank to delete):', edge.condition_text || '');
+      if (next === null) return;
+      if (next === '') {
+        edges = edges.filter(e => !(e.source_id === edge.source_id && e.target_id === edge.target_id && e.condition_text === edge.condition_text));
+      } else {
+        edge.condition_text = next;
+      }
+      renderEdges();
+      renderMiniMap();
+      scheduleAutoSave();
+    });
+    edgeLayer.appendChild(path);
+
+    if (edge.condition_text) {
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', midX);
+      label.setAttribute('y', (y1 + y2) / 2 - 6);
+      label.setAttribute('fill', '#0f172a');
+      label.setAttribute('font-size', '11');
+      label.textContent = edge.condition_text;
+      edgeLayer.appendChild(label);
+    }
+  });
+
+  if (tempLink) {
+    edgeLayer.appendChild(tempLink);
+  }
+}
+
+renderNodes();
+
+function startLink(e, sourceId) {
+  e.stopPropagation();
+  linking = { sourceId };
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  line.setAttribute('stroke', '#94a3b8');
+  line.setAttribute('stroke-width', '2');
+  line.setAttribute('fill', 'none');
+  tempLink = line;
+}
+
+function finishLink(e, targetId) {
+  if (!linking) return;
+  if (linking.sourceId === targetId) {
+    linking = null;
+    tempLink = null;
+    renderEdges();
+    return;
+  }
+  edges.push({
+    source_id: linking.sourceId,
+    target_id: targetId,
+    condition_text: '',
+    is_default: false
+  });
+  linking = null;
+  tempLink = null;
+  renderEdges();
+  renderMiniMap();
+  scheduleAutoSave();
+}
+
+canvas.addEventListener('mousemove', (e) => {
+  if (!linking || !tempLink) return;
+  const rect = canvasInner.getBoundingClientRect();
+  const sourceEl = canvasInner.querySelector(`.node[data-node-id="${linking.sourceId}"]`);
+  if (!sourceEl) return;
+  const sRect = sourceEl.getBoundingClientRect();
+  const x1 = sRect.left - rect.left + sRect.width;
+  const y1 = sRect.top - rect.top + sRect.height / 2;
+  const x2 = e.clientX - rect.left;
+  const y2 = e.clientY - rect.top;
+  const midX = (x1 + x2) / 2;
+  tempLink.setAttribute('d', `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`);
+  renderEdges();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+    e.preventDefault();
+    saveFlow();
+  }
+  if (e.key === 'Escape') {
+    linking = null;
+    tempLink = null;
+    renderEdges();
+  }
+});
+
+// Drag-to-pan
+let panning = false;
+let startX = 0;
+let startY = 0;
+canvas.addEventListener('mousedown', (e) => {
+  if (e.target.classList.contains('node')) return;
+  if (builderSide && builderSide.contains(e.target)) return;
+  panning = true;
+  canvas.classList.add('grabbing');
+  startX = e.clientX - panX;
+  startY = e.clientY - panY;
+});
+document.addEventListener('mousemove', (e) => {
+  if (!panning) return;
+  panX = e.clientX - startX;
+  panY = e.clientY - startY;
+  applyPan();
+  renderEdges();
+  renderMiniMap();
+});
+document.addEventListener('mouseup', () => {
+  panning = false;
+  canvas.classList.remove('grabbing');
+});
+
+// Zoom
+function zoomIn() {
+  zoom = Math.min(2, zoom + 0.1);
+  applyPan();
+  renderEdges();
+  renderMiniMap();
+}
+
+function zoomOut() {
+  zoom = Math.max(0.5, zoom - 0.1);
+  applyPan();
+  renderEdges();
+  renderMiniMap();
+}
+
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  if (e.deltaY < 0) {
+    zoomIn();
+  } else {
+    zoomOut();
+  }
+}, { passive: false });
+
+// Double-click canvas to add a message node
+canvas.addEventListener('dblclick', (e) => {
+  if (builderSide && builderSide.contains(e.target)) return;
+  const rect = canvasInner.getBoundingClientRect();
+  const rawX = e.clientX - rect.left;
+  const rawY = e.clientY - rect.top;
+  const grid = 12;
+  const nx = Math.round(rawX / grid) * grid;
+  const ny = Math.round(rawY / grid) * grid;
+  const id = 'msg_' + (nodes.length + 1);
+  nodes.push({
+    node_id: id,
+    node_type: 'message',
+    data: { text: 'New message' },
+    position_x: nx,
+    position_y: ny
+  });
+  renderNodes();
+  scheduleAutoSave();
+});
+
+function resetView() {
+  panX = 0;
+  panY = 0;
+  zoom = 1;
+  applyPan();
+  renderEdges();
+  renderMiniMap();
+}
+
+function scheduleAutoSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    fetch("{% url 'chatbot_flow_save' flow.id %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: JSON.stringify({ nodes, edges })
+    });
+  }, 1200);
+}
+
+function applyTemplate(name) {
+  if (!confirm('Replace current flow with template?')) return;
+  if (name === 'welcome') {
+    nodes = [
+      { node_id: 'start', node_type: 'start', data: { text: 'Start' }, position_x: 40, position_y: 40 },
+      { node_id: 'welcome', node_type: 'message', data: { text: 'Welcome! Type products or help.' }, position_x: 240, position_y: 40 },
+      { node_id: 'help', node_type: 'message', data: { text: 'Use: products, cart, checkout.' }, position_x: 240, position_y: 140 }
+    ];
+    edges = [
+      { source_id: 'start', target_id: 'welcome', condition_text: '', is_default: true },
+      { source_id: 'welcome', target_id: 'help', condition_text: 'help', is_default: false }
+    ];
+  }
+  if (name === 'catalog') {
+    nodes = [
+      { node_id: 'start', node_type: 'start', data: { text: 'Start' }, position_x: 40, position_y: 40 },
+      { node_id: 'catalog', node_type: 'message', data: { text: 'Categories: Grocery, Dairy, Snacks' }, position_x: 260, position_y: 40 },
+      { node_id: 'prompt', node_type: 'message', data: { text: 'Type: category <name>' }, position_x: 260, position_y: 140 }
+    ];
+    edges = [
+      { source_id: 'start', target_id: 'catalog', condition_text: '', is_default: true },
+      { source_id: 'catalog', target_id: 'prompt', condition_text: 'category', is_default: false }
+    ];
+  }
+  if (name === 'order') {
+    nodes = [
+      { node_id: 'start', node_type: 'start', data: { text: 'Start' }, position_x: 40, position_y: 40 },
+      { node_id: 'cart', node_type: 'message', data: { text: 'Your cart is ready. Type checkout.' }, position_x: 260, position_y: 40 },
+      { node_id: 'pay', node_type: 'message', data: { text: 'Select payment: cash, paytm, cod, netbanking.' }, position_x: 260, position_y: 140 },
+      { node_id: 'done', node_type: 'end', data: { text: 'Order placed. Thank you!' }, position_x: 260, position_y: 240 }
+    ];
+    edges = [
+      { source_id: 'start', target_id: 'cart', condition_text: '', is_default: true },
+      { source_id: 'cart', target_id: 'pay', condition_text: 'checkout', is_default: false },
+      { source_id: 'pay', target_id: 'done', condition_text: 'cash', is_default: false }
+    ];
+  }
+  if (name === 'whatsapp') {
+    nodes = [
+      { node_id: 'start', node_type: 'start', data: { text: 'Start' }, position_x: 40, position_y: 40 },
+      { node_id: 'welcome', node_type: 'message', data: { text: 'Welcome! Type products to browse.' }, position_x: 260, position_y: 40 },
+      { node_id: 'catalog', node_type: 'message', data: { text: 'Categories: Grocery, Dairy, Snacks' }, position_x: 260, position_y: 140 },
+      { node_id: 'add', node_type: 'message', data: { text: 'Add items like: add 2 sugar' }, position_x: 260, position_y: 240 },
+      { node_id: 'cart', node_type: 'message', data: { text: 'Type cart to view total.' }, position_x: 260, position_y: 340 },
+      { node_id: 'checkout', node_type: 'message', data: { text: 'Type checkout to place order.' }, position_x: 260, position_y: 440 },
+      { node_id: 'payment', node_type: 'message', data: { text: 'Select payment: cash, paytm, cod, netbanking.' }, position_x: 260, position_y: 540 },
+      { node_id: 'done', node_type: 'end', data: { text: 'Order placed. Thank you!' }, position_x: 260, position_y: 640 }
+    ];
+    edges = [
+      { source_id: 'start', target_id: 'welcome', condition_text: '', is_default: true },
+      { source_id: 'welcome', target_id: 'catalog', condition_text: 'products', is_default: false },
+      { source_id: 'catalog', target_id: 'add', condition_text: 'category', is_default: false },
+      { source_id: 'add', target_id: 'cart', condition_text: 'cart', is_default: false },
+      { source_id: 'cart', target_id: 'checkout', condition_text: 'checkout', is_default: false },
+      { source_id: 'checkout', target_id: 'payment', condition_text: 'pay', is_default: false },
+      { source_id: 'payment', target_id: 'done', condition_text: 'cash', is_default: false }
+    ];
+  }
+  renderNodes();
+  scheduleAutoSave();
+}
+</script>
+{% endblock %}

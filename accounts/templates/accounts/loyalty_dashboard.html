@@ -35,7 +35,7 @@
                                                 Bronze
                                             {% endif %}
                                         </h2>
-                                        <p class="card-text">Total Spent: ₹{{ loyalty_account.total_earned }}</p>
+                                        <p class="card-text">Total Spent: {{ loyalty_account.total_earned }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -85,7 +85,7 @@
                                                     {% endif %}
                                                 </td>
                                                 <td>{{ transaction.points }}</td>
-                                                <td>₹{{ transaction.amount }}</td>
+                                                <td>{{ transaction.amount }}</td>
                                                 <td>{{ transaction.description|default:"-" }}</td>
                                             </tr>
                                             {% empty %}
@@ -121,7 +121,7 @@
             <div class="modal-body">
                 {% if loyalty_account %}
                 <p>You have <strong>{{ loyalty_account.available_points }}</strong> available points.</p>
-                <p>Each {{ loyalty_account.program.min_redeem_points }} points = ₹{{ loyalty_account.program.points_to_rupee_ratio }}</p>
+                <p>Each {{ loyalty_account.program.min_redeem_points }} points = {{ loyalty_account.program.points_to_rupee_ratio }}</p>
                 <form id="redeemForm">
                     <div class="mb-3">
                         <label for="points" class="form-label">Points to Redeem</label>

@@ -79,20 +79,20 @@
 
         <div class="d-flex gap-2">
           <button type="submit" class="btn btn-warning px-4">
-            💾 Save Supplier Payment
+             Save Supplier Payment
           </button>
           <button type="button" id="saveDraftFooter" class="btn btn-outline-secondary">
-            📝 Save Draft
+             Save Draft
           </button>
         </div>
 
         <div class="d-flex flex-wrap gap-2">
-          <button type="button" onclick="window.print()" class="btn btn-secondary">🖨 Print Receipt</button>
-          <button type="button" id="downloadPDFFooter" class="btn btn-danger">⬇ PDF Receipt</button>
-          <button type="button" id="downloadExcelFooter" class="btn btn-success">📊 Excel Export</button>
-          <button type="button" id="shareWhatsAppFooter" class="btn btn-success">📤 WhatsApp</button>
-          <button type="button" id="shareEmailFooter" class="btn btn-warning">📧 Email Receipt</button>
-          <button type="button" id="shareSMSFooter" class="btn btn-info">💬 SMS Receipt</button>
+          <button type="button" onclick="window.print()" class="btn btn-secondary"> Print Receipt</button>
+          <button type="button" id="downloadPDFFooter" class="btn btn-danger"> PDF Receipt</button>
+          <button type="button" id="downloadExcelFooter" class="btn btn-success"> Excel Export</button>
+          <button type="button" id="shareWhatsAppFooter" class="btn btn-success"> WhatsApp</button>
+          <button type="button" id="shareEmailFooter" class="btn btn-warning"> Email Receipt</button>
+          <button type="button" id="shareSMSFooter" class="btn btn-info"> SMS Receipt</button>
         </div>
 
       </div>
@@ -182,7 +182,7 @@ function updateSupplierSummary() {
         const mobile = option.getAttribute('data-mobile');
 
         summary.innerHTML = `
-            <p><strong>Outstanding Balance:</strong> ₹${balance}</p>
+            <p><strong>Outstanding Balance:</strong> ${balance}</p>
             <p><strong>Mobile:</strong> ${mobile || 'Not provided'}</p>
             <p><strong>Status:</strong> <span class="badge bg-${parseFloat(balance) > 0 ? 'danger' : 'success'}">${parseFloat(balance) > 0 ? 'Outstanding' : 'Settled'}</span></p>
         `;
@@ -227,8 +227,8 @@ function updateOrderSummary() {
         const due = option.getAttribute('data-due');
 
         summary.innerHTML = `
-            <p><strong>Total Amount:</strong> ₹${amount}</p>
-            <p><strong>Outstanding:</strong> ₹${due}</p>
+            <p><strong>Total Amount:</strong> ${amount}</p>
+            <p><strong>Outstanding:</strong> ${due}</p>
             <p><strong>Status:</strong> <span class="badge bg-${parseFloat(due) > 0 ? 'warning' : 'success'}">${parseFloat(due) > 0 ? 'Pending' : 'Paid'}</span></p>
         `;
     } else {
@@ -257,9 +257,9 @@ function updatePaymentBreakdown() {
     if (amount && parseFloat(amount) > 0) {
         const numAmount = parseFloat(amount);
         breakdown.innerHTML = `
-            <p><strong>Payment Amount:</strong> ₹${numAmount.toFixed(2)}</p>
-            <p><strong>GST Impact:</strong> ₹${(numAmount * 0.18).toFixed(2)} (18% GST)</p>
-            <p><strong>Net Settlement:</strong> ₹${(numAmount * 1.18).toFixed(2)}</p>
+            <p><strong>Payment Amount:</strong> ${numAmount.toFixed(2)}</p>
+            <p><strong>GST Impact:</strong> ${(numAmount * 0.18).toFixed(2)} (18% GST)</p>
+            <p><strong>Net Settlement:</strong> ${(numAmount * 1.18).toFixed(2)}</p>
         `;
     } else {
         breakdown.innerHTML = '<p>Enter amount to see breakdown</p>';
@@ -348,10 +348,10 @@ function updateNavigationButtons() {
     nextBtn.disabled = currentStep === totalSteps;
 
     if (currentStep === totalSteps) {
-        nextBtn.innerHTML = 'Save Payment 💾';
+        nextBtn.innerHTML = 'Save Payment ';
         nextBtn.onclick = function() { document.querySelector('form').submit(); };
     } else {
-        nextBtn.innerHTML = 'Next ➡️';
+        nextBtn.innerHTML = 'Next ';
         nextBtn.onclick = nextStep;
     }
 }

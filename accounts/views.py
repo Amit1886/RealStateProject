@@ -12,6 +12,8 @@ from django.utils import timezone
 from decimal import Decimal
 from django.db.models import Case, When, F, FloatField
 from django.http import HttpResponseForbidden
+from django.urls import reverse
+from django.conf import settings
 from .models import DailySummary
 from khataapp.models import Transaction
 from django.utils.timezone import now
@@ -25,7 +27,8 @@ import json
 from .models import LoyaltyPoints
 from khataapp.models import UserProfile as KhataProfile
 
-from accounts.models import UserProfile, LoyaltyPoints
+from accounts.models import UserProfile, LoyaltyPoints, MembershipTier, SpecialOffer
+from core_settings.services import get_settings_payload, get_status_cards
 
 
 # Accounts
@@ -35,9 +38,13 @@ from .utils import render_to_pdf_bytes, send_email_otp, send_sms_otp
 from .forms import SignupForm, LoginForm, OTPForm, UserProfileForm
 
 # External Models
-from khataapp.models import Party, UserProfile
+from khataapp.models import Party, UserProfile, FieldAgent, CollectorVisit, LoginLink, CompanySettings, OfflineMessage
+from khataapp.utils.whatsapp_utils import send_whatsapp_message
 from billing.models import Plan, Subscription
+from billing.services import get_locked_feature_count, get_usage_summary, get_active_subscription
+from billing.services import ensure_free_plan, user_has_feature, get_locked_feature_count, get_usage_summary, get_active_subscription
 from commerce.models import Order, Payment, Invoice, Coupon, UserCoupon
+from accounts.models import LoyaltyProgram, MembershipTier, SpecialOffer
 
 
 User = get_user_model()
@@ -68,6 +75,36 @@ def calculate_running_balance(entries):
 def whatsapp_message_url(mobile, text):
     import urllib.parse
     return f"https://wa.me/91{mobile}?text={urllib.parse.quote(text)}"
+
+
+# ---------------------------------------------------
+# Role Resolution
+# ---------------------------------------------------
+def resolve_user_role(user):
+    if user.is_superuser or user.is_staff:
+        return "owner"
+
+    agent = getattr(user, "field_agent_profile", None)
+    if agent and agent.is_active:
+        return "collector" if agent.role == "collector" else "staff"
+
+    if user.groups.filter(name__iexact="staff").exists():
+        return "staff"
+    if user.groups.filter(name__iexact="party").exists():
+        return "party"
+
+    return "party"
+
+
+def role_based_redirect(user):
+    role = resolve_user_role(user)
+    if role == "owner":
+        return redirect("accounts:dashboard")
+    if role == "collector":
+        return redirect("accounts:collector_dashboard")
+    if role == "staff":
+        return redirect("accounts:staff_dashboard")
+    return redirect("accounts:party_dashboard")
 
 def users_list(request):
     admin_users = User.objects.filter(is_staff=True)  # admin users
@@ -165,7 +202,7 @@ def dashboard(request):
         invoice_total = Invoice.objects.filter(
             order__party=party,
             status="confirmed"
-        ).aggregate(total=Sum("total_amount"))["total"] or Decimal("0.00")
+        ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
 
         payment_total = Payment.objects.filter(
             invoice__order__party=party
@@ -182,7 +219,7 @@ def dashboard(request):
         })
 
     # =========================
-    # COUPONS
+    # COUPONS + LOYALTY
     # =========================
     active_coupons = Coupon.objects.filter(
         is_active=True
@@ -192,9 +229,27 @@ def dashboard(request):
         user=user
     ).select_related("coupon")
 
+    loyalty_account = LoyaltyPoints.objects.filter(user=user).select_related("program", "current_tier").first()
+    membership_tiers = MembershipTier.objects.filter(is_active=True).order_by("min_points_required")
+    active_offers = [o for o in SpecialOffer.objects.filter(is_active=True) if o.is_valid_for_user(user)]
+    scratch_coupons = Coupon.objects.filter(coupon_type="scratch", is_active=True).order_by("-created_at")[:5]
+
     # =========================
     # CONTEXT
     # =========================
+    settings_payload = get_settings_payload(user)
+    settings_status_cards = get_status_cards(settings_payload)
+    subscription = get_active_subscription(user)
+    locked_count = get_locked_feature_count(user)
+    usage_summary = get_usage_summary(user)
+    feature_access = {
+        "settings.advanced": user_has_feature(user, "settings.advanced"),
+        "reports.advanced": user_has_feature(user, "reports.advanced"),
+        "billing.invoices": user_has_feature(user, "billing.invoices"),
+        "commerce.orders": user_has_feature(user, "commerce.orders"),
+        "field.agents": user_has_feature(user, "field.agents"),
+    }
+
     context = {
         "user": user,
         "profile": profile,
@@ -210,9 +265,26 @@ def dashboard(request):
         "greeting": greeting,
         "active_coupons": active_coupons,
         "user_coupons": user_coupons,
+        "loyalty_account": loyalty_account,
+        "membership_tiers": membership_tiers,
+        "active_offers": active_offers,
+        "scratch_coupons": scratch_coupons,
+        "settings_status_cards": settings_status_cards,
+        "subscription": subscription,
+        "locked_features_count": locked_count,
+        "usage_summary": usage_summary,
+        "feature_access": feature_access,
     }
 
     return render(request, "accounts/dashboard.html", context)
+
+
+# ---------------------------------------------------
+# Role Dashboard Router
+# ---------------------------------------------------
+@login_required
+def role_dashboard(request):
+    return role_based_redirect(request.user)
 
 # -----------------------------------------
 # Party ledger: main view (with filters)
@@ -560,6 +632,258 @@ def party_ledger_pdf(request, party_id):
 def staff_dashboard(request):
     return render(request, "accounts/staff_dashboard.html")
 
+
+# ---------------------------------------------------
+# Collector Dashboard
+# ---------------------------------------------------
+@login_required
+def collector_dashboard(request):
+    agent = getattr(request.user, "field_agent_profile", None)
+    if not agent or not agent.is_active:
+        return HttpResponseForbidden("Collector access required.")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "visit_update":
+            visit_id = request.POST.get("visit_id")
+            status = request.POST.get("status")
+            collected_amount = request.POST.get("collected_amount")
+            payment_mode = request.POST.get("payment_mode")
+            notes = request.POST.get("visit_notes")
+
+            visit = get_object_or_404(CollectorVisit, id=visit_id, agent=agent)
+            try:
+                collected_val = Decimal(str(collected_amount or "0"))
+            except Exception:
+                collected_val = Decimal("0")
+
+            visit.status = status or visit.status
+            visit.collected_amount = collected_val
+            visit.payment_mode = payment_mode or visit.payment_mode
+            visit.notes = notes or visit.notes
+            visit.marked_at = timezone.now()
+            visit.save(update_fields=["status", "collected_amount", "payment_mode", "notes", "marked_at"])
+
+            messages.success(request, "Visit updated successfully.")
+            return redirect("accounts:collector_dashboard")
+
+        if action != "create_order":
+            messages.error(request, "Invalid action.")
+            return redirect("accounts:collector_dashboard")
+
+        party_id = request.POST.get("party_id")
+        notes = request.POST.get("notes")
+        products = request.POST.getlist("product_id[]")
+        raw_names = request.POST.getlist("raw_name[]")
+        qtys = request.POST.getlist("qty[]")
+        prices = request.POST.getlist("price[]")
+
+        if not party_id:
+            messages.error(request, "Please select a party.")
+            return redirect("accounts:collector_dashboard")
+
+        party = agent.assigned_parties.filter(id=party_id).first()
+        if not party:
+            messages.error(request, "Party not assigned to you.")
+            return redirect("accounts:collector_dashboard")
+
+        from commerce.models import Order, OrderItem, Product
+
+        with transaction.atomic():
+            order = Order.objects.create(
+                owner=agent.owner,
+                party=party,
+                order_type="SALE",
+                status="pending",
+                notes=notes or f"Agent order by {agent.user.get_full_name() or agent.user.email}",
+                order_source="Agent",
+                assigned_to=agent.user,
+                agent=agent,
+                placed_by="user",
+                discount_type=(request.POST.get("discount_type") or "none").lower(),
+                discount_value=Decimal(str(request.POST.get("discount_value") or "0")),
+                tax_percent=Decimal(str(request.POST.get("tax_percent") or "0")),
+            )
+
+            valid_items = 0
+            for product_id, raw_name, qty, price in zip(products, raw_names, qtys, prices):
+                try:
+                    qty_val = int(qty or 0)
+                    price_val = Decimal(str(price or "0"))
+                except Exception:
+                    continue
+
+                if qty_val <= 0 or price_val <= 0:
+                    continue
+
+                product = None
+                if product_id:
+                    product = Product.objects.filter(id=product_id).first()
+
+                raw_label = raw_name or (product.name if product else "Agent Item")
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    qty=qty_val,
+                    price=price_val,
+                    raw_name=raw_label,
+                )
+                valid_items += 1
+
+            if valid_items == 0:
+                messages.error(request, "Please add at least one valid item.")
+                return redirect("accounts:collector_dashboard")
+
+            # Recompute totals after items creation
+            order.compute_totals()
+            order.save(update_fields=["discount_amount", "tax_amount"])
+
+        # Auto send WhatsApp confirmation (best effort)
+        settings_obj = CompanySettings.objects.first()
+        if settings_obj and settings_obj.enable_auto_whatsapp and party.whatsapp_number:
+            try:
+                message = (
+                    f"Order #{order.id} received. Total ₹{order.total_amount()}. "
+                    f"Agent: {agent.user.get_full_name() or agent.user.email}."
+                )
+                send_whatsapp_message(party.whatsapp_number.lstrip("+"), message)
+            except Exception:
+                OfflineMessage.objects.create(
+                    party=party,
+                    recipient_name=party.name,
+                    recipient_mobile=party.whatsapp_number,
+                    message=message,
+                    channel="whatsapp",
+                    status="pending"
+                )
+
+        # Email + SMS (queue) best effort
+        if party.email:
+            try:
+                from django.core.mail import send_mail
+                send_mail(
+                    subject=f"Order #{order.id} Confirmation",
+                    message=f"Order #{order.id} received. Total ₹{order.total_amount()}.",
+                    from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, "DEFAULT_FROM_EMAIL") else None,
+                    recipient_list=[party.email],
+                    fail_silently=True
+                )
+            except Exception:
+                pass
+
+        if party.mobile:
+            OfflineMessage.objects.create(
+                party=party,
+                recipient_name=party.name,
+                recipient_mobile=party.mobile,
+                message=f"Order #{order.id} received. Total ₹{order.total_amount()}.",
+                channel="sms",
+                status="pending"
+            )
+
+        messages.success(request, f"Order #{order.id} created. Total ₹{order.total_amount()}.")
+        return redirect("accounts:collector_dashboard")
+
+    today = timezone.now().date()
+    visits_today = CollectorVisit.objects.filter(
+        agent=agent,
+        visit_date=today
+    ).select_related("party").order_by("party__name")
+
+    # Auto-generate visit plan if none exists for today
+    if not visits_today.exists():
+        for party in agent.assigned_parties.all():
+            summary = get_party_summary(party)
+            expected = summary.get("balance") if summary else 0
+            if expected and expected > 0:
+                CollectorVisit.objects.get_or_create(
+                    agent=agent,
+                    party=party,
+                    visit_date=today,
+                    defaults={
+                        "expected_amount": expected,
+                        "status": "planned"
+                    }
+                )
+
+        visits_today = CollectorVisit.objects.filter(
+            agent=agent,
+            visit_date=today
+        ).select_related("party").order_by("party__name")
+
+    total_expected = visits_today.aggregate(
+        total=Sum("expected_amount")
+    )["total"] or Decimal("0.00")
+
+    total_collected = visits_today.aggregate(
+        total=Sum("collected_amount")
+    )["total"] or Decimal("0.00")
+
+    from commerce.models import Product, Order
+    products = Product.objects.filter(owner=agent.owner).order_by("name")
+    recent_agent_orders = Order.objects.filter(agent=agent).select_related("party").order_by("-created_at")[:10]
+
+    visit_counts = {
+        "planned": visits_today.filter(status="planned").count(),
+        "visited": visits_today.filter(status="visited").count(),
+        "partial": visits_today.filter(status="partial").count(),
+        "not_available": visits_today.filter(status="not_available").count(),
+        "cancelled": visits_today.filter(status="cancelled").count(),
+    }
+
+    context = {
+        "agent": agent,
+        "visits_today": visits_today,
+        "total_expected": total_expected,
+        "total_collected": total_collected,
+        "today": today,
+        "products": products,
+        "recent_agent_orders": recent_agent_orders,
+        "visit_counts": visit_counts,
+    }
+
+    return render(request, "accounts/collector_dashboard.html", context)
+
+
+# ---------------------------------------------------
+# Party Dashboard
+# ---------------------------------------------------
+@login_required
+def party_dashboard(request):
+    user = request.user
+
+    mobile = None
+    if user.mobile:
+        mobile = user.mobile
+    else:
+        profile = KhataProfile.objects.filter(user=user).first()
+        mobile = profile.mobile if profile else None
+
+    party = None
+    if mobile:
+        party = Party.objects.filter(mobile=mobile).first()
+        if not party:
+            party = Party.objects.filter(whatsapp_number=mobile).first()
+
+    summary = None
+    invoices = []
+    payments = []
+
+    if party:
+        summary = get_party_summary(party)
+        invoices = Invoice.objects.filter(order__party=party).order_by("-created_at")[:10]
+        payments = Payment.objects.filter(invoice__order__party=party).order_by("-created_at")[:10]
+
+    context = {
+        "party": party,
+        "summary": summary,
+        "invoices": invoices,
+        "payments": payments,
+    }
+
+    return render(request, "accounts/party_dashboard.html", context)
+
 # ----------------- EDIT PROFILE -----------------
 @login_required
 def edit_profile(request):
@@ -597,6 +921,9 @@ def edit_profile(request):
         form = UserProfileForm(instance=profile)
 
     admin_profile = UserProfile.objects.filter(user__is_superuser=True).first()
+    subscription = get_active_subscription(request.user)
+    locked_count = get_locked_feature_count(request.user)
+    usage_summary = get_usage_summary(request.user)
     context = {
         "form": form,
         "profile": profile,
@@ -606,6 +933,9 @@ def edit_profile(request):
         "admin_gst": admin_profile.gst_number if admin_profile else "",
         "admin_contact": admin_profile.mobile if admin_profile else "",
         "plan_name": profile.plan.name if profile.plan else "Basic",
+        "subscription": subscription,
+        "locked_features_count": locked_count,
+        "usage_summary": usage_summary,
     }
 
     return render(request, "accounts/edit_profile.html", context)
@@ -640,6 +970,11 @@ def signup_view(request):
                         mobile=form.cleaned_data.get("mobile"),
                         full_name=user.get_full_name() or user.username
                     )
+                # Auto-assign free plan + subscription
+                try:
+                    ensure_free_plan(user)
+                except Exception:
+                    pass
 
                 # OTP sending outside transaction
                 if user.email:
@@ -799,7 +1134,7 @@ def verify_otp_view(request):
             if user.is_superuser:
                 return redirect("/superadmin/")
             else:
-                return redirect("/accounts/dashboard/")
+                return redirect("accounts:role_dashboard")
 
     else:
         form = OTPForm()
@@ -814,6 +1149,46 @@ def verify_otp_view(request):
 def logout_view(request):
     logout(request)
     return redirect("accounts:login")
+
+
+# ---------------------------------------------------
+# Login via Secure Link (WhatsApp First)
+# ---------------------------------------------------
+def login_link_view(request, token):
+    link = get_object_or_404(LoginLink, token=token, is_active=True)
+    if not link.is_valid():
+        messages.error(request, "Link expired or invalid. Please request a new link.")
+        return redirect("accounts:login")
+
+    user = link.user
+
+    mobile_for_otp = None
+    profile = KhataProfile.objects.filter(user=user).first()
+    if profile and profile.mobile:
+        mobile_for_otp = profile.mobile
+    elif user.mobile:
+        mobile_for_otp = user.mobile
+
+    otp = OTP.create_for(
+        user=user,
+        purpose="login",
+        email=user.email,
+        mobile=mobile_for_otp,
+    )
+
+    if user.email:
+        send_email_otp(user.email, otp.code)
+    if mobile_for_otp:
+        send_sms_otp(mobile_for_otp, otp.code)
+
+    link.last_used_at = timezone.now()
+    link.save(update_fields=["last_used_at"])
+
+    request.session["otp_user_id"] = user.id
+    request.session["otp_purpose"] = "login"
+
+    messages.info(request, "OTP sent. Please verify to continue.")
+    return redirect("accounts:verify_otp")
 
 
 # ----------------- PROFILE SETTINGS (Legacy Support) -----------------
@@ -955,6 +1330,23 @@ def business_snapshot_view(request):
         {"snapshot": snapshot}
     )
 
+@login_required
+def loyalty_dashboard(request):
+    loyalty_account = LoyaltyPoints.objects.filter(user=request.user).select_related("program", "current_tier").first()
+    program = LoyaltyProgram.objects.filter(is_active=True).first()
+    tiers = MembershipTier.objects.filter(is_active=True).order_by("min_points_required")
+    offers = [o for o in SpecialOffer.objects.filter(is_active=True) if o.is_valid_for_user(request.user)]
+    return render(
+        request,
+        "accounts/loyalty_dashboard.html",
+        {
+            "loyalty_account": loyalty_account,
+            "program": program,
+            "tiers": tiers,
+            "offers": offers,
+        },
+    )
+
 # -------------------------------------------------------
 # SAFE UPDATE FUNCTION – WILL NEVER CRASH OR TAKE STRING
 # -------------------------------------------------------
@@ -998,4 +1390,101 @@ def expense_list(request):
     expenses = Expense.objects.filter(created_by=request.user).order_by("-expense_date")
     return render(request, "accounts/expense_list.html", {
         "expenses": expenses
+    })
+
+@login_required
+@require_POST
+def redeem_points(request):
+    """
+    Redeem loyalty points securely.
+    Supports web, mobile app, API clients.
+    """
+
+    # -------------------------
+    # 1️⃣ Parse JSON safely
+    # -------------------------
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+        points = int(payload.get("points", 0))
+        description = payload.get(
+            "description",
+            "Points redeemed by user"
+        )
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"error": "Invalid JSON payload"},
+            status=400
+        )
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"error": "Points must be a valid number"},
+            status=400
+        )
+
+    # -------------------------
+    # 2️⃣ Validate points
+    # -------------------------
+    if points <= 0:
+        return JsonResponse(
+            {"error": "Points must be greater than zero"},
+            status=400
+        )
+
+    # -------------------------
+    # 3️⃣ Atomic transaction (SAFE)
+    # -------------------------
+    try:
+        with transaction.atomic():
+
+            # User profile
+            profile = UserProfile.objects.select_for_update().get(
+                user=request.user
+            )
+
+            # Loyalty account
+            loyalty = LoyaltyPoints.objects.select_for_update().get(
+                user=request.user
+            )
+
+            if loyalty.available_points < points:
+                return JsonResponse(
+                    {"error": "Insufficient reward points"},
+                    status=400
+                )
+
+            # Redeem using model method (BEST PRACTICE)
+            loyalty.redeem_points(
+                points=points,
+                description=description
+            )
+
+            # Optional sync with profile (if you use both)
+            profile.reward_points = loyalty.available_points
+            profile.save(update_fields=["reward_points"])
+
+    except UserProfile.DoesNotExist:
+        return JsonResponse(
+            {"error": "User profile not found"},
+            status=404
+        )
+
+    except LoyaltyPoints.DoesNotExist:
+        return JsonResponse(
+            {"error": "Loyalty account not found"},
+            status=404
+        )
+
+    except Exception as e:
+        return JsonResponse(
+            {"error": "Something went wrong", "details": str(e)},
+            status=500
+        )
+
+    # -------------------------
+    # 4️⃣ Success response
+    # -------------------------
+    return JsonResponse({
+        "success": True,
+        "message": f"{points} points redeemed successfully",
+        "remaining_points": loyalty.available_points,
     })

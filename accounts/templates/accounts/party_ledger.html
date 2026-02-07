@@ -8,27 +8,27 @@
   <!-- HEADER -->
   <div class="card-header">
     <div>
-      <h2>📘 {{ party.name }} – Ledger</h2>
+      <h2> {{ party.name }}  Ledger</h2>
       <p class="text-muted small mb-0">
-        📞 {{ party.mobile }}
-        &nbsp;&nbsp; | &nbsp;&nbsp; 🏷 Type: {{ party.party_type }}
+         {{ party.mobile }}
+        &nbsp;&nbsp; | &nbsp;&nbsp;  Type: {{ party.party_type }}
       </p>
     </div>
 
     <div class="d-flex gap-2">
 
       <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary btn-pill">
-        ← Back
+         Back
       </a>
 
       <a href="{% url 'accounts:party_ledger_pdf' party.id %}?from={{ request.GET.from }}&to={{ request.GET.to }}"
          class="btn btn-primary btn-pill">
-         📄 Export PDF
+          Export PDF
       </a>
 
       <a href="{{ whatsapp_url }}" target="_blank"
          class="btn btn-success btn-pill">
-        💬 WhatsApp
+         WhatsApp
       </a>
 
     </div>
@@ -69,16 +69,16 @@
     {% if page_obj.has_next %}
     <button id="loadMoreBtn" class="btn btn-outline-primary btn-pill"
             data-next-page="{{ page_obj.next_page_number }}">
-      ⤵️ Load more
+       Load more
     </button>
     {% endif %}
   </div>
 
   <!-- LEDGER SUMMARY BOX -->
   <div class="summary-box">
-    <strong>Total Credit:</strong> ₹{{ total_credit }} &nbsp;&nbsp;|&nbsp;&nbsp;
-    <strong>Total Debit:</strong> ₹{{ total_debit }} &nbsp;&nbsp;|&nbsp;&nbsp;
-    <strong>Balance:</strong> ₹{{ balance }}
+    <strong>Total Credit:</strong> {{ total_credit }} &nbsp;&nbsp;|&nbsp;&nbsp;
+    <strong>Total Debit:</strong> {{ total_debit }} &nbsp;&nbsp;|&nbsp;&nbsp;
+    <strong>Balance:</strong> {{ balance }}
   </div>
 
 </div>
@@ -98,7 +98,7 @@
                   "&from={{ request.GET.from }}&to={{ request.GET.to }}";
 
       this.disabled = true;
-      this.innerText = "Loading…";
+      this.innerText = "Loading";
 
       fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
       .then(r => r.json())
@@ -114,7 +114,7 @@
         if (data.has_next) {
           this.setAttribute('data-next-page', parseInt(nextPage) + 1);
           this.disabled = false;
-          this.innerText = "⤵️ Load more";
+          this.innerText = " Load more";
         } else {
           this.remove();
         }

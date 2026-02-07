@@ -16,6 +16,7 @@ DEBUG = True
 OTP_BYPASS = True
 
 ALLOWED_HOSTS = ["*", "khataapp.pythonanywhere.com", "127.0.0.1", "localhost"]
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
 # ---------------- INSTALLED APPS ----------------
 INSTALLED_APPS = [
@@ -36,6 +37,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    'reports.apps.ReportsConfig',
 
     # Third-party apps
     "widget_tweaks",
@@ -87,6 +89,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "khataapp.middleware.RestrictAdminMiddleware",
+    "core_settings.middleware.FeatureGateMiddleware",
 
     # REQUIRED FOR ALLAUTH
     "allauth.account.middleware.AccountMiddleware",
@@ -291,7 +294,7 @@ JAZZMIN_SETTINGS = {
     "hide_models": [],
 
     # List of apps (and/or models) to base side menu ordering off of (does not need to contain all apps/models)
-    "order_with_respect_to": ["accounts", "khataapp", "billing", "commerce"],
+    "order_with_respect_to": ["accounts", "khataapp", "billing", "commerce", "chatbot"],
 
     # Custom links to append to app groups, keyed on app name
     "custom_links": {
@@ -306,6 +309,13 @@ JAZZMIN_SETTINGS = {
             "icon": "fas fa-comments",
 
             # Whether link opens in a new window
+            "new_window": True
+        }],
+        "chatbot": [{
+            "name": "Flow Builder",
+            "url": "/chatbot/flows/",
+            "icon": "fas fa-project-diagram",
+            "permissions": ["chatbot.can_manage_flows"],
             "new_window": True
         }]
     },

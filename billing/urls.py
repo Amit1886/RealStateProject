@@ -8,13 +8,20 @@ app_name = "billing"
 urlpatterns = [
     # Plan selection and dashboard
     path("dashboard/", views.dashboard, name="dashboard"),                  # /billing/dashboard/
-    path("dashboard/", views.commerce_dashboard, name="commerce_dashboard"),
+    path("commerce-dashboard/", views.commerce_dashboard, name="commerce_dashboard"),
 
     # Payment related
     path("payment-success/<int:plan_id>/", views.payment_success, name="payment-success"),
     path("checkout/", views.checkout, name="checkout"),
     path("choose-plan/", views.choose_plan, name="choose_plan"),
     path("upgrade/", views.upgrade_plan, name="upgrade_plan"),
+    path("plan-management/", views.plan_management, name="plan_management"),
+    path("upgrade/start/<int:plan_id>/", views.start_upgrade, name="start_upgrade"),
+    path("history/", views.billing_history, name="billing_history"),
+
+    # Admin feature matrix
+    path("admin/feature-matrix/", views.feature_matrix, name="feature_matrix"),
+    path("admin/feature-matrix/save/", views.feature_matrix_save, name="feature_matrix_save"),
 
 
 

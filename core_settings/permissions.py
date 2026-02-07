@@ -1,17 +1,10 @@
-from billing.models import Subscription
+from billing.services import user_has_feature
 from core_settings.models import FeatureSettings, SaaSSettings, ModuleSettings
 
 
 def get_company(user):
     try:
         return user.userprofile.company
-    except:
-        return None
-
-
-def get_active_subscription(user):
-    try:
-        return Subscription.objects.get(company=get_company(user), active=True)
     except:
         return None
 
@@ -26,16 +19,13 @@ def has_feature(user, feature_name):
     if saas and not saas.enable_subscription:
         return True
 
-    sub = get_active_subscription(user)
-    if not sub:
-        return False
-
-    # Check if feature is enabled in system
-    if not FeatureSettings.objects.filter(feature=feature_name, enabled=True).exists():
-        return False
+    # Check if feature is enabled in system (fallback allow if feature not defined)
+    if FeatureSettings.objects.filter(feature=feature_name).exists():
+        if not FeatureSettings.objects.filter(feature=feature_name, enabled=True).exists():
+            return False
 
     # Check if plan has this feature
-    return sub.plan.features.filter(feature=feature_name).exists()
+    return user_has_feature(user, feature_name)
 
 
 def has_module(user, module_name):

@@ -6,10 +6,13 @@ from django.db.models import Sum
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from datetime import timedelta
 from decimal import Decimal
+import secrets
 from solo.models import SingletonModel
 from django.contrib.auth import get_user_model
 from khataapp.utils.whatsapp_utils import send_whatsapp_message
+from django.urls import reverse
 
 User = get_user_model()
 
@@ -54,6 +57,7 @@ class Party(models.Model):
     credit_period = models.PositiveIntegerField(default=30, help_text="Credit period in days")
     opening_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Opening balance for supplier")
     is_active = models.BooleanField(default=True)
+    customer_category = models.CharField(max_length=60, blank=True, null=True, help_text="Customer segment/category")
 
     # Helper / Computed Fields
     def get_payment_link(self):
@@ -81,6 +85,202 @@ class Party(models.Model):
     class Meta:
         ordering = ['-created_at']
         verbose_name_plural = "Parties"
+
+
+# ---------------- Secure Login Link ----------------
+class LoginLink(models.Model):
+    PURPOSE_CHOICES = (
+        ("dashboard", "Dashboard Login"),
+        ("payment", "Payment Link"),
+        ("otp", "OTP Login"),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="login_links"
+    )
+    token = models.CharField(max_length=64, unique=True, editable=False)
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES, default="dashboard")
+    expires_at = models.DateTimeField()
+    last_used_at = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = secrets.token_hex(32)
+        super().save(*args, **kwargs)
+
+    def is_valid(self):
+        return self.is_active and timezone.now() <= self.expires_at
+
+    def __str__(self):
+        return f"{self.user_id} - {self.purpose} (active={self.is_active})"
+
+
+# ---------------- Reminder Log ----------------
+class ReminderLog(models.Model):
+    REMINDER_TYPES = (
+        ("due", "Due Reminder"),
+        ("collector", "Collector Visit"),
+        ("payment", "Payment Follow-up"),
+        ("general", "General"),
+    )
+    CHANNELS = (
+        ("whatsapp", "WhatsApp"),
+        ("sms", "SMS"),
+        ("email", "Email"),
+    )
+    STATUS_CHOICES = (
+        ("scheduled", "Scheduled"),
+        ("sent", "Sent"),
+        ("failed", "Failed"),
+        ("skipped", "Skipped"),
+    )
+
+    party = models.ForeignKey(
+        "khataapp.Party",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reminder_logs"
+    )
+    reminder_type = models.CharField(max_length=20, choices=REMINDER_TYPES, default="due")
+    channel = models.CharField(max_length=20, choices=CHANNELS, default="whatsapp")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="scheduled")
+    scheduled_for = models.DateTimeField(blank=True, null=True)
+    sent_at = models.DateTimeField(blank=True, null=True)
+    payload = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.reminder_type} - {self.channel} - {self.status}"
+
+
+# ---------------- Field Agent (Collector/Staff) ----------------
+class FieldAgent(models.Model):
+    ROLE_CHOICES = (
+        ("collector", "Collector"),
+        ("staff", "Staff"),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="managed_agents"
+    )
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="field_agent_profile"
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="collector")
+    mobile = models.CharField(max_length=15, blank=True, null=True)
+    assigned_parties = models.ManyToManyField(
+        "khataapp.Party",
+        related_name="assigned_agents",
+        blank=True
+    )
+    is_active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} ({self.role})"
+
+
+# ---------------- Collector Visit ----------------
+class CollectorVisit(models.Model):
+    STATUS_CHOICES = (
+        ("planned", "Planned"),
+        ("visited", "Visited"),
+        ("not_available", "Not Available"),
+        ("partial", "Partial"),
+        ("cancelled", "Cancelled"),
+    )
+
+    agent = models.ForeignKey(
+        FieldAgent,
+        on_delete=models.CASCADE,
+        related_name="visits"
+    )
+    party = models.ForeignKey(
+        "khataapp.Party",
+        on_delete=models.CASCADE,
+        related_name="collector_visits"
+    )
+    visit_date = models.DateField(default=timezone.now)
+    expected_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    collected_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="planned")
+    payment_mode = models.CharField(max_length=20, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    proof = models.FileField(upload_to="collector_proofs/", blank=True, null=True)
+    marked_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def owner(self):
+        return self.agent.owner
+
+    def __str__(self):
+        return f"{self.party.name} - {self.visit_date} ({self.status})"
+
+
+# ---------------- Auto WhatsApp Login Link (Party) ----------------
+@receiver(post_save, sender=Party)
+def auto_create_login_link(sender, instance: Party, created, **kwargs):
+    if not created:
+        return
+
+    mobile = instance.whatsapp_number or instance.mobile
+    if not mobile:
+        return
+
+    User = get_user_model()
+    user = User.objects.filter(mobile=instance.mobile).first()
+    if not user:
+        safe_email = f"{instance.mobile}@party.local" if instance.mobile else f"party{instance.id}@party.local"
+        user = User.objects.filter(email__iexact=safe_email).first()
+    if not user:
+        user = User.objects.create(
+            username=instance.name[:150],
+            email=safe_email,
+            mobile=instance.mobile,
+            is_active=False,
+            is_otp_verified=False
+        )
+
+    # Avoid duplicates: keep only one active dashboard link
+    if LoginLink.objects.filter(user=user, purpose="dashboard", is_active=True).exists():
+        return
+
+    expires_at = timezone.now() + timedelta(days=7)
+    link = LoginLink.objects.create(
+        user=user,
+        purpose="dashboard",
+        expires_at=expires_at
+    )
+
+    # Queue WhatsApp message (offline queue)
+    try:
+        from django.contrib.sites.models import Site
+        current_site = Site.objects.get_current()
+        base_url = f"https://{current_site.domain}"
+    except Exception:
+        base_url = ""
+
+    url = f"{base_url}{reverse('accounts:login_link', args=[link.token])}"
+    message = f"Click here for more details \uD83D\uDC49 {url}"
+
+    OfflineMessage.objects.create(
+        party=instance,
+        message=message,
+        channel="whatsapp",
+        status="pending"
+    )
 
 
 # ---------------- TRANSACTION MODEL ----------------
@@ -204,6 +404,8 @@ class CompanySettings(models.Model):
 class OfflineMessage(models.Model):
     CHANNEL_CHOICES = (("whatsapp", "WhatsApp"), ("sms", "SMS"))
     party = models.ForeignKey("Party", on_delete=models.SET_NULL, null=True, blank=True)
+    recipient_name = models.CharField(max_length=120, blank=True, null=True)
+    recipient_mobile = models.CharField(max_length=20, blank=True, null=True)
     message = models.TextField()
     channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES)
     status = models.CharField(max_length=20, default="pending")

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_filters %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modern-app.css' %}">
+<style>
+  .toggle { position: relative; width: 44px; height: 24px; display: inline-block; }
+  .toggle input { display:none; }
+  .toggle-slider { position:absolute; inset:0; background:#cbd5f5; border-radius:999px; transition:0.2s; }
+  .toggle-slider:before { content:""; position:absolute; width:18px; height:18px; left:3px; top:3px; border-radius:50%; background:#fff; transition:0.2s; }
+  .toggle input:checked + .toggle-slider { background:#0f766e; }
+  .toggle input:checked + .toggle-slider:before { transform:translateX(20px); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding: 2rem;">
+  <div class="card">
+    <div class="card-header">
+      <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+        <h3 class="mb-0"> User Feature Overrides</h3>
+        <a href="{% url 'core_settings:plan_permissions' %}" class="btn btn-secondary btn-sm">Back to Plan Permissions</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 1.5rem;">
+    <div class="card-body">
+      <form method="get" style="display:flex; gap:1rem; align-items:center;">
+        <label class="mb-0">Select User</label>
+        <select name="user_id" class="form-control form-control-sm" onchange="this.form.submit()">
+          {% for u in users %}
+            <option value="{{ u.id }}" {% if selected_user and u.id == selected_user.id %}selected{% endif %}>
+              {{ u.email }}{% if u.mobile %} ({{ u.mobile }}){% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+  </div>
+
+  {% if selected_user %}
+  <form method="post" style="margin-top:1.5rem;">
+    {% csrf_token %}
+    <input type="hidden" name="user_id" value="{{ selected_user.id }}">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="mb-3">Overrides for: {{ selected_user.email }}</h5>
+        <div style="display:flex; gap:10px; margin-bottom:12px;">
+          <button type="button" id="enableAll" class="btn btn-outline-success btn-sm">Enable All</button>
+          <button type="button" id="disableAll" class="btn btn-outline-danger btn-sm">Disable All</button>
+        </div>
+        <div class="row">
+          {% for feature in features %}
+          <div class="col-md-6" style="margin-bottom:0.75rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid #eee;">
+              <span>{{ feature.group }}  {{ feature.label }}</span>
+              <label class="toggle">
+                <input type="checkbox" name="feature_{{ feature.id }}" {% if overrides|get_item:feature.id %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Save Overrides</button>
+      </div>
+    </div>
+  </form>
+  {% endif %}
+</div>
+
+<script>
+  (function () {
+    const enableAll = document.getElementById('enableAll');
+    const disableAll = document.getElementById('disableAll');
+    if (!enableAll || !disableAll) return;
+    const inputs = () => Array.from(document.querySelectorAll('input[type="checkbox"][name^="feature_"]'));
+
+    enableAll.addEventListener('click', () => {
+      inputs().forEach(i => i.checked = true);
+    });
+    disableAll.addEventListener('click', () => {
+      inputs().forEach(i => i.checked = false);
+    });
+  })();
+</script>
+{% endblock %}

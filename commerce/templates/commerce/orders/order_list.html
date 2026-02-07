@@ -11,6 +11,8 @@
                 <th>ID</th>
                 <th>Customer</th>
                 <th>Status</th>
+                <th>Source</th>
+                <th>Agent Ref</th>
                 <th>Total Amount</th>
                 <th>Created At</th>
                 <th>Actions</th>
@@ -20,9 +22,11 @@
             {% for order in orders %}
             <tr>
                 <td>{{ order.id }}</td>
-                <td>{{ order.customer }}</td>
+                <td>{{ order.party.name|default:"-" }}</td>
                 <td>{{ order.status }}</td>
-                <td>₹{{ order.total_amount|default:"0" }}</td>
+                <td>{{ order.order_source|default:"Manual" }}</td>
+                <td>{% if order.agent %}Agent #{{ order.agent.id }}{% else %}-{% endif %}</td>
+                <td>{{ order.total_amount|default:"0" }}</td>
                 <td>{{ order.created_at|date:"d M Y H:i" }}</td>
                 <td>
                     <a href="{% url 'commerce:order_detail' order.id %}" class="btn btn-sm btn-info">View</a>
@@ -30,7 +34,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="text-center">No orders found.</td>
+                <td colspan="8" class="text-center">No orders found.</td>
             </tr>
             {% endfor %}
         </tbody>

@@ -5,7 +5,7 @@ from decimal import Decimal
 import uuid
 import random
 import string
-from khataapp.models import Party
+from khataapp.models import Party, FieldAgent
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -178,6 +178,12 @@ class Order(models.Model):
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    order_source = models.CharField(
+        max_length=30,
+        default="Manual",
+        help_text="Origin of the order (e.g. Manual, WhatsApp, API).",
+    )
+
     assigned_to = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -186,8 +192,39 @@ class Order(models.Model):
         related_name="assigned_orders",
     )
 
+    agent = models.ForeignKey(
+        FieldAgent,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="agent_orders"
+    )
+
+    DISCOUNT_TYPES = (
+        ("none", "None"),
+        ("percent", "Percent"),
+        ("flat", "Flat"),
+    )
+    discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPES, default="none")
+    discount_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    tax_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    tax_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
     def total_amount(self):
-        """Sum all order item totals."""
+        """Sum all order item totals with discount and tax applied."""
+        agg = self.items.aggregate(
+            t=models.Sum(
+                models.F("qty") * models.F("price"),
+                output_field=models.DecimalField(max_digits=12, decimal_places=2),
+            )
+        )
+        subtotal = agg["t"] or Decimal("0.00")
+        discount_amount = self.discount_amount or Decimal("0.00")
+        tax_amount = self.tax_amount or Decimal("0.00")
+        return subtotal - discount_amount + tax_amount
+
+    def subtotal_amount(self):
         agg = self.items.aggregate(
             t=models.Sum(
                 models.F("qty") * models.F("price"),
@@ -195,6 +232,34 @@ class Order(models.Model):
             )
         )
         return agg["t"] or Decimal("0.00")
+
+    def compute_totals(self):
+        subtotal = self.items.aggregate(
+            t=models.Sum(
+                models.F("qty") * models.F("price"),
+                output_field=models.DecimalField(max_digits=12, decimal_places=2),
+            )
+        )["t"] or Decimal("0.00")
+
+        discount_amount = Decimal("0.00")
+        if self.discount_type == "percent":
+            discount_amount = (subtotal * (self.discount_value or Decimal("0.00"))) / Decimal("100")
+        elif self.discount_type == "flat":
+            discount_amount = self.discount_value or Decimal("0.00")
+
+        if discount_amount > subtotal:
+            discount_amount = subtotal
+
+        taxable = subtotal - discount_amount
+        tax_amount = (taxable * (self.tax_percent or Decimal("0.00"))) / Decimal("100")
+
+        self.discount_amount = discount_amount
+        self.tax_amount = tax_amount
+        return subtotal
+
+    def save(self, *args, **kwargs):
+        self.compute_totals()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Order #{self.pk} - {self.party.name if self.party else 'Unknown'} ({self.order_type} - {self.status})"
@@ -206,12 +271,110 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
     qty = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    raw_name = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Raw item name when product is not matched",
+    )
 
     def line_total(self):
         return self.qty * self.price
 
     def __str__(self):
         return f"{self.product.name if self.product else 'Unknown'} x {self.qty}"
+
+
+# ---------------- WhatsApp Order Inbox ----------------
+class WhatsAppOrderInbox(models.Model):
+    STATUS_CHOICES = (
+        ("new", "New"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+        ("manual_review", "Manual Review"),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="whatsapp_orders",
+    )
+    party = models.ForeignKey(
+        Party,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="whatsapp_orders",
+    )
+    mobile_number = models.CharField(max_length=20)
+    customer_name = models.CharField(max_length=120, blank=True)
+    raw_message = models.TextField()
+    parsed_items = models.JSONField(default=list, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="whatsapp_inbox_entries",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"WhatsApp Order #{self.id} - {self.mobile_number}"
+
+
+class WhatsAppSession(models.Model):
+    STATE_CHOICES = (
+        ("browsing", "Browsing"),
+        ("awaiting_payment", "Awaiting Payment"),
+        ("completed", "Completed"),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="whatsapp_sessions",
+    )
+    party = models.ForeignKey(
+        Party,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="whatsapp_sessions",
+    )
+    mobile_number = models.CharField(max_length=20)
+    state = models.CharField(max_length=30, choices=STATE_CHOICES, default="browsing")
+    selected_payment_mode = models.CharField(max_length=40, blank=True)
+    unmatched_items = models.JSONField(default=list, blank=True)
+    last_message_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("owner", "mobile_number")
+        ordering = ["-last_message_at"]
+
+    def __str__(self):
+        return f"WhatsApp Session {self.mobile_number}"
+
+
+class WhatsAppCartItem(models.Model):
+    session = models.ForeignKey(
+        WhatsAppSession,
+        on_delete=models.CASCADE,
+        related_name="cart_items",
+    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        unique_together = ("session", "product")
+
+    def line_total(self):
+        return self.quantity * self.unit_price
 
 
 # ---------------- Invoice ----------------
@@ -423,3 +586,25 @@ class StockEntry(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.entry_type} {self.quantity}"
+
+
+# ---------------- AI Reorder Settings ----------------
+class CommerceAISettings(models.Model):
+    """
+    Singleton-style settings for AI reorder planner thresholds.
+    Admin can update these values.
+    """
+    fast_daily_sales = models.DecimalField(max_digits=8, decimal_places=2, default=1.50)
+    medium_daily_sales = models.DecimalField(max_digits=8, decimal_places=2, default=0.60)
+    slow_daily_sales = models.DecimalField(max_digits=8, decimal_places=2, default=0.20)
+    safety_factor = models.DecimalField(max_digits=4, decimal_places=2, default=0.70)
+    default_budget = models.DecimalField(max_digits=14, decimal_places=2, default=50000)
+    default_target_days = models.PositiveIntegerField(default=30)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "Commerce AI Settings"
+
+    class Meta:
+        verbose_name = "AI Reorder Setting"
+        verbose_name_plural = "AI Reorder Settings"

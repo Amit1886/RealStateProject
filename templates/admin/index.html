@@ -1,0 +1,184 @@
+{% extends "admin/index.html" %}
+{% block content %}
+{{ block.super }}
+<div class="ai-admin-module">
+  <h2>AI Reorder Planner</h2>
+  <p>Live purchase recommendations, supplier grouping, and stock-out alerts.</p>
+  {% include "commerce/dashboard_ai_cards.html" %}
+  <div class="ai-admin-grid">
+    <div class="ai-admin-graph">
+      <h3>Budget Usage</h3>
+      <div class="ai-bar">
+        <div class="ai-bar-fill" id="ai-budget-fill"></div>
+      </div>
+      <div class="ai-graph-meta" id="ai-budget-meta">Loading...</div>
+    </div>
+    <div class="ai-admin-table">
+      <h3>Supplier-Wise PO Table</h3>
+      <div class="ai-table-wrap">
+        <table class="ai-table" id="ai-supplier-table">
+          <thead>
+            <tr>
+              <th>Supplier</th>
+              <th>Item</th>
+              <th>SKU</th>
+              <th>Qty</th>
+              <th>Unit Cost</th>
+              <th>Total Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="6">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="ai-admin-actions">
+    <a href="{% url 'commerce:ai_reorder_plan' %}" class="ai-admin-btn">Open Planner</a>
+    <a href="{% url 'commerce:supplier_po' %}" class="ai-admin-btn ai-admin-btn-ghost">Supplier POs</a>
+    <button class="ai-admin-btn ai-admin-btn-ghost" id="ai-admin-generate">Auto-Generate PO</button>
+  </div>
+</div>
+
+<style>
+.ai-admin-module {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+.ai-admin-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.ai-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+.ai-admin-graph {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  border-radius: 10px;
+  background: #fafafa;
+}
+.ai-bar {
+  height: 14px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+  margin: 10px 0;
+}
+.ai-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #0f766e, #22c55e);
+}
+.ai-graph-meta {
+  font-size: 12px;
+  color: #6b7280;
+}
+.ai-admin-table {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  border-radius: 10px;
+  background: #ffffff;
+}
+.ai-table-wrap {
+  overflow: auto;
+  max-height: 240px;
+}
+.ai-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.ai-table th,
+.ai-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+}
+.ai-admin-btn {
+  background: #0f766e;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 12px;
+}
+.ai-admin-btn-ghost {
+  background: transparent;
+  color: #0f766e;
+  border: 1px solid #0f766e;
+}
+</style>
+<script>
+(function () {
+  const budgetFill = document.getElementById('ai-budget-fill');
+  const budgetMeta = document.getElementById('ai-budget-meta');
+  const tableBody = document.querySelector('#ai-supplier-table tbody');
+  const generateBtn = document.getElementById('ai-admin-generate');
+
+  function formatCurrency(value) {
+    if (value === undefined || value === null) return '0';
+    return '' + Number(value).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  }
+
+  fetch('/api/ai/reorder-plan/')
+    .then(res => res.json())
+    .then(data => {
+      const budget = data.summary ? data.summary.budget : 0;
+      const used = data.summary ? data.summary.budget_used : 0;
+      const percent = budget ? Math.min(100, Math.round((used / budget) * 100)) : 0;
+      if (budgetFill) budgetFill.style.width = percent + '%';
+      if (budgetMeta) budgetMeta.textContent = `${formatCurrency(used)} of ${formatCurrency(budget)} used`;
+
+      if (!tableBody) return;
+      const rows = [];
+      const groups = data.supplier_groups || {};
+      Object.keys(groups).forEach(key => {
+        const group = groups[key];
+        (group.items || []).forEach(item => {
+          rows.push(`
+            <tr>
+              <td>${group.supplier_name || 'Supplier'}</td>
+              <td>${item.product}</td>
+              <td>${item.sku || '-'}</td>
+              <td>${item.qty}</td>
+              <td>${formatCurrency(item.unit_cost)}</td>
+              <td>${formatCurrency(item.total_cost)}</td>
+            </tr>
+          `);
+        });
+      });
+      tableBody.innerHTML = rows.join('') || '<tr><td colspan="6">No items</td></tr>';
+    })
+    .catch(() => {
+      if (budgetMeta) budgetMeta.textContent = 'Unavailable';
+      if (tableBody) tableBody.innerHTML = '<tr><td colspan="6">Unavailable</td></tr>';
+    });
+
+  if (generateBtn) {
+    generateBtn.addEventListener('click', () => {
+      generateBtn.disabled = true;
+      fetch('/api/ai/generate-po/', { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
+        .then(res => res.json())
+        .then(data => {
+          alert(data.message || 'PO generation complete');
+          generateBtn.disabled = false;
+        })
+        .catch(() => {
+          alert('Unable to generate PO right now.');
+          generateBtn.disabled = false;
+        });
+    });
+  }
+})();
+</script>
+{% endblock %}

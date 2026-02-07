@@ -18,12 +18,14 @@
     {% block extra_css %}{% endblock %}
 </head>
 
-<body class="{{ ui.theme_mode|default:'light' }}">
+<body class="{{ ui.theme_mode|default:'light' }}{% if hide_sidebar %} no-sidebar{% endif %}">
 
 <div class="layout">
 
     <!-- SIDEBAR -->
-    {% include "core/sidebar.html" %}
+    {% if not hide_sidebar %}
+        {% include "core/sidebar.html" %}
+    {% endif %}
 
     <!-- MAIN AREA -->
     <div class="main-content">
@@ -46,7 +48,7 @@
 
         <!-- FOOTER -->
         <footer class="footer">
-            © {% now "Y" %} KhataPro. All rights reserved.
+             {% now "Y" %} KhataPro. All rights reserved.
         </footer>
 
     </div>
@@ -61,6 +63,68 @@
 <script src="{% static 'js/sidebar.js' %}"></script>
 
 {% block extra_js %}{% endblock %}
+
+<!-- Locked Feature Modal -->
+<div id="lockedFeatureModal" class="locked-modal hidden">
+    <div class="locked-modal-card">
+        <div class="locked-modal-header"> Feature Locked</div>
+        <div class="locked-modal-body">
+            This feature requires Pro or Enterprise plan.
+        </div>
+        <div class="locked-modal-actions">
+            <button id="lockedModalClose" class="locked-btn ghost">Close</button>
+            <a id="lockedModalUpgrade" class="locked-btn primary" href="/billing/upgrade/">Go to Upgrade</a>
+        </div>
+    </div>
+</div>
+
+<style>
+  .locked-modal.hidden { display: none; }
+  .locked-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+  }
+  .locked-modal-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px;
+      max-width: 360px;
+      width: 92%;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+  }
+  body.dark .locked-modal-card { background: #0b1220; color: #e5e7eb; }
+  .locked-modal-header { font-weight: 700; margin-bottom: 8px; }
+  .locked-modal-body { font-size: 13px; color: #64748b; margin-bottom: 14px; }
+  body.dark .locked-modal-body { color: #94a3b8; }
+  .locked-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .locked-btn { border-radius: 999px; padding: 6px 12px; font-size: 12px; border: 1px solid #0f766e; text-decoration: none; }
+  .locked-btn.primary { background: #0f766e; color: #fff; }
+  .locked-btn.ghost { background: transparent; color: #0f766e; }
+</style>
+
+<script>
+  const lockedModal = document.getElementById("lockedFeatureModal");
+  const lockedClose = document.getElementById("lockedModalClose");
+  const lockedUpgrade = document.getElementById("lockedModalUpgrade");
+
+  document.addEventListener("click", (e) => {
+    const target = e.target.closest(".locked-feature");
+    if (!target) return;
+    e.preventDefault();
+    lockedUpgrade.href = target.dataset.upgradeUrl || "/billing/upgrade/";
+    lockedModal.classList.remove("hidden");
+  });
+
+  lockedClose.addEventListener("click", () => lockedModal.classList.add("hidden"));
+  lockedModal.addEventListener("click", (e) => {
+    if (e.target === lockedModal) lockedModal.classList.add("hidden");
+  });
+</script>
 
 </body>
 </html>

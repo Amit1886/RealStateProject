@@ -30,12 +30,12 @@
                                             {% if coupon.discount_type == 'percentage' %}
                                                 <span class="discount-badge">{{ coupon.discount_value }}% OFF</span>
                                             {% else %}
-                                                <span class="discount-badge">₹{{ coupon.discount_value }} OFF</span>
+                                                <span class="discount-badge">{{ coupon.discount_value }} OFF</span>
                                             {% endif %}
                                         </div>
                                         {% endif %}
                                         <div class="coupon-details">
-                                            <small>Min Order: ₹{{ coupon.min_order_amount }}</small>
+                                            <small>Min Order: {{ coupon.min_order_amount }}</small>
                                             {% if coupon.valid_until %}
                                             <small>Valid till: {{ coupon.valid_until|date:"M d" }}</small>
                                             {% endif %}
@@ -158,7 +158,7 @@
                                         {{ order.status|title }}
                                     </span>
                                 </td>
-                                <td>₹{{ order.total_amount }}</td>
+                                <td>{{ order.total_amount }}</td>
                                 <td>{{ order.created_at|date:"M d, Y" }}</td>
                             </tr>
                             {% empty %}
@@ -213,7 +213,7 @@
                                 <span class="time"><i class="fas fa-clock"></i> {{ order.created_at|timesince }}</span>
                                 <h3 class="timeline-header">New order from {{ order.party.name }}</h3>
                                 <div class="timeline-body">
-                                    Order #{{ order.id }} - ₹{{ order.total_amount }}
+                                    Order #{{ order.id }} - {{ order.total_amount }}
                                 </div>
                             </div>
                         </div>

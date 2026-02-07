@@ -1,7 +1,8 @@
 from django.contrib import admin
 from .models import (
     Plan, BillingInvoice, Subscription, PaymentGateway,
-    Commerce, Payment, PlanPermissions
+    Commerce, Payment, PlanPermissions, FeatureRegistry, PlanFeature, SubscriptionHistory,
+    UserFeatureOverride
 )
 
 
@@ -45,15 +46,21 @@ class PlanPermissionsAdmin(admin.ModelAdmin):
 # =========================
 # 💳 PLAN ADMIN
 # =========================
+class PlanFeatureInline(admin.TabularInline):
+    model = PlanFeature
+    extra = 0
+
+
 @admin.register(Plan)
 class PlanAdmin(admin.ModelAdmin):
+    inlines = [PlanFeatureInline]
     list_display = ('name', 'price', 'active', 'created_at')
     list_filter = ('active',)
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name',)
     fieldsets = (
         ("🎯 Plan Info", {
-            "fields": ("name", "slug", "price", "description")
+            "fields": ("name", "slug", "price", "price_monthly", "price_yearly", "discount_percent", "trial_days", "description")
         }),
         ("🔧 Settings", {
             "fields": ("active", "groups", "feature_toggle")
@@ -113,5 +120,26 @@ class PaymentAdmin(admin.ModelAdmin):
     list_display = ('id', 'order', 'amount', 'payment_method', 'payment_status', 'created_at')
     list_filter = ('payment_status', 'payment_method')
     search_fields = ('transaction_id', 'order__id')
+
+
+@admin.register(FeatureRegistry)
+class FeatureRegistryAdmin(admin.ModelAdmin):
+    list_display = ("key", "label", "group", "active")
+    list_filter = ("group", "active")
+    search_fields = ("key", "label")
+
+
+@admin.register(UserFeatureOverride)
+class UserFeatureOverrideAdmin(admin.ModelAdmin):
+    list_display = ("user", "feature", "is_enabled", "updated_at")
+    list_editable = ("is_enabled",)
+    list_filter = ("feature", "is_enabled")
+    search_fields = ("user__email", "user__mobile", "feature__key")
+
+
+@admin.register(SubscriptionHistory)
+class SubscriptionHistoryAdmin(admin.ModelAdmin):
+    list_display = ("user", "plan", "event_type", "created_at")
+    list_filter = ("event_type",)
 
 

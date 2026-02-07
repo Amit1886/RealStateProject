@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from .models import (
     User, UserProfile, DailySummary, BusinessSnapshot,
     ExpenseCategory, Expense, LoyaltyProgram, MembershipTier,
-    LoyaltyPoints, PointsTransaction, SpecialOffer
+    LoyaltyPoints, PointsTransaction, SpecialOffer, OTP 
 )
 
 # Custom User Admin
@@ -14,6 +14,12 @@ class CustomUserAdmin(UserAdmin):
 
 # Register User with custom admin
 admin.site.register(User, CustomUserAdmin)
+
+# Otp View Admin
+@admin.register(OTP)
+class OTPAdmin(admin.ModelAdmin):
+    list_display = ("user", "code", "created_at")
+    search_fields = ("user__username",)
 
 # Other models
 admin.site.register(UserProfile)

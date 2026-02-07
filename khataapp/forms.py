@@ -1,6 +1,7 @@
 # full path: ~/myproject/khatapro/khataapp/forms.py
 from django import forms
-from .models import Party, Transaction, SupplierPayment
+from django.contrib.auth import get_user_model
+from .models import Party, Transaction, SupplierPayment, FieldAgent
 from khataapp.models import UserProfile
 from .models import ContactMessage
 from commerce.models import Order
@@ -80,3 +81,28 @@ class SupplierPaymentForm(forms.ModelForm):
                 order_type='PURCHASE',
                 due_amount__gt=0
             ).select_related('party')
+
+
+# ----------------- Field Agent Form -----------------
+class FieldAgentForm(forms.ModelForm):
+    class Meta:
+        model = FieldAgent
+        fields = ["user", "role", "mobile", "assigned_parties", "is_active", "notes"]
+        widgets = {
+            "assigned_parties": forms.SelectMultiple(attrs={"size": 8}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        owner = kwargs.pop("owner", None)
+        super().__init__(*args, **kwargs)
+
+        User = get_user_model()
+        qs = User.objects.filter(is_active=True).exclude(is_superuser=True)
+        if owner:
+            qs = qs.exclude(id=owner.id)
+
+        if self.instance and self.instance.pk:
+            qs = qs | User.objects.filter(id=self.instance.user_id)
+
+        self.fields["user"].queryset = qs.distinct()

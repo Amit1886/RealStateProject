@@ -11,7 +11,7 @@
         <div class="card-body text-center">
           <h4 class="card-title">{{ plan.name }}</h4>
           <p class="card-text text-muted">{{ plan.description }}</p>
-          <h3 class="text-primary mb-3">₹{{ plan.price }}</h3>
+          <h3 class="text-primary mb-3">{{ plan.price }}</h3>
           {% if current_plan and plan.id == current_plan.id %}
             <button class="btn btn-success" disabled>Current Plan</button>
           {% else %}

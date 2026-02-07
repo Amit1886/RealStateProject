@@ -7,15 +7,17 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 import json
 import random
 import string
 import os
+from django.contrib.auth import get_user_model
 
 from .models import (
     Product, Warehouse, Order,                     # OrderItem removed because unused
     Payment, Stock, Invoice,ChatThread, ChatMessage, OrderItem, Category, SalesVoucher, SalesVoucherItem,
-    Coupon, UserCoupon, CouponUsage
+    Coupon, UserCoupon, CouponUsage, WhatsAppOrderInbox, WhatsAppSession, WhatsAppCartItem
 )
 from khataapp.models import UserProfile
 from django.db import transaction
@@ -30,6 +32,15 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+
+from commerce.services import build_reorder_plan, build_reorder_summary
+from commerce.services.whatsapp_orders import (
+    parse_whatsapp_order_message,
+    create_order_from_parsed_items,
+)
+from chatbot.services.flow_engine import run_flow
+
+User = get_user_model()
 
 
 
@@ -96,8 +107,15 @@ def download_invoice(request, order_id):
             f"₹ {item.subtotal:.2f}"
         ])
 
-    # ✅ Add total row
-    table_data.append(["", "", "Total:", f"₹ {order.total_amount():.2f}"])
+    # ✅ Totals
+    subtotal = order.subtotal_amount()
+    discount = order.discount_amount or Decimal("0.00")
+    tax = order.tax_amount or Decimal("0.00")
+    total = order.total_amount()
+    table_data.append(["", "", "Subtotal:", f"₹ {subtotal:.2f}"])
+    table_data.append(["", "", "Discount:", f"₹ {discount:.2f}"])
+    table_data.append(["", "", "Tax:", f"₹ {tax:.2f}"])
+    table_data.append(["", "", "Total:", f"₹ {total:.2f}"])
 
     # ✅ Create item table
     t = Table(table_data, colWidths=[200, 80, 100, 120])
@@ -543,6 +561,20 @@ def order_detail(request, pk):
     return render(request, "commerce/order_detail.html", {"order": order})
 
 
+@login_required
+def sales_order_detail(request, order_id):
+    order = get_object_or_404(Order, id=order_id, order_type__iexact="sale")
+    items = order.items.select_related("product")
+    return render(
+        request,
+        "commerce/sales_order_detail.html",
+        {
+            "order": order,
+            "items": items,
+        },
+    )
+
+
 # ---------------- Order Action (User Side) ----------------
 @login_required
 def order_action(request, order_id, action):
@@ -707,23 +739,31 @@ def add_invoice(request):
 def add_payment(request):
     if request.method == "POST":
         amount = request.POST.get("amount")
-        mode = request.POST.get("mode")
+        method = request.POST.get("method")
         reference = request.POST.get("reference")
         note = request.POST.get("note")
         invoice_id = request.POST.get("invoice_id")
+        payment_date = request.POST.get("payment_date")
+        payment_proof = request.FILES.get("payment_proof")
+        final_notes = request.POST.get("final_notes")
 
         try:
             invoice = Invoice.objects.get(id=invoice_id)
         except Invoice.DoesNotExist:
             messages.error(request, "❌ Invalid invoice selected.")
-            return redirect("add_payment")
+            return redirect("commerce:add_payment")
+
+        # Combine notes
+        combined_note = note or ""
+        if final_notes:
+            combined_note += "\n" + final_notes
 
         Payment.objects.create(
             invoice=invoice,
             amount=amount,
-            method=mode,
+            method=method,
             reference=reference,
-            note=note,
+            note=combined_note,
         )
         messages.success(request, "💰 Payment added successfully!")
         return redirect("accounts:dashboard")
@@ -803,6 +843,404 @@ def api_chat_send(request, thread_id):
             "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         })
     return JsonResponse({"error": "Only POST method allowed"}, status=405)
+
+
+# ---------------- WhatsApp Orders ----------------
+PAYMENT_MODES = {
+    "cash": "Cash",
+    "paytm": "Paytm",
+    "cod": "Cash on Delivery",
+    "netbanking": "Netbanking",
+}
+
+
+def _wa_help_text():
+    return (
+        "Welcome! Quick options (reply text):\n"
+        "[products] [cart] [checkout]\n"
+        "You can also type:\n"
+        "- category <name>\n"
+        "- add <qty> <product>\n"
+        "- pay cash/paytm/cod/netbanking"
+    )
+
+
+def _wa_categories_text(owner, party):
+    categories = Category.objects.filter(owner=owner).order_by("name")
+    if not categories.exists():
+        categories = Category.objects.all().order_by("name")
+    if not categories.exists():
+        return "No categories found."
+
+    cat_lines = "\n".join([f"- {c.name}" for c in categories])
+    segment = party.customer_category or "General"
+    return f"Customer segment: {segment}\nCategories:\n{cat_lines}\nQuick: [category <name>] [cart]"
+
+
+def _wa_products_in_category(owner, category_name):
+    category = Category.objects.filter(owner=owner, name__iexact=category_name).first()
+    if not category:
+        category = Category.objects.filter(name__iexact=category_name).first()
+    if not category:
+        return "Category not found. Type 'products' to see categories."
+
+    products = Product.objects.filter(category=category, owner=owner).order_by("name")
+    if not products.exists():
+        products = Product.objects.filter(category=category).order_by("name")
+    if not products.exists():
+        return f"No products in {category.name}."
+
+    lines = "\n".join([f"- {p.name} (Rs. {p.price})" for p in products])
+    return f"{category.name} products:\n{lines}\nQuick: [add <qty> <product>] [cart]"
+
+
+def _wa_cart_text(session):
+    items = session.cart_items.select_related("product")
+    if not items.exists() and not session.unmatched_items:
+        return "Your cart is empty. Type 'products' to browse."
+
+    lines = []
+    total = Decimal("0.00")
+    for item in items:
+        line_total = item.quantity * item.unit_price
+        total += line_total
+        lines.append(f"- {item.product.name} x {item.quantity} = Rs. {line_total}")
+
+    for item in session.unmatched_items:
+        lines.append(f"- {item.get('name')} x {item.get('qty')} (manual review)")
+
+    lines.append(f"Total: Rs. {total}")
+    lines.append("Type 'checkout' to place order.")
+    return "\n".join(lines)
+
+
+def _wa_strip_verbs(text):
+    lower = text.lower().strip()
+    for verb in ["add ", "order ", "buy ", "need ", "want "]:
+        if lower.startswith(verb):
+            return text[len(verb):].strip()
+    return text
+
+
+@login_required
+def whatsapp_order_inbox(request):
+    inbox = WhatsAppOrderInbox.objects.filter(owner=request.user).select_related("party", "order")[:200]
+    return render(request, "commerce/whatsapp_order_inbox.html", {"inbox": inbox})
+
+
+@login_required
+@require_POST
+def whatsapp_order_action(request, inbox_id, action):
+    inbox = get_object_or_404(WhatsAppOrderInbox, id=inbox_id, owner=request.user)
+    if action == "approve":
+        inbox.status = "approved"
+        if inbox.order:
+            inbox.order.status = "accepted"
+            inbox.order.save(update_fields=["status"])
+        inbox.save(update_fields=["status"])
+        messages.success(request, f"WhatsApp order #{inbox.id} approved.")
+    elif action == "reject":
+        inbox.status = "rejected"
+        if inbox.order:
+            inbox.order.status = "rejected"
+            inbox.order.save(update_fields=["status"])
+        inbox.save(update_fields=["status"])
+        messages.error(request, f"WhatsApp order #{inbox.id} rejected.")
+    elif action == "manual":
+        inbox.status = "manual_review"
+        inbox.save(update_fields=["status"])
+        messages.info(request, f"WhatsApp order #{inbox.id} moved to manual review.")
+    else:
+        messages.error(request, "Invalid action.")
+    return redirect("commerce:whatsapp_order_inbox")
+
+
+@csrf_exempt
+@require_POST
+def api_whatsapp_order_inbox(request):
+    """
+    Chatbot intake endpoint for WhatsApp messages.
+    Expected JSON:
+    {
+      "mobile": "9999999999",
+      "message": "1 atta, 2 milk",
+      "owner_id": 1,
+      "customer_name": "Ravi",
+      "address": "..."
+    }
+    """
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+    mobile = (payload.get("mobile") or "").strip()
+    message = (payload.get("message") or "").strip()
+    owner_id = payload.get("owner_id")
+    customer_name = (payload.get("customer_name") or "").strip()
+    address = (payload.get("address") or "").strip()
+
+    if not mobile or not message:
+        return JsonResponse({"error": "mobile and message are required"}, status=400)
+
+    party = Party.objects.filter(whatsapp_number=mobile).first() or Party.objects.filter(mobile=mobile).first()
+    owner = party.owner if party else None
+
+    if not owner and owner_id:
+        owner = User.objects.filter(id=owner_id).first()
+
+    if not owner and request.user.is_authenticated:
+        owner = request.user
+
+    if not owner:
+        return JsonResponse({"error": "Unable to determine owner for this message"}, status=400)
+
+    if not party:
+        party = Party.objects.create(
+            owner=owner,
+            name=customer_name or f"WhatsApp Customer {mobile[-4:]}",
+            mobile=mobile,
+            whatsapp_number=mobile,
+            address=address or "",
+            party_type="customer",
+        )
+
+    session, created = WhatsAppSession.objects.get_or_create(
+        owner=owner,
+        mobile_number=mobile,
+        defaults={"party": party},
+    )
+    if not session.party:
+        session.party = party
+        session.save(update_fields=["party"])
+
+    text = message.strip()
+    text_lower = text.lower()
+
+    if text_lower in ["hi", "hello", "start", "menu", "help"]:
+        return JsonResponse({"reply": _wa_help_text()})
+
+    if text_lower in ["products", "product list", "catalog", "list"]:
+        if session.state != "browsing":
+            session.state = "browsing"
+            session.save(update_fields=["state"])
+        return JsonResponse({"reply": _wa_categories_text(owner, party)})
+
+    if text_lower.startswith("category "):
+        if session.state != "browsing":
+            session.state = "browsing"
+            session.save(update_fields=["state"])
+        category_name = text[9:].strip()
+        return JsonResponse({"reply": _wa_products_in_category(owner, category_name)})
+
+    if text_lower in ["cart", "my cart", "basket"]:
+        return JsonResponse({"reply": _wa_cart_text(session)})
+
+    if text_lower in ["checkout", "place order", "submit", "order submit"]:
+        if not session.cart_items.exists() and not session.unmatched_items:
+            return JsonResponse({"reply": "Your cart is empty. Add items first."})
+        session.state = "awaiting_payment"
+        session.save(update_fields=["state"])
+        return JsonResponse({
+            "reply": "Select payment mode: cash, paytm, cod, netbanking"
+        })
+
+    if text_lower in PAYMENT_MODES:
+        if session.state != "awaiting_payment":
+            return JsonResponse({"reply": "Type 'checkout' to select payment mode."})
+
+        session.selected_payment_mode = text_lower
+        session.save(update_fields=["selected_payment_mode"])
+
+        # Create order only on submit/payment selection
+        order = Order.objects.create(
+            owner=owner,
+            party=party,
+            order_type="SALE",
+            status="pending",
+            notes=f"WhatsApp order from {mobile}",
+            order_source="WhatsApp",
+        )
+
+        for item in session.cart_items.select_related("product"):
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                qty=item.quantity,
+                price=item.unit_price,
+            )
+
+        for item in session.unmatched_items:
+            OrderItem.objects.create(
+                order=order,
+                product=None,
+                qty=item.get("qty", 1),
+                price=Decimal("0.00"),
+                raw_name=item.get("name", "Unknown"),
+            )
+
+        invoice = Invoice.objects.create(order=order)
+        Payment.objects.create(
+            invoice=invoice,
+            amount=order.total_amount(),
+            method=PAYMENT_MODES[text_lower],
+            note="WhatsApp payment selection",
+        )
+
+        inbox_status = "new" if not session.unmatched_items else "manual_review"
+        WhatsAppOrderInbox.objects.create(
+            owner=owner,
+            party=party,
+            mobile_number=mobile,
+            customer_name=party.name,
+            raw_message=message,
+            parsed_items=[
+                {
+                    "raw_name": item.product.name,
+                    "quantity": item.quantity,
+                    "matched": True,
+                    "product_id": item.product.id,
+                    "confidence": 1.0,
+                    "status": "matched",
+                }
+                for item in session.cart_items.select_related("product")
+            ] + [
+                {
+                    "raw_name": item.get("name", "Unknown"),
+                    "quantity": item.get("qty", 1),
+                    "matched": False,
+                    "product_id": None,
+                    "confidence": 0.0,
+                    "status": "manual_review",
+                }
+                for item in session.unmatched_items
+            ],
+            status=inbox_status,
+            order=order,
+        )
+
+        session.cart_items.all().delete()
+        session.unmatched_items = []
+        session.state = "completed"
+        session.save(update_fields=["unmatched_items", "state"])
+
+        return JsonResponse({
+            "reply": f"Order #{order.id} placed. Total Rs. {order.total_amount()}. Payment: {PAYMENT_MODES[text_lower]}."
+        })
+
+    # Remove item
+    if text_lower.startswith("remove "):
+        if session.state != "browsing":
+            session.state = "browsing"
+            session.save(update_fields=["state"])
+        remove_text = _wa_strip_verbs(text)
+        products = Product.objects.filter(owner=owner)
+        if not products.exists():
+            products = Product.objects.all()
+        parsed = parse_whatsapp_order_message(remove_text, products)
+        if parsed and parsed[0].matched_product:
+            WhatsAppCartItem.objects.filter(session=session, product=parsed[0].matched_product).delete()
+            return JsonResponse({"reply": "Removed item. Type 'cart' to view."})
+        return JsonResponse({"reply": "Product not found in cart."})
+
+    if text_lower in ["clear cart", "clear", "empty cart"]:
+        if session.state != "browsing":
+            session.state = "browsing"
+            session.save(update_fields=["state"])
+        session.cart_items.all().delete()
+        session.unmatched_items = []
+        session.save(update_fields=["unmatched_items"])
+        return JsonResponse({"reply": "Cart cleared."})
+
+    # Default: try to add items
+    if session.state != "browsing":
+        session.state = "browsing"
+        session.save(update_fields=["state"])
+    cleaned = _wa_strip_verbs(text)
+    products = Product.objects.filter(owner=owner)
+    if not products.exists():
+        products = Product.objects.all()
+    parsed_items = parse_whatsapp_order_message(cleaned, products)
+
+    added = []
+    unmatched = []
+    for item in parsed_items:
+        if item.matched_product:
+            cart_item, _ = WhatsAppCartItem.objects.get_or_create(
+                session=session,
+                product=item.matched_product,
+                defaults={"quantity": 0, "unit_price": item.matched_product.price},
+            )
+            cart_item.quantity += item.quantity
+            cart_item.unit_price = item.matched_product.price
+            cart_item.save(update_fields=["quantity", "unit_price"])
+            added.append(f"{item.matched_product.name} x {item.quantity}")
+        else:
+            unmatched.append({"name": item.raw_name, "qty": item.quantity})
+
+    if unmatched:
+        session.unmatched_items = (session.unmatched_items or []) + unmatched
+        session.save(update_fields=["unmatched_items"])
+
+    if added or unmatched:
+        reply_bits = []
+        if added:
+            reply_bits.append("Added: " + ", ".join(added))
+        if unmatched:
+            reply_bits.append("Manual review: " + ", ".join([f"{u['name']} x {u['qty']}" for u in unmatched]))
+        reply_bits.append("Type 'cart' to review or 'checkout' to place order.")
+        return JsonResponse({"reply": "\n".join(reply_bits)})
+
+    flow_reply = run_flow(message)
+    if flow_reply:
+        return JsonResponse({"reply": flow_reply})
+
+    return JsonResponse({"reply": "Sorry, I could not understand. Type 'help' for options."})
+
+
+@require_GET
+def api_orders_live_feed(request):
+    owner_id = request.GET.get("owner_id")
+    owner = None
+    if request.user.is_authenticated:
+        owner = request.user
+    if not owner and owner_id:
+        owner = User.objects.filter(id=owner_id).first()
+
+    if not owner:
+        return JsonResponse({"error": "owner not resolved"}, status=400)
+
+    today = timezone.now().date()
+    orders = (
+        Order.objects.filter(owner=owner, order_source__iexact="whatsapp")
+        .select_related("party")
+        .order_by("-created_at")[:10]
+    )
+    total_today = Order.objects.filter(
+        owner=owner,
+        order_source__iexact="whatsapp",
+        created_at__date=today,
+    )
+
+    total_today_count = total_today.count()
+    total_sales_today = sum([o.total_amount() for o in total_today])
+
+    data = {
+        "total_orders_today": total_today_count,
+        "total_sales_today": float(total_sales_today),
+        "latest_orders": [
+            {
+                "id": o.id,
+                "order_no": f"#{o.id}",
+                "customer_name": o.party.name if o.party else "Unknown",
+                "mobile": o.party.mobile if o.party else "",
+                "total": float(o.total_amount()),
+                "created_at": o.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            for o in orders
+        ],
+    }
+    return JsonResponse(data)
 
 
 # ---------------- Coupons ----------------
@@ -912,3 +1350,151 @@ def dashboard_with_coupons(request):
         "available_coupons": available_coupons,
     }
     return render(request, "commerce/dashboard_with_coupons.html", context)
+
+
+# ---------------- AI Reorder Planner ----------------
+def _parse_budget(request, default=None):
+    if default is None:
+        from commerce.models import CommerceAISettings
+        settings_obj = CommerceAISettings.objects.first() or CommerceAISettings.objects.create()
+        default = settings_obj.default_budget
+    raw = request.GET.get("budget") or request.POST.get("budget")
+    if raw is None:
+        return default
+    try:
+        return Decimal(str(raw))
+    except Exception:
+        return default
+
+
+@login_required
+@require_GET
+def ai_reorder_plan_view(request):
+    budget = _parse_budget(request, default=Decimal("50000"))
+    from commerce.models import CommerceAISettings
+    settings_obj = CommerceAISettings.objects.first() or CommerceAISettings.objects.create()
+    target_days = request.GET.get("target_days", settings_obj.default_target_days)
+    plan = build_reorder_plan(
+        user=request.user,
+        budget=budget,
+        target_stock_days=target_days,
+    )
+    context = {
+        "plan": plan,
+        "budget": budget,
+        "target_days": target_days,
+    }
+    return render(request, "commerce/reorder_plan.html", context)
+
+
+@login_required
+@require_GET
+def supplier_po_view(request):
+    budget = _parse_budget(request, default=Decimal("50000"))
+    from commerce.models import CommerceAISettings
+    settings_obj = CommerceAISettings.objects.first() or CommerceAISettings.objects.create()
+    target_days = request.GET.get("target_days", settings_obj.default_target_days)
+    plan = build_reorder_plan(
+        user=request.user,
+        budget=budget,
+        target_stock_days=target_days,
+    )
+    return render(request, "commerce/supplier_po.html", {"plan": plan, "budget": budget, "target_days": target_days})
+
+
+@login_required
+@require_GET
+def api_ai_reorder_plan(request):
+    budget = _parse_budget(request, default=Decimal("50000"))
+    from commerce.models import CommerceAISettings
+    settings_obj = CommerceAISettings.objects.first() or CommerceAISettings.objects.create()
+    target_days = request.GET.get("target_days", settings_obj.default_target_days)
+    plan = build_reorder_plan(
+        user=request.user,
+        budget=budget,
+        target_stock_days=target_days,
+    )
+    return JsonResponse(plan, safe=False)
+
+
+@login_required
+@require_GET
+def api_dashboard_reorder_summary(request):
+    budget = _parse_budget(request, default=Decimal("50000"))
+    from commerce.models import CommerceAISettings
+    settings_obj = CommerceAISettings.objects.first() or CommerceAISettings.objects.create()
+    target_days = request.GET.get("target_days", settings_obj.default_target_days)
+    summary = build_reorder_summary(
+        user=request.user,
+        budget=budget,
+        target_stock_days=target_days,
+    )
+    return JsonResponse(summary, safe=False)
+
+
+@require_GET
+def api_dashboard_reorder_summary_health(request):
+    return JsonResponse({"status": "ok", "service": "dashboard_reorder_summary"})
+
+
+@require_GET
+def api_ai_reorder_plan_health(request):
+    return JsonResponse({"status": "ok", "service": "ai_reorder_plan"})
+
+
+@login_required
+@require_POST
+def api_ai_generate_po(request):
+    budget = _parse_budget(request, default=Decimal("50000"))
+    from commerce.models import CommerceAISettings
+    settings_obj = CommerceAISettings.objects.first() or CommerceAISettings.objects.create()
+    target_days = request.GET.get("target_days", settings_obj.default_target_days)
+    plan = build_reorder_plan(
+        user=request.user,
+        budget=budget,
+        target_stock_days=target_days,
+    )
+
+    created_orders = []
+    supplier_groups = plan.get("supplier_groups", {})
+
+    for group in supplier_groups.values():
+        supplier_id = group.get("supplier_id")
+        if not supplier_id:
+            continue
+
+        items = [i for i in group.get("items", []) if i.get("qty", 0) > 0]
+        if not items:
+            continue
+
+        order = Order.objects.create(
+            owner=request.user,
+            party_id=supplier_id,
+            order_type="PURCHASE",
+            status="pending",
+            notes="AI reorder planner auto-generated PO",
+        )
+
+        for item in items:
+            product = Product.objects.filter(sku=item.get("sku")).first()
+            if not product:
+                product = Product.objects.filter(name=item.get("product")).first()
+            if not product:
+                continue
+
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                qty=item.get("qty", 0),
+                price=item.get("unit_cost", 0),
+            )
+
+        created_orders.append(order.id)
+
+    return JsonResponse(
+        {
+            "success": True,
+            "created_orders": created_orders,
+            "message": "Purchase orders created" if created_orders else "No purchase orders created",
+        }
+    )

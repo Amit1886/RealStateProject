@@ -2,7 +2,7 @@
 {% block content %}
 
 <style>
-  /* 🌈 Modern App Card UI */
+  /*  Modern App Card UI */
   .order-container {
     max-width: 480px;
     margin: 40px auto;
@@ -90,7 +90,7 @@
 
 <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
   <div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md">
-    <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">📦 Create New Order</h2>
+    <h2 class="text-2xl font-bold mb-4 text-center text-gray-800"> Create New Order</h2>
 
     <form method="POST" class="space-y-4 order-form">
       {% csrf_token %}
@@ -136,10 +136,10 @@
 
       <!-- Submit Button -->
       <button type="submit" class="btn-submit">
-        ✅ Create Order
+         Create Order
       </button>
     </form>
-    <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary px-4 rounded-pill">← Back to Dashboard</a>
+    <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary px-4 rounded-pill"> Back to Dashboard</a>
   </div>
 </div>
 

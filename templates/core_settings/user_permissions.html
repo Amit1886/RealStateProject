@@ -14,9 +14,9 @@
     <div class="card">
         <div class="card-header">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <h3 class="mb-0">🔐 Your Plan Permissions</h3>
+                <h3 class="mb-0"> Your Plan Permissions</h3>
                 <span class="badge" style="background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem;">
-                    📋 Plan: {{ user_plan.name }}
+                     Plan: {{ user_plan.name }}
                 </span>
             </div>
         </div>
@@ -35,7 +35,7 @@
                 <div class="col-md-3">
                     <div style="text-align: center;">
                         <p style="color: #6b7280; margin-bottom: 0.5rem;">Monthly Price</p>
-                        <p class="font-semibold" style="font-size: 1.2rem;">₹{{ user_plan.price }}</p>
+                        <p class="font-semibold" style="font-size: 1.2rem;">{{ user_plan.price }}</p>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -43,9 +43,9 @@
                         <p style="color: #6b7280; margin-bottom: 0.5rem;">Status</p>
                         <p>
                             {% if user_plan.active %}
-                            <span class="badge bg-success" style="font-size: 0.95rem;">✓ Active</span>
+                            <span class="badge bg-success" style="font-size: 0.95rem;"> Active</span>
                             {% else %}
-                            <span class="badge bg-danger" style="font-size: 0.95rem;">✗ Inactive</span>
+                            <span class="badge bg-danger" style="font-size: 0.95rem;"> Inactive</span>
                             {% endif %}
                         </p>
                     </div>
@@ -53,7 +53,7 @@
                 <div class="col-md-3">
                     <div style="text-align: center;">
                         <a href="{% url 'accounts:dashboard' %}" class="btn btn-secondary btn-sm">
-                            ⬅️ Back to Dashboard
+                             Back to Dashboard
                         </a>
                     </div>
                 </div>
@@ -68,21 +68,21 @@
             <!-- Dashboard & Reports -->
             <div class="col-md-6">
                 <div style="padding: 1.5rem; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);">
-                    <p class="font-semibold mb-3" style="font-size: 1.1rem;">📊 Dashboard & Reports</p>
+                    <p class="font-semibold mb-3" style="font-size: 1.1rem;"> Dashboard & Reports</p>
                     <div style="display: grid; gap: 0.8rem;">
-                        {% for key, value in permission_categories|get_item:"📊 Dashboard & Reports".items %}
+                        {% for key, value in permission_categories|get_item:" Dashboard & Reports".items %}
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(59, 130, 246, 0.1);">
                             <span style="color: var(--dark);">
-                                {% if key == 'allow_dashboard' %}✅ Dashboard{% endif %}
-                                {% if key == 'allow_reports' %}📋 Reports{% endif %}
-                                {% if key == 'allow_pdf_export' %}📄 PDF Export{% endif %}
-                                {% if key == 'allow_excel_export' %}📊 Excel Export{% endif %}
-                                {% if key == 'allow_analytics' %}📈 Analytics{% endif %}
+                                {% if key == 'allow_dashboard' %} Dashboard{% endif %}
+                                {% if key == 'allow_reports' %} Reports{% endif %}
+                                {% if key == 'allow_pdf_export' %} PDF Export{% endif %}
+                                {% if key == 'allow_excel_export' %} Excel Export{% endif %}
+                                {% if key == 'allow_analytics' %} Analytics{% endif %}
                             </span>
                             {% if value %}
-                            <span class="badge bg-success">✓ Allowed</span>
+                            <span class="badge bg-success"> Allowed</span>
                             {% else %}
-                            <span class="badge bg-danger">✗ Disabled</span>
+                            <span class="badge bg-danger"> Disabled</span>
                             {% endif %}
                         </div>
                         {% endfor %}
@@ -93,23 +93,23 @@
             <!-- Party Management -->
             <div class="col-md-6">
                 <div style="padding: 1.5rem; background: #f0fdf4; border-radius: 8px; border-left: 4px solid #10b981; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);">
-                    <p class="font-semibold mb-3" style="font-size: 1.1rem;">👥 Party Management</p>
+                    <p class="font-semibold mb-3" style="font-size: 1.1rem;"> Party Management</p>
                     <div style="display: grid; gap: 0.8rem;">
-                        {% for key, value in permission_categories|get_item:"👥 Party Management".items %}
+                        {% for key, value in permission_categories|get_item:" Party Management".items %}
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(16, 185, 129, 0.1);">
                             <span style="color: var(--dark);">
-                                {% if key == 'allow_add_party' %}➕ Add Party{% endif %}
-                                {% if key == 'allow_edit_party' %}✏️ Edit Party{% endif %}
-                                {% if key == 'allow_delete_party' %}🗑️ Delete Party{% endif %}
-                                {% if key == 'max_parties' %}📊 Max Parties{% endif %}
+                                {% if key == 'allow_add_party' %} Add Party{% endif %}
+                                {% if key == 'allow_edit_party' %} Edit Party{% endif %}
+                                {% if key == 'allow_delete_party' %} Delete Party{% endif %}
+                                {% if key == 'max_parties' %} Max Parties{% endif %}
                             </span>
                             {% if key == 'max_parties' %}
                             <span class="badge bg-info">{{ value }} parties</span>
                             {% else %}
                                 {% if value %}
-                                <span class="badge bg-success">✓ Allowed</span>
+                                <span class="badge bg-success"> Allowed</span>
                                 {% else %}
-                                <span class="badge bg-danger">✗ Disabled</span>
+                                <span class="badge bg-danger"> Disabled</span>
                                 {% endif %}
                             {% endif %}
                         </div>
@@ -121,20 +121,20 @@
             <!-- Transactions -->
             <div class="col-md-6">
                 <div style="padding: 1.5rem; background: #eff6ff; border-radius: 8px; border-left: 4px solid #0ea5e9; box-shadow: 0 2px 4px rgba(14, 165, 233, 0.1);">
-                    <p class="font-semibold mb-3" style="font-size: 1.1rem;">💰 Transactions</p>
+                    <p class="font-semibold mb-3" style="font-size: 1.1rem;"> Transactions</p>
                     <div style="display: grid; gap: 0.8rem;">
-                        {% for key, value in permission_categories|get_item:"💰 Transactions".items %}
+                        {% for key, value in permission_categories|get_item:" Transactions".items %}
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(14, 165, 233, 0.1);">
                             <span style="color: var(--dark);">
-                                {% if key == 'allow_add_transaction' %}➕ Add Transaction{% endif %}
-                                {% if key == 'allow_edit_transaction' %}✏️ Edit Transaction{% endif %}
-                                {% if key == 'allow_delete_transaction' %}🗑️ Delete Transaction{% endif %}
-                                {% if key == 'allow_bulk_transaction' %}📦 Bulk Transaction{% endif %}
+                                {% if key == 'allow_add_transaction' %} Add Transaction{% endif %}
+                                {% if key == 'allow_edit_transaction' %} Edit Transaction{% endif %}
+                                {% if key == 'allow_delete_transaction' %} Delete Transaction{% endif %}
+                                {% if key == 'allow_bulk_transaction' %} Bulk Transaction{% endif %}
                             </span>
                             {% if value %}
-                            <span class="badge bg-success">✓ Allowed</span>
+                            <span class="badge bg-success"> Allowed</span>
                             {% else %}
-                            <span class="badge bg-danger">✗ Disabled</span>
+                            <span class="badge bg-danger"> Disabled</span>
                             {% endif %}
                         </div>
                         {% endfor %}
@@ -145,20 +145,20 @@
             <!-- Commerce & Warehouse -->
             <div class="col-md-6">
                 <div style="padding: 1.5rem; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b; box-shadow: 0 2px 4px rgba(245, 158, 11, 0.1);">
-                    <p class="font-semibold mb-3" style="font-size: 1.1rem;">📦 Commerce & Warehouse</p>
+                    <p class="font-semibold mb-3" style="font-size: 1.1rem;"> Commerce & Warehouse</p>
                     <div style="display: grid; gap: 0.8rem;">
-                        {% for key, value in permission_categories|get_item:"📦 Commerce & Warehouse".items %}
+                        {% for key, value in permission_categories|get_item:" Commerce & Warehouse".items %}
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(245, 158, 11, 0.1);">
                             <span style="color: var(--dark);">
-                                {% if key == 'allow_commerce' %}🛍️ Commerce{% endif %}
-                                {% if key == 'allow_warehouse' %}🏭 Warehouse{% endif %}
-                                {% if key == 'allow_orders' %}📋 Orders{% endif %}
-                                {% if key == 'allow_inventory' %}📦 Inventory{% endif %}
+                                {% if key == 'allow_commerce' %} Commerce{% endif %}
+                                {% if key == 'allow_warehouse' %} Warehouse{% endif %}
+                                {% if key == 'allow_orders' %} Orders{% endif %}
+                                {% if key == 'allow_inventory' %} Inventory{% endif %}
                             </span>
                             {% if value %}
-                            <span class="badge bg-success">✓ Allowed</span>
+                            <span class="badge bg-success"> Allowed</span>
                             {% else %}
-                            <span class="badge bg-danger">✗ Disabled</span>
+                            <span class="badge bg-danger"> Disabled</span>
                             {% endif %}
                         </div>
                         {% endfor %}
@@ -169,19 +169,19 @@
             <!-- Communication -->
             <div class="col-md-6">
                 <div style="padding: 1.5rem; background: #fee2e2; border-radius: 8px; border-left: 4px solid #ef4444; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1);">
-                    <p class="font-semibold mb-3" style="font-size: 1.1rem;">📱 Communication</p>
+                    <p class="font-semibold mb-3" style="font-size: 1.1rem;"> Communication</p>
                     <div style="display: grid; gap: 0.8rem;">
-                        {% for key, value in permission_categories|get_item:"📱 Communication".items %}
+                        {% for key, value in permission_categories|get_item:" Communication".items %}
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(239, 68, 68, 0.1);">
                             <span style="color: var(--dark);">
-                                {% if key == 'allow_whatsapp' %}💬 WhatsApp{% endif %}
-                                {% if key == 'allow_sms' %}📞 SMS{% endif %}
-                                {% if key == 'allow_email' %}📧 Email{% endif %}
+                                {% if key == 'allow_whatsapp' %} WhatsApp{% endif %}
+                                {% if key == 'allow_sms' %} SMS{% endif %}
+                                {% if key == 'allow_email' %} Email{% endif %}
                             </span>
                             {% if value %}
-                            <span class="badge bg-success">✓ Allowed</span>
+                            <span class="badge bg-success"> Allowed</span>
                             {% else %}
-                            <span class="badge bg-danger">✗ Disabled</span>
+                            <span class="badge bg-danger"> Disabled</span>
                             {% endif %}
                         </div>
                         {% endfor %}
@@ -192,18 +192,18 @@
             <!-- Ledger & Credit -->
             <div class="col-md-6">
                 <div style="padding: 1.5rem; background: #fce7f3; border-radius: 8px; border-left: 4px solid #ec4899; box-shadow: 0 2px 4px rgba(236, 72, 153, 0.1);">
-                    <p class="font-semibold mb-3" style="font-size: 1.1rem;">📊 Ledger & Credit</p>
+                    <p class="font-semibold mb-3" style="font-size: 1.1rem;"> Ledger & Credit</p>
                     <div style="display: grid; gap: 0.8rem;">
-                        {% for key, value in permission_categories|get_item:"📊 Ledger & Credit".items %}
+                        {% for key, value in permission_categories|get_item:" Ledger & Credit".items %}
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(236, 72, 153, 0.1);">
                             <span style="color: var(--dark);">
-                                {% if key == 'allow_ledger' %}📋 Ledger{% endif %}
-                                {% if key == 'allow_credit_report' %}📊 Credit Report{% endif %}
+                                {% if key == 'allow_ledger' %} Ledger{% endif %}
+                                {% if key == 'allow_credit_report' %} Credit Report{% endif %}
                             </span>
                             {% if value %}
-                            <span class="badge bg-success">✓ Allowed</span>
+                            <span class="badge bg-success"> Allowed</span>
                             {% else %}
-                            <span class="badge bg-danger">✗ Disabled</span>
+                            <span class="badge bg-danger"> Disabled</span>
                             {% endif %}
                         </div>
                         {% endfor %}
@@ -214,19 +214,19 @@
             <!-- Admin & Settings -->
             <div class="col-md-6">
                 <div style="padding: 1.5rem; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #6b7280; box-shadow: 0 2px 4px rgba(107, 114, 128, 0.1);">
-                    <p class="font-semibold mb-3" style="font-size: 1.1rem;">🔧 Admin & Settings</p>
+                    <p class="font-semibold mb-3" style="font-size: 1.1rem;"> Admin & Settings</p>
                     <div style="display: grid; gap: 0.8rem;">
-                        {% for key, value in permission_categories|get_item:"🔧 Admin & Settings".items %}
+                        {% for key, value in permission_categories|get_item:" Admin & Settings".items %}
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(107, 114, 128, 0.1);">
                             <span style="color: var(--dark);">
-                                {% if key == 'allow_settings' %}⚙️ Settings{% endif %}
-                                {% if key == 'allow_users' %}👤 Users{% endif %}
-                                {% if key == 'allow_api_access' %}🔌 API Access{% endif %}
+                                {% if key == 'allow_settings' %} Settings{% endif %}
+                                {% if key == 'allow_users' %} Users{% endif %}
+                                {% if key == 'allow_api_access' %} API Access{% endif %}
                             </span>
                             {% if value %}
-                            <span class="badge bg-success">✓ Allowed</span>
+                            <span class="badge bg-success"> Allowed</span>
                             {% else %}
-                            <span class="badge bg-danger">✗ Disabled</span>
+                            <span class="badge bg-danger"> Disabled</span>
                             {% endif %}
                         </div>
                         {% endfor %}
@@ -239,10 +239,10 @@
 
     <!-- Info Section -->
     <div style="margin-top: 2rem; padding: 1.5rem; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
-        <p class="mb-2" style="color: #1e40af; font-weight: 600;">ℹ️ About Your Permissions</p>
+        <p class="mb-2" style="color: #1e40af; font-weight: 600;"> About Your Permissions</p>
         <ul style="color: #3730a3; margin-bottom: 0; padding-left: 1.5rem;">
             <li>This page shows all the features available with your <strong>{{ user_plan.name }}</strong> plan.</li>
-            <li>Disabled features (marked with ✗) are not available on this plan.</li>
+            <li>Disabled features (marked with ) are not available on this plan.</li>
             <li>To unlock more features, consider upgrading to a higher plan.</li>
             <li>Admins can manage these permissions per plan in the Settings dashboard.</li>
         </ul>
