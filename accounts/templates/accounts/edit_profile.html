@@ -2,158 +2,231 @@
 {% load static %}
 
 {% block content %}
-
-<div class="card saas-card">
-
-  <!-- HEADER -->
-  <div class="card-header">
-    <div>
-      <h2 class="card-title">Edit Profile</h2>
-      <p class="card-subtitle">Manage your personal & business information</p>
+<div class="profile-center">
+  <div class="profile-hero">
+    <div class="hero-left">
+      <h1>Profile & Control Center</h1>
+      <p>Manage identity, security, plan, and preferences in one place.</p>
+    </div>
+    <div class="hero-right">
+      <a href="{% url 'billing:plan_management' %}" class="primary-btn">Upgrade Plan</a>
     </div>
   </div>
 
-  <!-- BODY -->
-  <div class="card-body">
-
-    <!-- PROFILE COMPLETION -->
-    <div class="profile-progress">
-      <span>Profile Completion</span>
-      <div class="progress-bar">
-        <div class="progress-fill" style="width: 75%"></div>
+  <div class="profile-grid">
+    <div class="profile-card">
+      <div class="card-header">
+        <h3>Profile Card</h3>
+        <span class="badge">{% if subscription %}{{ subscription.plan.name }}{% else %}Free{% endif %}</span>
+      </div>
+      <div class="profile-info">
+        <div class="avatar-wrap">
+          <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" alt="Avatar">
+        </div>
+        <div>
+          <h2>{{ profile.full_name|default:request.user.username }}</h2>
+          <p>{{ profile.business_name|default:"No business name" }}</p>
+          <div class="tag-row">
+            <span>GST: {{ profile.gst_number|default:"-" }}</span>
+            <span>Mobile: {{ profile.mobile|default:"-" }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <form method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-
-      <!-- BASIC INFO -->
-      <div class="section">
-        <h4 class="section-heading">Basic Information</h4>
-
-        <div class="form-grid">
-
-          <div class="form-field">
-            <i class="fa fa-user"></i>
-            {{ form.full_name }}
-            <label>Full Name</label>
-          </div>
-
-          <div class="form-field">
-            <i class="fa fa-phone"></i>
-            {{ form.mobile_number }}
-            <label>Mobile Number</label>
-          </div>
-
-          <div class="form-field">
-            <i class="fa fa-briefcase"></i>
-            {{ form.business_name }}
-            <label>Business Name</label>
-          </div>
-
-          <div class="form-field">
-            <i class="fa fa-building"></i>
-            {{ form.business_type }}
-            <label>Business Type</label>
-          </div>
-
-          <div class="form-field">
-            <i class="fa fa-id-card"></i>
-            {{ form.gst_number }}
-            <label>GST Number</label>
-          </div>
-
-          <div class="form-field full">
-            <i class="fa fa-map-marker"></i>
-            {{ form.address }}
-            <label>Address</label>
-          </div>
-
-        </div>
+    <div class="profile-card">
+      <div class="card-header">
+        <h3>Plan & Usage</h3>
       </div>
-
-      <!-- MEDIA -->
-      <div class="section">
-        <h4 class="section-heading">Profile Media</h4>
-
-        <div class="form-grid">
-
-          <div class="form-field">
-            <label class="static">Profile Picture</label>
-            {{ form.profile_picture }}
-
-            {% if profile.profile_picture %}
-              <img src="{{ profile.profile_picture.url }}" class="preview-img">
+      <div class="plan-metrics">
+        <div>
+          <div class="metric-label">Locked Features</div>
+          <div class="metric-value">{{ locked_features_count|default:"0" }}</div>
+        </div>
+        <div>
+          <div class="metric-label">Usage</div>
+          <div class="metric-value">{{ usage_summary.usage }}/{{ usage_summary.limit }}</div>
+        </div>
+        <div>
+          <div class="metric-label">Expiry</div>
+          <div class="metric-value">
+            {% if subscription and subscription.end_date %}
+              {{ subscription.end_date|date:"Y-m-d" }}
+            {% else %}
+              
             {% endif %}
           </div>
-
-          <div class="form-field">
-            <label class="static">Plan</label>
-            {{ form.plan }}
-            <p class="muted-text">
-              Current: <strong>{{ profile.plan.name }}</strong>
-            </p>
-          </div>
-
         </div>
       </div>
-
-      <!-- BANK -->
-      <div class="section">
-        <h4 class="section-heading">Bank & Payment Details</h4>
-
-        <div class="form-grid">
-
-          <div class="form-field">
-            <i class="fa fa-qrcode"></i>
-            {{ form.upi_id }}
-            <label>UPI ID</label>
-          </div>
-
-          <div class="form-field">
-            <i class="fa fa-credit-card"></i>
-            {{ form.account_number }}
-            <label>Account Number</label>
-          </div>
-
-          <div class="form-field">
-            <i class="fa fa-university"></i>
-            {{ form.bank_name }}
-            <label>Bank Name</label>
-          </div>
-
-          <div class="form-field">
-            <i class="fa fa-lock"></i>
-            {{ form.ifsc_code }}
-            <label>IFSC Code</label>
-          </div>
-
-          <div class="form-field">
-            <label class="static">QR Code</label>
-            {{ form.qr_code }}
-
-            {% if profile.qr_code %}
-              <img src="{{ profile.qr_code.url }}" class="preview-img">
-            {% endif %}
-          </div>
-
-        </div>
-      </div>
-
-      <!-- ACTIONS -->
-      <div class="form-actions">
-        <a href="{% url 'accounts:dashboard' %}" class="btn btn-light">
-          Back
-        </a>
-
-        <button type="submit" class="btn btn-primary">
-          Save Changes
-        </button>
-      </div>
-
-    </form>
-
+      <a href="{% url 'billing:plan_management' %}" class="ghost-btn">Manage Plan</a>
+    </div>
   </div>
+
+  <form method="POST" enctype="multipart/form-data" class="profile-form">
+    {% csrf_token %}
+    <div class="section-grid">
+      <div class="section-card">
+        <h4>Account & Company</h4>
+        <div class="form-grid">
+          <label>Full Name {{ form.full_name }}</label>
+          <label>Mobile {{ form.mobile }}</label>
+          <label>Business Name {{ form.business_name }}</label>
+          <label>Business Type {{ form.business_type }}</label>
+          <label>GST Number {{ form.gst_number }}</label>
+          <label class="full">Address {{ form.address }}</label>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h4>Bank & ID</h4>
+        <div class="form-grid">
+          <label>UPI ID {{ form.upi_id }}</label>
+          <label>Account Number {{ form.account_number }}</label>
+          <label>Bank Name {{ form.bank_name }}</label>
+          <label>IFSC Code {{ form.ifsc_code }}</label>
+          <label>Profile Picture {{ form.profile_picture }}</label>
+          <label>QR Code {{ form.qr_code }}</label>
+          <label>Plan {{ form.plan }}</label>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h4>Security Panel</h4>
+        <div class="security-list">
+          <div class="security-item">
+            <span>Change Password</span>
+            <button type="button" class="ghost-btn">Coming Soon</button>
+          </div>
+          <div class="security-item">
+            <span>2FA / OTP</span>
+            <label class="toggle">
+              <input type="checkbox" data-setting="user_2fa_enabled">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="security-item">
+            <span>OTP Login</span>
+            <label class="toggle">
+              <input type="checkbox" data-setting="user_2fa_enabled">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="security-item">
+            <span>Logout All Devices</span>
+            <button type="button" class="ghost-btn">Coming Soon</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h4>Preferences</h4>
+        <div class="form-grid">
+          <label>Theme
+            <select data-setting="user_theme">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </label>
+          <label>Language
+            <select data-setting="user_language">
+              <option value="en">English</option>
+              <option value="hi">Hindi</option>
+              <option value="gu">Gujarati</option>
+              <option value="mr">Marathi</option>
+            </select>
+          </label>
+          <label>Currency
+            <select data-setting="company_currency">
+              <option value="INR">INR</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h4>Connected Services</h4>
+        <div class="service-grid">
+          <div class="service-pill">WhatsApp: Pending</div>
+          <div class="service-pill">Payment Gateway: Pending</div>
+          <div class="service-pill">Printer: Pending</div>
+          <div class="service-pill">API Key: Pending</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h4>AI Assistant</h4>
+        <ul class="ai-list">
+          <li>Complete missing profile details to improve verification score.</li>
+          <li>Consider upgrading to unlock advanced reports.</li>
+          <li>Check settings center for tax configuration.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a href="{% url 'accounts:dashboard' %}" class="ghost-btn">Back</a>
+      <button type="submit" class="primary-btn">Save Changes</button>
+    </div>
+  </form>
 </div>
 
+<style>
+  .profile-center { padding: 24px; }
+  .profile-hero { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+  .profile-hero h1 { margin:0; font-size:26px; }
+  .profile-hero p { margin:4px 0 0; color:#64748b; font-size:12px; }
+  .primary-btn { background:#0f766e; color:#fff; padding:8px 14px; border-radius:999px; text-decoration:none; border:none; }
+  .ghost-btn { background:transparent; color:#0f766e; padding:6px 12px; border-radius:999px; border:1px solid #0f766e; text-decoration:none; }
+  .profile-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:12px; margin-bottom:16px; }
+  .profile-card { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:14px; }
+  .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .badge { background:#e0f2f1; color:#0f766e; padding:4px 8px; border-radius:999px; font-size:11px; }
+  .profile-info { display:flex; gap:12px; align-items:center; }
+  .avatar-wrap img { width:64px; height:64px; border-radius:50%; object-fit:cover; }
+  .tag-row { display:flex; gap:10px; font-size:11px; color:#64748b; }
+  .plan-metrics { display:grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap:10px; margin-bottom:10px; }
+  .metric-label { font-size:10px; text-transform:uppercase; color:#94a3b8; }
+  .metric-value { font-size:16px; font-weight:700; }
+  .profile-form { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:16px; }
+  .section-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:12px; }
+  .section-card { border:1px solid #e2e8f0; border-radius:14px; padding:12px; }
+  .section-card h4 { margin-top:0; }
+  .form-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:10px; font-size:12px; }
+  .form-grid label { display:flex; flex-direction:column; gap:6px; }
+  .form-grid .full { grid-column: 1 / -1; }
+  .security-list { display:flex; flex-direction:column; gap:8px; font-size:12px; }
+  .security-item { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .toggle { position:relative; width:42px; height:22px; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider { position:absolute; inset:0; background:#cbd5f5; border-radius:999px; transition:0.2s; }
+  .toggle-slider:before { content:""; position:absolute; width:16px; height:16px; left:3px; top:3px; border-radius:50%; background:#fff; transition:0.2s; }
+  .toggle input:checked + .toggle-slider { background:#0f766e; }
+  .toggle input:checked + .toggle-slider:before { transform:translateX(18px); }
+  .service-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap:8px; }
+  .service-pill { background:#f8fafc; border-radius:999px; padding:6px 10px; font-size:11px; text-align:center; }
+  .ai-list { font-size:12px; color:#64748b; padding-left:18px; }
+  .form-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+  @media (max-width: 720px) {
+    .profile-hero { flex-direction:column; align-items:flex-start; }
+    .form-actions { flex-direction:column; }
+  }
+</style>
+
+<script>
+  const updateUrl = "{% url 'core_settings:api_settings_update' %}";
+  const csrfToken = "{{ csrf_token }}";
+  document.querySelectorAll("[data-setting]").forEach(el => {
+    el.addEventListener("change", () => {
+      const key = el.dataset.setting;
+      const value = el.type === "checkbox" ? el.checked : el.value;
+      fetch(updateUrl, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": csrfToken},
+        body: JSON.stringify({ updates: [{ key, value }] })
+      });
+    });
+  });
+</script>
 {% endblock %}

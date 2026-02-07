@@ -11,13 +11,19 @@
       <h3 class="text-primary fw-bold">Order Details</h3>
 
       <a href="{% url 'commerce:order_list' %}" class="btn btn-secondary btn-sm back-btn">
-        ← Back to Orders
+         Back to Orders
       </a>
     </div>
 
     <div class="order-info">
       <p><strong>Order ID:</strong> #{{ order.id }}</p>
       <p><strong>Party:</strong> {{ order.party.name }}</p>
+      <p><strong>Source:</strong> {{ order.order_source|default:"Manual" }}</p>
+      <p><strong>Agent Ref:</strong> {% if order.agent %}Agent #{{ order.agent.id }}{% else %}-{% endif %}</p>
+      <p><strong>Subtotal:</strong> {{ order.subtotal_amount|default:"0" }}</p>
+      <p><strong>Discount:</strong> {{ order.discount_amount|default:"0" }} ({{ order.discount_type }})</p>
+      <p><strong>Tax:</strong> {{ order.tax_amount|default:"0" }} ({{ order.tax_percent }}%)</p>
+      <p><strong>Total:</strong> {{ order.total_amount|default:"0" }}</p>
       <p><strong>Status:</strong>
         <span class="badge 
           {% if order.status == 'pending' %} bg-secondary

@@ -15,15 +15,15 @@
 
             <div class="header-actions">
                 <a href="{% url 'khataapp:transaction_edit' txn.id %}" class="btn btn-edit">
-                    ✏ Edit
+                     Edit
                 </a>
                 <a href="{% url 'khataapp:transaction_delete' txn.id %}"
                    onclick="return confirm('Delete this transaction?')"
                    class="btn btn-delete">
-                    🗑 Delete
+                     Delete
                 </a>
                 <a href="{% url 'khataapp:transaction_list' %}" class="btn btn-back">
-                    ← Back
+                     Back
                 </a>
             </div>
         </div>
@@ -46,7 +46,7 @@
 
                 <div class="txn-box">
                     <span class="label">Amount</span>
-                    <span class="value amount">₹ {{ txn.amount }}</span>
+                    <span class="value amount"> {{ txn.amount }}</span>
                 </div>
 
                 <div class="txn-box">
@@ -57,7 +57,7 @@
                 <div class="txn-box full">
                     <span class="label">Notes</span>
                     <span class="value notes">
-                        {{ txn.notes|default:"—" }}
+                        {{ txn.notes|default:"" }}
                     </span>
                 </div>
 

@@ -1,65 +1,145 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/add_order.css' %}">
+{% endblock %}
+
 {% block content %}
 
-<div class="min-h-screen bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center p-6">
-  <div class="bg-white shadow-2xl rounded-2xl w-full max-w-md p-8 border-t-4 border-green-600">
+<div class="container-fluid py-4">
+  <div class="card shadow-lg border-0 order-card">
 
-    {% if messages %}
-      <div class="mb-4">
-        {% for message in messages %}
-          <div
-            class="p-3 mb-2 rounded-lg text-white font-semibold
-                   {% if message.tags == 'success' %}bg-green-500
-                   {% elif message.tags == 'error' %}bg-red-500
-                   {% else %}bg-indigo-500{% endif %}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">📂 Add New Category</h2>
-
-    <form method="POST" class="space-y-4">
-      {% csrf_token %}
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Category Name</label>
-        <input
-          type="text"
-          name="name"
-          required
-          class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400 outline-none transition"
-        />
-      </div>
-
-      <div>
-        <label class="block text-gray-700 font-semibold mb-1">Description</label>
-        <textarea
-          name="description"
-          rows="3"
-          class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400 outline-none transition"
-        ></textarea>
-      </div>
-
-      <button
-        type="submit"
-        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-lg transition"
-      >
-        ➕ Add Category
-      </button>
-    </form>
-
-    <div class="mt-8">
-      <h3 class="text-lg font-semibold mb-2 text-gray-700">Existing Categories</h3>
-      <ul class="space-y-1">
-        {% for c in categories %}
-          <li class="px-3 py-2 bg-gray-100 rounded-lg shadow-sm">{{ c.name }}</li>
-        {% empty %}
-          <li>No categories yet.</li>
-        {% endfor %}
-      </ul>
+    <!-- HEADER -->
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+<<<<<<< HEAD
+      <h4 class="mb-0"> Category Manager</h4>
+=======
+      <h4 class="mb-0">📂 Category Manager</h4>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+      <span class="badge bg-light text-success">Product Organization</span>
     </div>
+
+    <div class="card-body">
+
+      {% if messages %}
+        <div class="mb-4">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- CATEGORY FORM -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <label for="name" class="form-label">Category Name</label>
+              <input type="text" name="name" id="name" required class="form-control" placeholder="Enter category name">
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <label for="description" class="form-label">Description</label>
+              <textarea name="description" id="description" rows="3" class="form-control" placeholder="Describe the category..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXISTING CATEGORIES -->
+      <div class="card">
+        <div class="card-header bg-light">
+<<<<<<< HEAD
+          <h5 class="mb-0"> Existing Categories</h5>
+=======
+          <h5 class="mb-0">📋 Existing Categories</h5>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+        </div>
+        <div class="card-body">
+          {% if categories %}
+            <div class="row g-2">
+              {% for c in categories %}
+                <div class="col-md-4">
+                  <div class="card h-100 border-secondary">
+                    <div class="card-body text-center">
+                      <h6 class="card-title text-secondary">{{ c.name }}</h6>
+                      {% if c.description %}
+                        <small class="text-muted">{{ c.description|truncatechars:50 }}</small>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center text-muted py-4">
+              <p>No categories created yet.</p>
+              <small>Create your first category above!</small>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER ACTIONS -->
+    <div class="card-footer bg-light d-flex flex-wrap gap-2 justify-content-between">
+      <div class="d-flex gap-2">
+        <button type="submit" form="categoryForm" class="btn btn-success px-4">
+<<<<<<< HEAD
+           Add Category
+        </button>
+        <a href="{% url 'commerce:add_product' %}" class="btn btn-outline-primary">
+           Add Product
+=======
+          ➕ Add Category
+        </button>
+        <a href="{% url 'commerce:add_product' %}" class="btn btn-outline-primary">
+          🛒 Add Product
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+        </a>
+      </div>
+
+      <div class="d-flex gap-2">
+<<<<<<< HEAD
+        <button type="button" onclick="window.print()" class="btn btn-secondary" aria-label="Print categories"> Print</button>
+        <button type="button" id="downloadPDF" class="btn btn-danger" aria-label="Download PDF"> PDF</button>
+        <button type="button" class="btn btn-success" aria-label="Share via WhatsApp"> WhatsApp</button>
+        <button type="button" class="btn btn-warning" aria-label="Send SMS"> SMS</button>
+=======
+        <button type="button" onclick="window.print()" class="btn btn-secondary" aria-label="Print categories">🖨 Print</button>
+        <button type="button" id="downloadPDF" class="btn btn-danger" aria-label="Download PDF">⬇ PDF</button>
+        <button type="button" class="btn btn-success" aria-label="Share via WhatsApp">📤 WhatsApp</button>
+        <button type="button" class="btn btn-warning" aria-label="Send SMS">📩 SMS</button>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+      </div>
+    </div>
+
   </div>
 </div>
+
+<form id="categoryForm" method="POST" style="display: none;">
+  {% csrf_token %}
+  <input type="text" name="name" id="hiddenName">
+  <textarea name="description" id="hiddenDescription"></textarea>
+</form>
+
+<script>
+  // Sync form inputs to hidden form
+  document.getElementById('name').addEventListener('input', function() {
+    document.getElementById('hiddenName').value = this.value;
+  });
+  document.getElementById('description').addEventListener('input', function() {
+    document.getElementById('hiddenDescription').value = this.value;
+  });
+</script>
 
 {% endblock %}

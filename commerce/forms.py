@@ -2,7 +2,11 @@ from django import forms
 from django.forms import inlineformset_factory
 from .models import (
     Product, Warehouse, OrderItem, ChatMessage,
-     Order, Invoice
+<<<<<<< HEAD
+     Order, Invoice, Coupon, Payment
+=======
+     Order, Invoice, Coupon
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 )
 
 # ---------------- Product Form ----------------
@@ -90,3 +94,56 @@ class InvoiceForm(forms.ModelForm):
             "order": forms.Select(attrs={"class": "form-control"}),
             "status": forms.Select(attrs={"class": "form-control"}),
         }
+
+# ---------------- Coupon Form ----------------
+class CouponForm(forms.ModelForm):
+    valid_until = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"})
+    )
+
+    class Meta:
+        model = Coupon
+        fields = [
+            "title", "code", "description", "coupon_type",
+            "discount_type", "discount_value", "max_discount",
+            "usage_limit", "per_user_limit", "min_order_amount",
+            "valid_from", "valid_until", "is_active", "win_probability"
+        ]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "code": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "coupon_type": forms.Select(attrs={"class": "form-control"}),
+            "discount_type": forms.Select(attrs={"class": "form-control"}),
+            "discount_value": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "max_discount": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "usage_limit": forms.NumberInput(attrs={"class": "form-control"}),
+            "per_user_limit": forms.NumberInput(attrs={"class": "form-control"}),
+            "min_order_amount": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "valid_from": forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "win_probability": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "min": "0", "max": "1"}),
+        }
+
+    def clean_code(self):
+        code = self.cleaned_data.get('code')
+        if code:
+            code = code.upper()
+        return code
+<<<<<<< HEAD
+
+# ---------------- Payment Form ----------------
+class PaymentForm(forms.ModelForm):
+    class Meta:
+        model = Payment
+        fields = ["invoice", "amount", "method", "reference", "note"]
+        widgets = {
+            "invoice": forms.Select(attrs={"class": "form-control"}),
+            "amount": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "method": forms.Select(attrs={"class": "form-control"}),
+            "reference": forms.TextInput(attrs={"class": "form-control"}),
+            "note": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+        }
+=======
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738

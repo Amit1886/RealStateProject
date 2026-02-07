@@ -3,6 +3,18 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/modern-app.css' %}">
+<style>
+.toggle { position: relative; width: 44px; height: 24px; display: inline-block; }
+.toggle input { display:none; }
+.toggle-slider {
+  position:absolute; inset:0; background:#cbd5f5; border-radius:999px; transition:0.2s;
+}
+.toggle-slider:before {
+  content:""; position:absolute; width:18px; height:18px; left:3px; top:3px; border-radius:50%; background:#fff; transition:0.2s;
+}
+.toggle input:checked + .toggle-slider { background:#0f766e; }
+.toggle input:checked + .toggle-slider:before { transform:translateX(20px); }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -13,9 +25,9 @@
     <div class="card">
         <div class="card-header">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <h3 class="mb-0">📋 Plan Permissions Management</h3>
+                <h3 class="mb-0"> Plan Permissions Management</h3>
                 <a href="{% url 'admin:billing_plan_change' %}" target="_blank" class="btn btn-primary btn-sm">
-                    ⚙️ Manage Plans in Admin
+                     Manage Plans in Admin
                 </a>
             </div>
         </div>
@@ -23,6 +35,16 @@
 
     {% if plans %}
     <div style="margin-top: 2rem;">
+        <!-- Demo / How it Works -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-body">
+                <h5 class="mb-2"> How Toggles Work (Demo)</h5>
+                <p class="mb-1">These toggles are connected to <strong>PlanPermissions</strong> for each plan.</p>
+                <p class="mb-1">If a toggle is OFF, users on that plan will see the feature locked and will be redirected to upgrade.</p>
+                <p class="mb-0">You can test by toggling any switch below, saving, and refreshing the dashboard.</p>
+            </div>
+        </div>
+
         <!-- Tabs for Plans -->
         <div class="nav nav-tabs" role="tablist" style="border-bottom: 2px solid var(--border-color); margin-bottom: 0;">
             {% for plan in plans %}
@@ -33,7 +55,7 @@
                     type="button" 
                     role="tab"
                     style="padding: 1rem 1.5rem; color: var(--dark); border: none; border-bottom: 3px solid transparent; transition: var(--transition); cursor: pointer;">
-                📋 {{ plan.name }} 
+                 {{ plan.name }} 
                 <span class="badge" style="background: {% if plan.active %}#10b981{% else %}#ef4444{% endif %}; color: white; margin-left: 0.5rem;">
                     {% if plan.active %}Active{% else %}Inactive{% endif %}
                 </span>
@@ -61,22 +83,22 @@
                             </div>
                             <div class="col-md-3">
                                 <p style="margin-bottom: 0.5rem; color: #6b7280;">Price</p>
-                                <p class="font-semibold">₹{{ plan.price }}/month</p>
+                                <p class="font-semibold">{{ plan.price }}/month</p>
                             </div>
                             <div class="col-md-3">
                                 <p style="margin-bottom: 0.5rem; color: #6b7280;">Active</p>
                                 <p class="font-semibold">
                                     {% if plan.active %}
-                                    <span class="badge bg-success">✓ Yes</span>
+                                    <span class="badge bg-success"> Yes</span>
                                     {% else %}
-                                    <span class="badge bg-danger">✗ No</span>
+                                    <span class="badge bg-danger"> No</span>
                                     {% endif %}
                                 </p>
                             </div>
                             <div class="col-md-3">
                                 <a href="{% url 'admin:billing_planpermissions_change' plan.permissions.id %}" 
                                    class="btn btn-primary btn-sm" target="_blank">
-                                   ✏️ Edit Permissions
+                                    Edit Permissions
                                 </a>
                             </div>
                         </div>
@@ -85,41 +107,49 @@
 
                 <!-- Permissions Grid -->
                 {% if plan.permissions %}
+                <form method="post" style="margin-bottom: 1rem;">
+                    {% csrf_token %}
+                    <input type="hidden" name="plan_id" value="{{ plan.id }}">
                 <div class="row">
                     <!-- Dashboard & Reports -->
                     <div class="col-md-6">
                         <div style="padding: 1.5rem; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 1rem;">
-                            <p class="font-semibold mb-3">📊 Dashboard & Reports</p>
+                            <p class="font-semibold mb-3"> Dashboard & Reports</p>
                             <div style="display: grid; gap: 0.8rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Dashboard Access</span>
-                                    <span class="badge {% if plan.permissions.allow_dashboard %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_dashboard %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_dashboard" {% if plan.permissions.allow_dashboard %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Reports</span>
-                                    <span class="badge {% if plan.permissions.allow_reports %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_reports %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_reports" {% if plan.permissions.allow_reports %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>PDF Export</span>
-                                    <span class="badge {% if plan.permissions.allow_pdf_export %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_pdf_export %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_pdf_export" {% if plan.permissions.allow_pdf_export %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Excel Export</span>
-                                    <span class="badge {% if plan.permissions.allow_excel_export %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_excel_export %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_excel_export" {% if plan.permissions.allow_excel_export %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Analytics</span>
-                                    <span class="badge {% if plan.permissions.allow_analytics %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_analytics %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_analytics" {% if plan.permissions.allow_analytics %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -128,29 +158,32 @@
                     <!-- Party Management -->
                     <div class="col-md-6">
                         <div style="padding: 1.5rem; background: #f0fdf4; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 1rem;">
-                            <p class="font-semibold mb-3">👥 Party Management</p>
+                            <p class="font-semibold mb-3"> Party Management</p>
                             <div style="display: grid; gap: 0.8rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Add Party</span>
-                                    <span class="badge {% if plan.permissions.allow_add_party %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_add_party %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_add_party" {% if plan.permissions.allow_add_party %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Edit Party</span>
-                                    <span class="badge {% if plan.permissions.allow_edit_party %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_edit_party %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_edit_party" {% if plan.permissions.allow_edit_party %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Delete Party</span>
-                                    <span class="badge {% if plan.permissions.allow_delete_party %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_delete_party %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_delete_party" {% if plan.permissions.allow_delete_party %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Max Parties</span>
-                                    <span class="badge bg-info">{{ plan.permissions.max_parties }} parties</span>
+                                    <input type="number" name="max_parties" class="form-control form-control-sm" style="width:120px;" value="{{ plan.permissions.max_parties }}">
                                 </div>
                             </div>
                         </div>
@@ -159,31 +192,35 @@
                     <!-- Transactions -->
                     <div class="col-md-6">
                         <div style="padding: 1.5rem; background: #eff6ff; border-radius: 8px; border-left: 4px solid #0ea5e9; margin-bottom: 1rem;">
-                            <p class="font-semibold mb-3">💰 Transactions</p>
+                            <p class="font-semibold mb-3"> Transactions</p>
                             <div style="display: grid; gap: 0.8rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Add Transaction</span>
-                                    <span class="badge {% if plan.permissions.allow_add_transaction %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_add_transaction %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_add_transaction" {% if plan.permissions.allow_add_transaction %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Edit Transaction</span>
-                                    <span class="badge {% if plan.permissions.allow_edit_transaction %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_edit_transaction %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_edit_transaction" {% if plan.permissions.allow_edit_transaction %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Delete Transaction</span>
-                                    <span class="badge {% if plan.permissions.allow_delete_transaction %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_delete_transaction %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_delete_transaction" {% if plan.permissions.allow_delete_transaction %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Bulk Transaction</span>
-                                    <span class="badge {% if plan.permissions.allow_bulk_transaction %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_bulk_transaction %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_bulk_transaction" {% if plan.permissions.allow_bulk_transaction %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -192,31 +229,35 @@
                     <!-- Commerce & Warehouse -->
                     <div class="col-md-6">
                         <div style="padding: 1.5rem; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 1rem;">
-                            <p class="font-semibold mb-3">📦 Commerce & Warehouse</p>
+                            <p class="font-semibold mb-3"> Commerce & Warehouse</p>
                             <div style="display: grid; gap: 0.8rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Commerce</span>
-                                    <span class="badge {% if plan.permissions.allow_commerce %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_commerce %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_commerce" {% if plan.permissions.allow_commerce %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Warehouse</span>
-                                    <span class="badge {% if plan.permissions.allow_warehouse %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_warehouse %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_warehouse" {% if plan.permissions.allow_warehouse %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Orders</span>
-                                    <span class="badge {% if plan.permissions.allow_orders %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_orders %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_orders" {% if plan.permissions.allow_orders %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Inventory</span>
-                                    <span class="badge {% if plan.permissions.allow_inventory %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_inventory %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_inventory" {% if plan.permissions.allow_inventory %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -225,25 +266,28 @@
                     <!-- Communication -->
                     <div class="col-md-6">
                         <div style="padding: 1.5rem; background: #fee2e2; border-radius: 8px; border-left: 4px solid #ef4444; margin-bottom: 1rem;">
-                            <p class="font-semibold mb-3">📱 Communication</p>
+                            <p class="font-semibold mb-3"> Communication</p>
                             <div style="display: grid; gap: 0.8rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>WhatsApp</span>
-                                    <span class="badge {% if plan.permissions.allow_whatsapp %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_whatsapp %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_whatsapp" {% if plan.permissions.allow_whatsapp %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>SMS</span>
-                                    <span class="badge {% if plan.permissions.allow_sms %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_sms %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_sms" {% if plan.permissions.allow_sms %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Email</span>
-                                    <span class="badge {% if plan.permissions.allow_email %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_email %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_email" {% if plan.permissions.allow_email %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -252,19 +296,21 @@
                     <!-- Ledger & Credit -->
                     <div class="col-md-6">
                         <div style="padding: 1.5rem; background: #fce7f3; border-radius: 8px; border-left: 4px solid #ec4899; margin-bottom: 1rem;">
-                            <p class="font-semibold mb-3">📊 Ledger & Credit</p>
+                            <p class="font-semibold mb-3"> Ledger & Credit</p>
                             <div style="display: grid; gap: 0.8rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Ledger</span>
-                                    <span class="badge {% if plan.permissions.allow_ledger %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_ledger %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_ledger" {% if plan.permissions.allow_ledger %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Credit Report</span>
-                                    <span class="badge {% if plan.permissions.allow_credit_report %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_credit_report %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_credit_report" {% if plan.permissions.allow_credit_report %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -273,25 +319,28 @@
                     <!-- Admin & Settings -->
                     <div class="col-md-6">
                         <div style="padding: 1.5rem; background: #f3f4f6; border-radius: 8px; border-left: 4px solid #6b7280; margin-bottom: 1rem;">
-                            <p class="font-semibold mb-3">🔧 Admin & Settings</p>
+                            <p class="font-semibold mb-3"> Admin & Settings</p>
                             <div style="display: grid; gap: 0.8rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Settings</span>
-                                    <span class="badge {% if plan.permissions.allow_settings %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_settings %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_settings" {% if plan.permissions.allow_settings %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>Users</span>
-                                    <span class="badge {% if plan.permissions.allow_users %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_users %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_users" {% if plan.permissions.allow_users %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                     <span>API Access</span>
-                                    <span class="badge {% if plan.permissions.allow_api_access %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if plan.permissions.allow_api_access %}✓ Allowed{% else %}✗ Disabled{% endif %}
-                                    </span>
+                                    <label class="toggle">
+                                        <input type="checkbox" name="allow_api_access" {% if plan.permissions.allow_api_access %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -300,17 +349,17 @@
 
                 <!-- Edit Button -->
                 <div style="margin-top: 2rem;">
-                    <a href="{% url 'admin:billing_planpermissions_change' plan.permissions.id %}" 
-                       class="btn btn-primary btn-lg" target="_blank">
-                       ✏️ Edit {{ plan.name }} Permissions in Admin
-                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Save {{ plan.name }} Permissions
+                    </button>
                 </div>
+                </form>
                 {% else %}
                 <div style="padding: 2rem; text-align: center; background: #fef3c7; border-radius: 8px;">
-                    <p style="color: #92400e; font-weight: 600; margin-bottom: 1rem;">⚠️ No Permissions Configured</p>
+                    <p style="color: #92400e; font-weight: 600; margin-bottom: 1rem;"> No Permissions Configured</p>
                     <p style="color: #b45309;">This plan doesn't have permissions configured yet. Please create it in the Django admin panel.</p>
                     <a href="{% url 'admin:billing_planpermissions_add' %}" class="btn btn-warning mt-3" target="_blank">
-                        ➕ Create Permissions
+                         Create Permissions
                     </a>
                 </div>
                 {% endif %}
@@ -323,10 +372,10 @@
     {% else %}
     <!-- No Plans Message -->
     <div style="margin-top: 2rem; padding: 3rem; text-align: center; background: var(--light); border-radius: 8px;">
-        <p style="font-size: 1.5rem; color: #6b7280; margin-bottom: 1rem;">📋 No Plans Found</p>
+        <p style="font-size: 1.5rem; color: #6b7280; margin-bottom: 1rem;"> No Plans Found</p>
         <p style="color: #9ca3af; margin-bottom: 2rem;">Create plans in the Django admin panel to manage their permissions.</p>
         <a href="{% url 'admin:billing_plan_add' %}" class="btn btn-primary" target="_blank">
-            ➕ Create New Plan
+             Create New Plan
         </a>
     </div>
     {% endif %}

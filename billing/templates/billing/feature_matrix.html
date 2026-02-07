@@ -1,0 +1,113 @@
+{% extends "billing/base.html" %}
+{% load static %}
+{% load plan_tags %}
+
+{% block billing_content %}
+<div class="matrix-wrap">
+  <div class="matrix-header">
+    <div>
+      <h2>Plan Feature Matrix</h2>
+      <p>Enable or disable features per plan. Changes apply immediately.</p>
+    </div>
+    <div>
+      <input id="featureSearch" type="text" placeholder="Search features..." />
+    </div>
+  </div>
+
+  <div class="matrix-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          {% for plan in plans %}
+            <th>
+              {{ plan.name }}
+              <div>
+                <button type="button" class="mini-btn select-all" data-plan="{{ plan.id }}">Select All</button>
+                <button type="button" class="mini-btn clear-all" data-plan="{{ plan.id }}">Clear</button>
+              </div>
+            </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for feature in features %}
+        <tr>
+          <td>
+            <strong>{{ feature.label }}</strong>
+            <div class="muted">{{ feature.group }}</div>
+          </td>
+          {% for plan in plans %}
+            <td>
+              <input type="checkbox"
+                     class="feature-checkbox"
+                     data-plan="{{ plan.id }}"
+                     data-feature="{{ feature.id }}"
+                     {% if feature.id in matrix|get_item:plan.id %}checked{% endif %}>
+            </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  .matrix-wrap h2 { margin:0; }
+  .matrix-header p { margin:4px 0 12px; color:#64748b; font-size:12px; }
+  .matrix-table table { width:100%; border-collapse:collapse; font-size:12px; }
+  .matrix-table th, .matrix-table td { border-bottom:1px solid #e2e8f0; padding:8px; text-align:center; }
+  .matrix-table th:first-child, .matrix-table td:first-child { text-align:left; }
+  .muted { color:#64748b; font-size:10px; }
+  #featureSearch { border:1px solid #e2e8f0; border-radius:999px; padding:6px 12px; font-size:12px; }
+  .mini-btn { border:1px solid #0f766e; background:transparent; color:#0f766e; border-radius:999px; padding:2px 6px; font-size:9px; margin-top:6px; }
+</style>
+
+<script>
+  const saveUrl = "{% url 'billing:feature_matrix_save' %}";
+  const csrfToken = "{{ csrf_token }}";
+
+  function savePlan(planId) {
+    const checkboxes = document.querySelectorAll(`.feature-checkbox[data-plan="${planId}"]`);
+    const featureIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => parseInt(cb.dataset.feature, 10));
+    fetch(saveUrl, {
+      method: "POST",
+      headers: {"Content-Type": "application/json", "X-CSRFToken": csrfToken},
+      body: JSON.stringify({ plan_id: planId, feature_ids: featureIds })
+    });
+  }
+
+  document.querySelectorAll(".feature-checkbox").forEach(cb => {
+    cb.addEventListener("change", (e) => {
+      const planId = e.target.dataset.plan;
+      savePlan(planId);
+    });
+  });
+
+  document.querySelectorAll(".select-all").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const planId = btn.dataset.plan;
+      document.querySelectorAll(`.feature-checkbox[data-plan="${planId}"]`).forEach(cb => cb.checked = true);
+      savePlan(planId);
+    });
+  });
+
+  document.querySelectorAll(".clear-all").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const planId = btn.dataset.plan;
+      document.querySelectorAll(`.feature-checkbox[data-plan="${planId}"]`).forEach(cb => cb.checked = false);
+      savePlan(planId);
+    });
+  });
+
+  const searchInput = document.getElementById("featureSearch");
+  searchInput.addEventListener("input", () => {
+    const term = searchInput.value.toLowerCase();
+    document.querySelectorAll(".matrix-table tbody tr").forEach(row => {
+      const label = row.querySelector("td").innerText.toLowerCase();
+      row.style.display = label.includes(term) ? "" : "none";
+    });
+  });
+</script>
+{% endblock %}

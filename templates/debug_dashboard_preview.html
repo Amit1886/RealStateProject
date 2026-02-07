@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard UI Preview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 18px; }
+    .summary-modern-wrap,
+    .snapshot-modern-wrap {
+        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 14px;
+        margin-top: 12px;
+    }
+    .summary-modern-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    .summary-modern-header h3 { margin: 0; font-size: 18px; }
+    .summary-modern-header p { margin: 4px 0 0 0; color: #6b7280; font-size: 12px; }
+    .summary-modern-grid,
+    .snapshot-modern-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 10px;
+    }
+    .summary-modern-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 10px;
+    }
+    .summary-modern-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; }
+    .summary-modern-card .value { font-size: 20px; font-weight: 700; margin-top: 6px; }
+    .summary-modern-card .meta { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .summary-modern-card.positive .value { color: #15803d; }
+    .summary-modern-card.negative .value { color: #dc2626; }
+    .summary-modern-card.accent .value { color: #0f766e; }
+    .summary-modern-card.info .value { color: #0284c7; }
+    .summary-modern-card.warning .value { color: #d97706; }
+    .summary-modern-btn {
+        background: #0f766e;
+        color: #ffffff;
+        padding: 8px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 12px;
+    }
+    .summary-modern-btn-ghost {
+        background: transparent;
+        color: #0f766e;
+        border: 1px solid #0f766e;
+    }
+    .smart-section-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+    }
+    .smart-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 12px;
+    }
+    .smart-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+    .smart-card-header h3 { margin: 0; font-size: 18px; }
+    .smart-card-header p { margin: 4px 0 0 0; color: #6b7280; font-size: 12px; }
+    .smart-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .smart-table th, .smart-table td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+    .smart-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; }
+    .smart-badge { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .smart-badge-positive { background: #dcfce7; color: #15803d; }
+    .smart-badge-negative { background: #fee2e2; color: #b91c1c; }
+    .ai-reorder-wrap {
+      background: linear-gradient(135deg, #f7f7f2 0%, #f2f7ff 100%);
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+      margin: 12px 0;
+    }
+    .ai-reorder-header { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 12px; }
+    .ai-title { font-size: 20px; font-weight: 700; margin: 0 0 4px 0; }
+    .ai-subtitle { color: #6b7280; margin: 0; font-size: 13px; }
+    .ai-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .ai-btn { background: #14532d; color: #fff; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; }
+    .ai-btn-ghost { background: transparent; color: #14532d; border: 1px solid #14532d; }
+    .ai-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .ai-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px; min-height: 110px; display: flex; flex-direction: column; gap: 6px; }
+    .ai-card-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; }
+    .ai-card-value { font-size: 24px; font-weight: 700; }
+    .ai-card-list { font-size: 13px; }
+    .ai-slider { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+    .ai-slide-track { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; transition: transform 0.4s ease; }
+    .ai-slide { padding: 12px; min-height: 110px; }
+    .ai-slide-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 8px; }
+    .ai-slide-value { font-size: 22px; font-weight: 700; color: #14532d; }
+    .ai-slide-list span { display: block; margin-bottom: 6px; }
+    .ai-slider-controls { display: flex; justify-content: space-between; padding: 8px 12px 10px; border-top: 1px solid #e5e7eb; }
+    .ai-slider-btn { background: transparent; border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 999px; font-size: 12px; }
+    .coupon-slider { overflow: hidden; width: 100%; }
+    .coupon-track { display: flex; transition: transform 0.3s ease; }
+    .coupon-item { flex: 0 0 280px; margin-right: 12px; }
+    .coupon-card { border: 1px solid #e5e7eb; border-radius: 14px; background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%); height: 200px; display: flex; flex-direction: column; }
+    .coupon-header { padding: 12px; border-bottom: 1px solid rgba(148, 163, 184, 0.3); }
+    .coupon-body { flex: 1; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; font-size: 12px; }
+    .coupon-footer { padding: 8px 10px; border-top: 1px solid rgba(148, 163, 184, 0.3); text-align: center; }
+    .coupon-code { background: rgba(15, 118, 110, 0.1); padding: 2px 8px; border-radius: 6px; font-family: monospace; color: #0f766e; }
+    .discount-badge { background: #0f766e; color: white; padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: bold; display: inline-block; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="summary-modern-wrap">
+      <div class="summary-modern-header">
+        <div>
+          <h3>Today Summary</h3>
+          <p>Quick view of todays cashflow performance.</p>
+        </div>
+        <a class="summary-modern-btn summary-modern-btn-ghost">More Details</a>
+      </div>
+      <div class="summary-modern-grid">
+        <div class="summary-modern-card positive"><div class="label">Total Credit</div><div class="value"> 0</div><div class="meta">Received</div></div>
+        <div class="summary-modern-card negative"><div class="label">Total Debit</div><div class="value"> 0</div><div class="meta">Given</div></div>
+        <div class="summary-modern-card accent"><div class="label">Balance</div><div class="value"> 0</div><div class="meta">Positive</div></div>
+      </div>
+    </div>
+
+    <div class="ai-reorder-wrap">
+      <div class="ai-reorder-header">
+        <div>
+          <h2 class="ai-title">AI Reorder Planner</h2>
+          <p class="ai-subtitle">Automated purchasing insights across inventory, sales velocity, and supplier lead times.</p>
+        </div>
+        <div class="ai-actions">
+          <a class="ai-btn">Open Planner</a>
+          <a class="ai-btn ai-btn-ghost">Supplier POs</a>
+        </div>
+      </div>
+      <div class="ai-cards-grid">
+        <div class="ai-card">
+          <div class="ai-card-title">AI Purchase Recommendation</div>
+          <div class="ai-card-value">45,000</div>
+          <div class="ai-card-list">Budget used</div>
+        </div>
+        <div class="ai-card">
+          <div class="ai-card-title">Fast-Moving Items</div>
+          <div class="ai-card-list"><span>Item A (2.1/day)</span><span>Item B (1.8/day)</span></div>
+        </div>
+        <div class="ai-card">
+          <div class="ai-card-title">Low Stock Alerts</div>
+          <div class="ai-card-list"><span>Item C (risk 2 days)</span><span>Item D (risk 3 days)</span></div>
+        </div>
+      </div>
+      <div class="ai-slider">
+        <div class="ai-slide-track">
+          <div class="ai-slide">
+            <div class="ai-slide-label">AI Suggested Purchase</div>
+            <div class="ai-slide-value">45,000 of 50,000</div>
+          </div>
+          <div class="ai-slide">
+            <div class="ai-slide-label">Top 5 Fast Moving Items</div>
+            <div class="ai-slide-list"><span>Item A</span><span>Item B</span><span>Item C</span></div>
+          </div>
+          <div class="ai-slide">
+            <div class="ai-slide-label">Items at Risk of Stock-Out</div>
+            <div class="ai-slide-list"><span>Item D</span><span>Item E</span></div>
+          </div>
+        </div>
+        <div class="ai-slider-controls">
+          <button class="ai-slider-btn">Prev</button>
+          <button class="ai-slider-btn">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="smart-card smart-card-wide">
+      <div class="smart-card-header">
+        <div>
+          <h3>Active Coupons</h3>
+          <p>Smart offers ready to boost sales.</p>
+        </div>
+      </div>
+      <div class="coupon-slider">
+        <div class="coupon-track">
+          <div class="coupon-item">
+            <div class="coupon-card">
+              <div class="coupon-header">
+                <h5>Welcome Offer</h5>
+                <span class="coupon-code">SAVE10</span>
+              </div>
+              <div class="coupon-body">
+                <p>Get 10% off on your next order.</p>
+                <div class="coupon-discount">
+                  <span class="discount-badge">10% OFF</span>
+                </div>
+                <div class="coupon-details">
+                  <small>Min Order: 500</small>
+                  <small>Valid till: Feb 10</small>
+                </div>
+              </div>
+              <div class="coupon-footer">
+                <a class="summary-modern-btn summary-modern-btn-ghost">Apply</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="smart-card smart-card-wide">
+      <div class="smart-card-header">
+        <div>
+          <h3>Party Ledger Summary</h3>
+          <p>Outstanding balances and ledger actions by party.</p>
+        </div>
+        <a class="summary-modern-btn summary-modern-btn-ghost">View All Ledger </a>
+      </div>
+      <table class="smart-table">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Party</th>
+            <th>Business</th>
+            <th>Mobile</th>
+            <th>Credit ()</th>
+            <th>Debit ()</th>
+            <th>Balance ()</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>Example Party</td>
+            <td>Example Business</td>
+            <td>9999999999</td>
+            <td><span class="smart-badge smart-badge-positive">1200</span></td>
+            <td><span class="smart-badge smart-badge-negative">800</span></td>
+            <td>400</td>
+            <td><a class="summary-modern-btn">View</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="snapshot-modern-wrap">
+      <div class="summary-modern-header">
+        <div>
+          <h3>Today Business Snapshot</h3>
+          <p>Revenue, purchases, and cash movement at a glance.</p>
+        </div>
+        <a class="summary-modern-btn summary-modern-btn-ghost">Today</a>
+      </div>
+      <div class="snapshot-modern-grid">
+        <div class="summary-modern-card positive"><div class="label">Total Sales</div><div class="value"> 0</div><div class="meta">Orders: 0</div></div>
+        <div class="summary-modern-card accent"><div class="label">Total Purchase</div><div class="value"> 0</div><div class="meta">Orders: 0</div></div>
+        <div class="summary-modern-card positive"><div class="label">Profit</div><div class="value"> 0</div><div class="meta">Today</div></div>
+        <div class="summary-modern-card info"><div class="label">Payment Received</div><div class="value"> 0</div><div class="meta">Cash In</div></div>
+        <div class="summary-modern-card warning"><div class="label">Payment Given</div><div class="value"> 0</div><div class="meta">Cash Out</div></div>
+        <div class="summary-modern-card positive"><div class="label">Receivable</div><div class="value"> 0</div><div class="meta">Pending Inflow</div></div>
+        <div class="summary-modern-card negative"><div class="label">Payable</div><div class="value"> 0</div><div class="meta">Pending Outflow</div></div>
+      </div>
+    </div>
+
+    <div class="smart-section-grid">
+      <div class="smart-card">
+        <div class="smart-card-header">
+          <div>
+            <h3>Recent Parties</h3>
+            <p>Latest customers and suppliers added.</p>
+          </div>
+          <a class="summary-modern-btn summary-modern-btn-ghost">View All Parties</a>
+        </div>
+        <table class="smart-table">
+          <thead>
+            <tr><th>Name</th><th>Type</th><th>Grade</th><th>Created</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Example Party</td><td>Customer</td><td>A</td><td>2026-02-03</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="smart-card">
+        <div class="smart-card-header">
+          <div>
+            <h3>Recent Transactions</h3>
+            <p>Latest cashflow activity tracked today.</p>
+          </div>
+          <a class="summary-modern-btn summary-modern-btn-ghost">View All Transactions</a>
+        </div>
+        <table class="smart-table">
+          <thead>
+            <tr><th>Party</th><th>Type</th><th>Amount</th><th>Date</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Example Party</td><td><span class="smart-badge smart-badge-positive">Credit</span></td><td> 0</td><td>2026-02-03</td><td>-</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

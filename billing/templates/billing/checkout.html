@@ -4,14 +4,24 @@
 {% block billing_content %}
 <div class="container mx-auto mt-10">
   <div class="bg-white shadow-lg rounded-3xl p-6 max-w-lg mx-auto text-center">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">💳 Complete Your Payment</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4"> Complete Your Payment</h2>
     <p class="text-gray-600 mb-6">You have selected the <strong>{{ plan.name }}</strong> plan.</p>
     <p class="text-gray-700 text-lg font-semibold mb-6">
-      Amount: ₹{{ plan.price_per_month }} / month
+      Amount: {{ plan.price_monthly|default:plan.price }} / month
     </p>
 
     <form method="POST">
       {% csrf_token %}
+      <div class="mb-4 text-left">
+        <label class="block text-sm font-medium mb-2">Select Payment Gateway</label>
+        <select name="gateway_id" class="w-full border rounded-lg px-3 py-2">
+          <option value="">-- Select --</option>
+          {% for g in gateways %}
+            <option value="{{ g.id }}">{{ g.name }} ({{ g.provider }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
       <button type="submit"
         class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-lg transition">
         Pay Now

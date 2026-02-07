@@ -3,99 +3,568 @@
 {% block content %}
 
 <link rel="stylesheet" href="{% static 'css/add_order.css' %}">
-<script src="{% static 'js/add_order.js' %}" defer></script>
+<script src="{% static 'libs/html5-qrcode.min.js' %}"></script>
+<script src="{% static 'js/add_order_enhanced.js' %}" defer></script>
+<script src="{% static 'js/add_order_search.js' %}" defer></script>
 
-<div class="order-wrapper">
+<!-- KEYBOARD SHORTCUTS HELP MODAL -->
+<div id="keyboardHelp" class="keyboard-help-modal">
+  <div class="keyboard-help-content">
+<<<<<<< HEAD
+    <h3 class="fw-bold text-primary mb-4"> Keyboard Shortcuts (PC Mode)</h3>
+=======
+    <h3 class="fw-bold text-primary mb-4">⌨️ Keyboard Shortcuts (PC Mode)</h3>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+    <div class="shortcuts-grid">
+      <div class="shortcut-item"><kbd class="fw-bold">F1</kbd> <span>Show Help</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">F2</kbd> <span>Party Search</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">F3</kbd> <span>Product Search</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">F4</kbd> <span>Add Row</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">F5</kbd> <span>Save Order</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">F6</kbd> <span>Save Draft</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">F7</kbd> <span>Print</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">F8</kbd> <span>Scan Barcode</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">Tab</kbd> <span>Next Field</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">Shift+Tab</kbd> <span>Previous Field</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">Ctrl+S</kbd> <span>Quick Save</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">Esc</kbd> <span>Cancel/Close</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">Ctrl+Z</kbd> <span>Undo Last Action</span></div>
+      <div class="shortcut-item"><kbd class="fw-bold">Ctrl+Y</kbd> <span>Redo Last Action</span></div>
+    </div>
+    <div class="text-center mt-4">
+      <button class="btn btn-danger btn-lg fw-bold px-4" onclick="hideKeyboardHelp()">Close (Esc)</button>
+    </div>
+  </div>
+</div>
 
-    <div class="header-flex">
-        <h2 class="order-title">Create New Order</h2>
+<div class="container-fluid py-4">
+  <div class="card shadow-lg border-0 order-card" id="mainOrderCard">
 
-        <!-- Shortcuts Panel -->
-        <div class="shortcut-box">
-            <h5>Shortcuts</h5>
-            <ul>
-                <li><b>Alt + A</b> – Add Item</li>
-                <li><b>Ctrl + Enter</b> – Save Order</li>
-                <li><b>Ctrl + P</b> – Print</li>
-                <li><b>Ctrl + D</b> – Download PDF</li>
-            </ul>
+    <!-- HEADER WITH MODE SWITCHER -->
+    <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center flex-wrap">
+      <div class="d-flex align-items-center gap-3">
+<<<<<<< HEAD
+        <h2 class="mb-0 fw-bold text-shadow"> Smart Order System</h2>
+        <span class="badge bg-warning text-dark fw-bold pulse-badge">AI Ready</span>
+        <button type="button" class="btn btn-warning btn-lg fw-bold shadow-lg" onclick="showKeyboardHelp()" title="F1">
+           Shortcuts
+=======
+        <h2 class="mb-0 fw-bold text-shadow">🚀 Smart Order System</h2>
+        <span class="badge bg-warning text-dark fw-bold pulse-badge">AI Ready</span>
+        <button type="button" class="btn btn-warning btn-lg fw-bold shadow-lg" onclick="showKeyboardHelp()" title="F1">
+          ⌨️ Shortcuts
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+        </button>
+      </div>
+
+      <!-- MODE SWITCHER -->
+      <div class="mode-switcher d-flex gap-3">
+        <button type="button" class="btn btn-xl btn-outline-light active fw-bold shadow-lg pulse-button" data-mode="pc" id="pcMode">
+<<<<<<< HEAD
+           PC Mode
+        </button>
+        <button type="button" class="btn btn-xl btn-outline-light fw-bold shadow-lg" data-mode="pos" id="posMode">
+           POS Mode
+        </button>
+        <button type="button" class="btn btn-xl btn-outline-light fw-bold shadow-lg" data-mode="mobile" id="mobileMode">
+           Mobile Mode
+=======
+          💻 PC Mode
+        </button>
+        <button type="button" class="btn btn-xl btn-outline-light fw-bold shadow-lg" data-mode="pos" id="posMode">
+          🏪 POS Mode
+        </button>
+        <button type="button" class="btn btn-xl btn-outline-light fw-bold shadow-lg" data-mode="mobile" id="mobileMode">
+          📱 Mobile Mode
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+        </button>
+      </div>
+
+      <!-- THEME SELECTOR -->
+      <div class="theme-selector">
+        <select id="themeSelect" class="form-select form-select-lg fw-bold rainbow-border" aria-label="Theme Selector">
+<<<<<<< HEAD
+          <option value="default"> Default Theme</option>
+          <option value="dark"> Dark Theme</option>
+          <option value="blue"> Blue Theme</option>
+          <option value="green"> Green Theme</option>
+          <option value="red"> Red Theme</option>
+          <option value="rainbow"> Rainbow Theme</option>
+          <option value="neon"> Neon Theme</option>
+=======
+          <option value="default">🎨 Default Theme</option>
+          <option value="dark">🌙 Dark Theme</option>
+          <option value="blue">🔵 Blue Theme</option>
+          <option value="green">🟢 Green Theme</option>
+          <option value="red">🔴 Red Theme</option>
+          <option value="rainbow">🌈 Rainbow Theme</option>
+          <option value="neon">⚡ Neon Theme</option>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+        </select>
+      </div>
+    </div>
+
+    <!-- STEP WIZARD INDICATOR -->
+    <div class="wizard-steps bg-gradient-light p-3 border-bottom border-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="step-indicator d-flex align-items-center gap-2">
+          <span class="step step-circle active fw-bold" data-step="1">
+            <span class="step-number">1</span>
+            <span class="step-text">Party</span>
+          </span>
+<<<<<<< HEAD
+          <span class="step-arrow fw-bold text-primary"></span>
+=======
+          <span class="step-arrow fw-bold text-primary">→</span>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          <span class="step step-circle fw-bold" data-step="2">
+            <span class="step-number">2</span>
+            <span class="step-text">Products</span>
+          </span>
+<<<<<<< HEAD
+          <span class="step-arrow fw-bold text-primary"></span>
+=======
+          <span class="step-arrow fw-bold text-primary">→</span>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          <span class="step step-circle fw-bold" data-step="3">
+            <span class="step-number">3</span>
+            <span class="step-text">Review</span>
+          </span>
+<<<<<<< HEAD
+          <span class="step-arrow fw-bold text-primary"></span>
+=======
+          <span class="step-arrow fw-bold text-primary">→</span>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          <span class="step step-circle fw-bold" data-step="4">
+            <span class="step-number">4</span>
+            <span class="step-text">Save</span>
+          </span>
         </div>
+        <div class="step-navigation">
+          <button type="button" class="btn btn-outline-primary btn-lg fw-bold shadow" id="prevStep" disabled>
+<<<<<<< HEAD
+             Previous
+          </button>
+          <button type="button" class="btn btn-primary btn-lg fw-bold shadow pulse-button" id="nextStep">
+            Next 
+=======
+            ⬅️ Previous
+          </button>
+          <button type="button" class="btn btn-primary btn-lg fw-bold shadow pulse-button" id="nextStep">
+            Next ➡️
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          </button>
+        </div>
+      </div>
     </div>
 
     <form method="POST" action="{% url 'commerce:add_order' %}">
-        {% csrf_token %}
+      {% csrf_token %}
 
-        <!-- ORDER TYPE -->
-        <label><b>Order Type</b></label>
-        <select name="order_type" class="form-control" required>
-            <option value="">-- Select --</option>
-            <option value="sale">Sale</option>
-            <option value="purchase">Purchase</option>
-        </select>
-
-        <!-- PARTY SEARCH -->
-        <label class="mt-3"><b>Select Party (Searchable)</b></label>
-        <input type="text" id="partySearch" class="form-control mb-2" placeholder="Search Party...">
-
-        <select name="party" id="partySelect" class="form-control" required>
-            <option value="">-- Select Party --</option>
-            {% for p in parties %}
-            <option value="{{ p.id }}">{{ p.name }}</option>
-            {% endfor %}
-        </select>
-
-        <hr>
-
-        <h5><b>Order Items</b></h5>
-
-        <table class="table table-bordered" id="itemsTable">
-            <thead class="table-light">
-                <tr>
-                    <th>Product</th>
-                    <th style="width: 10%">Qty</th>
-                    <th style="width: 15%">Price</th>
-                    <th style="width: 18%">Amount</th>
-                    <th style="width: 10%">Action</th>
-                </tr>
-            </thead>
-            <tbody id="orderBody">
-                <tr class="item-row">
-                    <td>
-                        <input type="text" class="form-control product-search" placeholder="Search product...">
-                        <select name="product[]" class="form-control product mt-1" required>
-                            <option value="">Select</option>
-                            {% for prod in products %}
-                            <option value="{{ prod.id }}" data-price="{{ prod.price }}">{{ prod.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-
-                    <td><input type="number" name="qty[]" class="form-control qty" value="1" min="1"></td>
-                    <td><input type="number" name="price[]" class="form-control price" step="0.01"></td>
-                    <td><input type="number" name="amount[]" class="form-control amount" readonly></td>
-
-                    <td><button type="button" class="remove-btn">✕</button></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <button type="button" id="addItem" class="add-btn">+ Add Item (Alt + A)</button>
-
-        <div class="total-box" id="totalBox">Total: ₹0.00</div>
-
-        <label class="mt-3"><b>Notes</b></label>
-        <textarea name="notes" class="form-control" rows="3"></textarea>
-
-        <button type="submit" class="btn btn-success w-100 mt-3" id="saveBtn">
-            Save Order (Ctrl + Enter)
-        </button>
-
-        <div class="mt-3 print-download-box">
-            <button type="button" class="btn btn-secondary" id="printBtn">Print (Ctrl + P)</button>
-            <button type="button" class="btn btn-danger" id="downloadPdfBtn">Download PDF (Ctrl + D)</button>
+      <!-- STEP 1: Party Selection -->
+      <div class="card-body step-content" id="step-1">
+        <div class="step-header text-center mb-4">
+<<<<<<< HEAD
+          <h4 class="fw-bold text-primary"> Step 1: Select Party & Order Type</h4>
+=======
+          <h4 class="fw-bold text-primary">🎯 Step 1: Select Party & Order Type</h4>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          <p class="text-muted">Choose your order type and select a party to get started</p>
         </div>
 
+        <!-- ORDER BASIC INFO -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <div class="card border-primary">
+              <div class="card-body">
+<<<<<<< HEAD
+                <label for="orderType" class="form-label fw-bold"> Order Type (F2)</label>
+                <select id="orderType" name="order_type" class="form-select form-select-lg fw-bold" required title="Order Type" aria-label="Order Type">
+                  <option value="">Select Order Type</option>
+                  <option value="sale"> Sale Order</option>
+                  <option value="purchase"> Purchase Order</option>
+=======
+                <label for="orderType" class="form-label fw-bold">📋 Order Type (F2)</label>
+                <select id="orderType" name="order_type" class="form-select form-select-lg fw-bold" required title="Order Type" aria-label="Order Type">
+                  <option value="">Select Order Type</option>
+                  <option value="sale">💰 Sale Order</option>
+                  <option value="purchase">🛒 Purchase Order</option>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-8">
+            <div class="card border-success">
+              <div class="card-body">
+<<<<<<< HEAD
+                <label for="partySelect" class="form-label fw-bold"> Party Selection (F3)</label>
+                <input type="text" id="partySearch" class="form-control form-control-lg mb-2 fw-bold" placeholder=" Search Party (Type to search...)" autocomplete="off">
+=======
+                <label for="partySelect" class="form-label fw-bold">🏢 Party Selection (F3)</label>
+                <input type="text" id="partySearch" class="form-control form-control-lg mb-2 fw-bold" placeholder="🔍 Search Party (Type to search...)" autocomplete="off">
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+                <div id="partyDropdown" class="dropdown-menu w-100 dropdown-hidden" role="listbox" aria-label="Party search results"></div>
+                <select id="partySelect" name="party" class="form-select form-select-lg d-none fw-bold" required title="Select Party" aria-label="Select Party">
+                  <option value="">Select Party</option>
+                  {% for p in parties %}
+                  <option value="{{ p.id }}">{{ p.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI SUGGESTIONS -->
+        <div class="ai-suggestions-section mb-4">
+          <div class="ai-suggestions">
+            <div class="suggestion-item fw-bold">
+<<<<<<< HEAD
+               <strong>AI Assistant:</strong> Start by selecting a party or scanning a product barcode. I'll help you optimize your order!
+=======
+              🤖 <strong>AI Assistant:</strong> Start by selecting a party or scanning a product barcode. I'll help you optimize your order!
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+            </div>
+          </div>
+        </div>
+
+        <!-- SCAN BAR -->
+        <div class="scan-section mb-4 text-center">
+          <button type="button" id="startScan" class="btn btn-primary btn-xl fw-bold px-5 py-3 shadow-lg">
+<<<<<<< HEAD
+             Scan Barcode / QR (F8)
+=======
+            📷 Scan Barcode / QR (F8)
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          </button>
+          <div id="scanner" class="mt-3"></div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Product Selection -->
+      <div class="card-body step-content" id="step-2" style="display: none;">
+        <div class="step-header text-center mb-4">
+<<<<<<< HEAD
+          <h4 class="fw-bold text-success"> Step 2: Add Products</h4>
+=======
+          <h4 class="fw-bold text-success">📦 Step 2: Add Products</h4>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          <p class="text-muted">Add products to your order with quantities and prices</p>
+        </div>
+
+        <!-- ITEMS TABLE -->
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle shadow-lg" id="orderTable">
+            <thead class="table-primary text-center fw-bold">
+              <tr>
+                <th class="fw-bold">Product (F3)</th>
+                <th width="100" class="fw-bold">Qty</th>
+                <th width="140" class="fw-bold">Price</th>
+                <th width="160" class="fw-bold">Amount</th>
+                <th width="80" class="fw-bold">Action</th>
+              </tr>
+            </thead>
+
+            <tbody id="orderBody">
+              <tr class="item-row">
+                <td>
+                  <div class="card border-warning">
+                    <div class="card-body p-2">
+<<<<<<< HEAD
+                      <input type="text" class="form-control product-search mb-1 fw-bold" placeholder=" Search Product (F3)" autocomplete="off">
+=======
+                      <input type="text" class="form-control product-search mb-1 fw-bold" placeholder="🔍 Search Product (F3)" autocomplete="off">
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+                      <div class="product-dropdown dropdown-menu dropdown-hidden"></div>
+                      <select name="product[]" class="form-select product d-none fw-bold" required title="Select Product" aria-label="Select Product">
+                        <option value="">Select Product</option>
+                        {% for prod in products %}
+                        <option value="{{ prod.id }}" data-price="{{ prod.price }}">
+                          {{ prod.name }}
+                        </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  <div class="card border-info">
+                    <div class="card-body p-2">
+                      <input type="number" name="qty[]" class="form-control qty text-center fw-bold" value="1" min="1" aria-label="Quantity">
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  <div class="card border-danger">
+                    <div class="card-body p-2">
+                      <input type="number" name="price[]" class="form-control price text-end fw-bold" step="0.01" aria-label="Price">
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  <div class="card border-success">
+                    <div class="card-body p-2">
+                      <input type="number" name="amount[]" class="form-control amount text-end fw-bold" readonly aria-label="Amount">
+                    </div>
+                  </div>
+                </td>
+
+                <td class="text-center">
+<<<<<<< HEAD
+                  <button type="button" class="btn btn-danger btn-lg remove-btn fw-bold shadow"></button>
+=======
+                  <button type="button" class="btn btn-danger btn-lg remove-btn fw-bold shadow">✕</button>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="text-center mb-4">
+          <button type="button" id="addRow" class="btn btn-success btn-xl fw-bold px-5 py-3 shadow-lg">
+<<<<<<< HEAD
+             Add Product Row (F4)
+=======
+            ➕ Add Product Row (F4)
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          </button>
+        </div>
+
+        <!-- LIVE SUMMARY -->
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <div class="card summary-card border-primary shadow-lg">
+              <div class="card-header bg-primary text-white text-center fw-bold">
+<<<<<<< HEAD
+                 Live Order Summary
+=======
+                💰 Live Order Summary
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+              </div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="fw-bold">Subtotal:</span>
+<<<<<<< HEAD
+                  <strong class="text-primary fw-bold fs-5"> <span id="subTotal">0.00</span></strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="fw-bold">GST (18%):</span>
+                  <strong class="text-warning fw-bold fs-5"> <span id="tax">0.00</span></strong>
+=======
+                  <strong class="text-primary fw-bold fs-5">₹ <span id="subTotal">0.00</span></strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="fw-bold">GST (18%):</span>
+                  <strong class="text-warning fw-bold fs-5">₹ <span id="tax">0.00</span></strong>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+                </div>
+                <hr class="border-2">
+                <div class="d-flex justify-content-between">
+                  <span class="fw-bold fs-5">Grand Total:</span>
+<<<<<<< HEAD
+                  <strong class="text-success fw-bold fs-4"> <span id="grandTotal">0.00</span></strong>
+=======
+                  <strong class="text-success fw-bold fs-4">₹ <span id="grandTotal">0.00</span></strong>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Review Order -->
+      <div class="card-body step-content" id="step-3" style="display: none;">
+        <div class="step-header text-center mb-4">
+<<<<<<< HEAD
+          <h4 class="fw-bold text-warning"> Step 3: Review Order</h4>
+=======
+          <h4 class="fw-bold text-warning">🔍 Step 3: Review Order</h4>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          <p class="text-muted">Review your order details before saving</p>
+        </div>
+
+        <!-- ORDER SUMMARY -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="card border-info">
+<<<<<<< HEAD
+              <div class="card-header bg-info text-white fw-bold"> Order Details</div>
+=======
+              <div class="card-header bg-info text-white fw-bold">📋 Order Details</div>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+              <div class="card-body">
+                <p><strong>Order Type:</strong> <span id="reviewOrderType" class="fw-bold text-primary">-</span></p>
+                <p><strong>Party:</strong> <span id="reviewParty" class="fw-bold text-success">-</span></p>
+                <p><strong>Items Count:</strong> <span id="reviewItemCount" class="fw-bold text-warning">-</span></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card border-success">
+<<<<<<< HEAD
+              <div class="card-header bg-success text-white fw-bold"> Final Summary</div>
+              <div class="card-body">
+                <p><strong>Subtotal:</strong> <span id="reviewSubtotal" class="fw-bold">-</span></p>
+                <p><strong>GST:</strong> <span id="reviewTax" class="fw-bold">-</span></p>
+                <hr>
+                <p class="mb-0"><strong>Grand Total:</strong> <span id="reviewGrandTotal" class="fw-bold fs-4 text-primary">-</span></p>
+=======
+              <div class="card-header bg-success text-white fw-bold">💰 Final Summary</div>
+              <div class="card-body">
+                <p><strong>Subtotal:</strong> ₹<span id="reviewSubtotal" class="fw-bold">-</span></p>
+                <p><strong>GST:</strong> ₹<span id="reviewTax" class="fw-bold">-</span></p>
+                <hr>
+                <p class="mb-0"><strong>Grand Total:</strong> ₹<span id="reviewGrandTotal" class="fw-bold fs-4 text-primary">-</span></p>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTES -->
+        <div class="card border-warning">
+<<<<<<< HEAD
+          <div class="card-header bg-warning text-dark fw-bold"> Additional Notes</div>
+=======
+          <div class="card-header bg-warning text-dark fw-bold">📝 Additional Notes</div>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          <div class="card-body">
+            <textarea name="notes" class="form-control fw-bold" rows="4" placeholder="Add any additional notes for this order..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: Save Order -->
+      <div class="card-body step-content" id="step-4" style="display: none;">
+        <div class="step-header text-center mb-4">
+<<<<<<< HEAD
+          <h4 class="fw-bold text-success"> Step 4: Save Order</h4>
+=======
+          <h4 class="fw-bold text-success">💾 Step 4: Save Order</h4>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          <p class="text-muted">Choose how you want to save and share your order</p>
+        </div>
+
+        <!-- SAVE OPTIONS -->
+        <div class="row text-center">
+          <div class="col-md-3 mb-3">
+            <button type="submit" class="btn btn-success btn-xl fw-bold px-4 py-4 shadow-lg w-100">
+<<<<<<< HEAD
+               Save Order (F5)
+=======
+              💾 Save Order (F5)
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+            </button>
+          </div>
+          <div class="col-md-3 mb-3">
+            <button type="button" id="saveDraftStep4" class="btn btn-warning btn-xl fw-bold px-4 py-4 shadow-lg w-100">
+<<<<<<< HEAD
+               Save Draft (F6)
+=======
+              📝 Save Draft (F6)
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+            </button>
+          </div>
+          <div class="col-md-3 mb-3">
+            <button type="button" onclick="window.print()" class="btn btn-primary btn-xl fw-bold px-4 py-4 shadow-lg w-100">
+<<<<<<< HEAD
+               Print (F7)
+=======
+              🖨️ Print (F7)
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+            </button>
+          </div>
+          <div class="col-md-3 mb-3">
+            <button type="button" id="shareWhatsApp" class="btn btn-success btn-xl fw-bold px-4 py-4 shadow-lg w-100">
+<<<<<<< HEAD
+               WhatsApp
+=======
+              📤 WhatsApp
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+            </button>
+          </div>
+        </div>
+
+        <!-- ADDITIONAL ACTIONS -->
+        <div class="row text-center mt-3">
+          <div class="col-md-4 mb-3">
+            <button type="button" id="downloadPDF" class="btn btn-danger btn-lg fw-bold px-4 py-3 shadow w-100">
+<<<<<<< HEAD
+               PDF Export
+=======
+              ⬇ PDF Export
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+            </button>
+          </div>
+          <div class="col-md-4 mb-3">
+            <button type="button" id="downloadExcel" class="btn btn-info btn-lg fw-bold px-4 py-3 shadow w-100">
+<<<<<<< HEAD
+               Excel Export
+=======
+              📊 Excel Export
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+            </button>
+          </div>
+          <div class="col-md-4 mb-3">
+            <button type="button" id="shareEmail" class="btn btn-secondary btn-lg fw-bold px-4 py-3 shadow w-100">
+<<<<<<< HEAD
+               Email Share
+=======
+              📧 Email Share
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ENHANCED FOOTER ACTIONS -->
+      <div class="card-footer bg-light d-flex flex-wrap gap-2 justify-content-between align-items-center">
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success px-4">
+<<<<<<< HEAD
+             Save Order
+          </button>
+          <button type="button" id="saveDraftFooter" class="btn btn-outline-secondary">
+             Save Draft
+=======
+            💾 Save Order
+          </button>
+          <button type="button" id="saveDraftFooter" class="btn btn-outline-secondary">
+            📝 Save Draft
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+          </button>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+<<<<<<< HEAD
+          <button type="button" onclick="window.print()" class="btn btn-secondary"> Print</button>
+          <button type="button" id="downloadPDFFooter" class="btn btn-danger"> PDF</button>
+          <button type="button" id="downloadExcelFooter" class="btn btn-success"> Excel</button>
+          <button type="button" id="shareWhatsAppFooter" class="btn btn-success"> WhatsApp</button>
+          <button type="button" id="shareEmailFooter" class="btn btn-warning"> Email</button>
+          <button type="button" id="shareSMSFooter" class="btn btn-info"> SMS</button>
+=======
+          <button type="button" onclick="window.print()" class="btn btn-secondary">🖨 Print</button>
+          <button type="button" id="downloadPDFFooter" class="btn btn-danger">⬇ PDF</button>
+          <button type="button" id="downloadExcelFooter" class="btn btn-success">📊 Excel</button>
+          <button type="button" id="shareWhatsAppFooter" class="btn btn-success">📤 WhatsApp</button>
+          <button type="button" id="shareEmailFooter" class="btn btn-warning">📧 Email</button>
+          <button type="button" id="shareSMSFooter" class="btn btn-info">💬 SMS</button>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+        </div>
+
+      </div>
+
     </form>
+  </div>
 </div>
 
 {% endblock %}

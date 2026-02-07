@@ -169,6 +169,11 @@
     margin-left: 80px;
 }
 
+/* No sidebar layout (e.g., admin builder) */
+.no-sidebar .main-content {
+    margin-left: 0;
+}
+
 /* ===============================
    SCROLLBAR (OPTIONAL NICE LOOK)
 ================================ */

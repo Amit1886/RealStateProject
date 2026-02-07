@@ -1,8 +1,14 @@
 # full path: ~/myproject/khatapro/khataapp/forms.py
 from django import forms
-from .models import Party, Transaction
+<<<<<<< HEAD
+from django.contrib.auth import get_user_model
+from .models import Party, Transaction, SupplierPayment, FieldAgent
+=======
+from .models import Party, Transaction, SupplierPayment
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 from khataapp.models import UserProfile
 from .models import ContactMessage
+from commerce.models import Order
 
 
 # ----------------- Party Form -----------------
@@ -56,3 +62,54 @@ class ContactForm(forms.ModelForm):
     class Meta:
         model = ContactMessage
         fields = ['name', 'email', 'mobile', 'message']
+
+
+# ----------------- Supplier Payment Form -----------------
+class SupplierPaymentForm(forms.ModelForm):
+    class Meta:
+        model = SupplierPayment
+        fields = ['order', 'amount', 'payment_mode', 'reference', 'notes', 'payment_date']
+        widgets = {
+            'payment_date': forms.DateInput(attrs={'type': 'date'}),
+            'notes': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        if user:
+            # Filter orders to show only purchase orders for this user with outstanding amounts
+            self.fields['order'].queryset = Order.objects.filter(
+                owner=user,
+                order_type='PURCHASE',
+                due_amount__gt=0
+            ).select_related('party')
+<<<<<<< HEAD
+
+
+# ----------------- Field Agent Form -----------------
+class FieldAgentForm(forms.ModelForm):
+    class Meta:
+        model = FieldAgent
+        fields = ["user", "role", "mobile", "assigned_parties", "is_active", "notes"]
+        widgets = {
+            "assigned_parties": forms.SelectMultiple(attrs={"size": 8}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        owner = kwargs.pop("owner", None)
+        super().__init__(*args, **kwargs)
+
+        User = get_user_model()
+        qs = User.objects.filter(is_active=True).exclude(is_superuser=True)
+        if owner:
+            qs = qs.exclude(id=owner.id)
+
+        if self.instance and self.instance.pk:
+            qs = qs | User.objects.filter(id=self.instance.user_id)
+
+        self.fields["user"].queryset = qs.distinct()
+=======
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738

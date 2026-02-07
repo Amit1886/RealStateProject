@@ -1,0 +1,58 @@
+{% extends "billing/base.html" %}
+{% load static %}
+{% load plan_tags %}
+
+{% block billing_content %}
+<div class="plan-management">
+  <div class="plan-header">
+    <div>
+      <h2>Plan Management</h2>
+      <p>Compare plans and upgrade to unlock advanced features.</p>
+    </div>
+    {% if current_plan %}
+      <div class="plan-badge">Current: {{ current_plan.name }}</div>
+    {% endif %}
+  </div>
+
+  <div class="plan-grid">
+    {% for plan in plans %}
+    <div class="plan-card {% if current_plan and current_plan.id == plan.id %}active{% endif %}">
+      <h3>{{ plan.name }}</h3>
+      <div class="plan-price">{{ plan.price_monthly|default:plan.price }} / month</div>
+      <div class="plan-meta">{{ plan.price_yearly|default:0 }} / year  {{ plan.discount_percent }}% off</div>
+      <ul class="plan-features">
+        {% for feature in features %}
+          <li class="{% if feature.id in plan_features|get_item:plan.id %}enabled{% else %}locked{% endif %}">
+            {{ feature.label }}
+          </li>
+        {% endfor %}
+      </ul>
+      {% if current_plan and current_plan.id == plan.id %}
+        <button class="btn btn-light" disabled>Active Plan</button>
+      {% else %}
+        <form method="post" action="{% url 'billing:start_upgrade' plan.id %}">
+          {% csrf_token %}
+          <button class="btn btn-primary">Upgrade</button>
+        </form>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+  .plan-management h2 { margin: 0; }
+  .plan-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .plan-header p { margin:4px 0 0; color:#64748b; font-size:12px; }
+  .plan-badge { background:#0f766e; color:#fff; padding:6px 12px; border-radius:999px; font-size:12px; }
+  .plan-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:12px; }
+  .plan-card { border:1px solid #e2e8f0; border-radius:14px; padding:16px; background:#fff; }
+  .plan-card.active { border-color:#0f766e; box-shadow:0 6px 16px rgba(15,118,110,0.15); }
+  .plan-price { font-size:18px; font-weight:700; margin:8px 0; }
+  .plan-meta { font-size:11px; color:#64748b; }
+  .plan-features { list-style:none; padding:0; margin:12px 0; max-height:220px; overflow:auto; }
+  .plan-features li { font-size:12px; padding:4px 0; }
+  .plan-features li.enabled::before { content:" "; }
+  .plan-features li.locked::before { content:" "; color:#94a3b8; }
+</style>
+{% endblock %}

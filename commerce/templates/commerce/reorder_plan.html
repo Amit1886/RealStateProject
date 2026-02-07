@@ -1,0 +1,222 @@
+{% extends "commerce/base.html" %}
+{% block content %}
+<div class="ai-plan-page">
+  <div class="ai-plan-header">
+    <div>
+      <h1>AI Reorder Plan</h1>
+      <p>AI-driven purchase plan based on inventory, sales velocity, and supplier intelligence.</p>
+    </div>
+    <div class="ai-plan-actions">
+      <a class="ai-btn" href="{% url 'commerce:supplier_po' %}?budget={{ budget }}&target_days={{ target_days }}">Supplier POs</a>
+      <button class="ai-btn ai-btn-ghost" id="ai-generate-po">Auto-Generate PO</button>
+    </div>
+  </div>
+
+  <div class="ai-plan-summary">
+    <div class="ai-summary-card">
+      <div class="label">Total Purchase Cost</div>
+      <div class="value">{{ plan.summary.budget_used|floatformat:0 }}</div>
+    </div>
+    <div class="ai-summary-card">
+      <div class="label">Budget Used / Remaining</div>
+      <div class="value">{{ plan.summary.budget_used|floatformat:0 }} / {{ plan.summary.budget_remaining|floatformat:0 }}</div>
+    </div>
+    <div class="ai-summary-card">
+      <div class="label">Total Items Reordered</div>
+      <div class="value">{{ plan.summary.total_items_reordered }}</div>
+    </div>
+    <div class="ai-summary-card">
+      <div class="label">Expected Stock Stability</div>
+      <div class="value">{{ plan.summary.expected_stock_stability_days }} days</div>
+    </div>
+  </div>
+
+  <div class="ai-section">
+    <h2>Supplier-Wise Table</h2>
+    {% for group in plan.supplier_groups.values %}
+    <div class="ai-supplier-card">
+      <div class="ai-supplier-header">
+        <strong>{{ group.supplier_name }}</strong>
+        <span>Total: {{ group.total_cost|floatformat:0 }}</span>
+      </div>
+      <div class="ai-table-wrap">
+        <table class="ai-table">
+          <thead>
+            <tr>
+              <th>Supplier</th>
+              <th>Item</th>
+              <th>SKU</th>
+              <th>Qty</th>
+              <th>Unit Cost</th>
+              <th>Total Cost</th>
+              <th>Stock Days</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in group.items %}
+            <tr>
+              <td>{{ group.supplier_name }}</td>
+              <td>{{ item.product }}</td>
+              <td>{{ item.sku }}</td>
+              <td>{{ item.qty }}</td>
+              <td>{{ item.unit_cost|floatformat:2 }}</td>
+              <td>{{ item.total_cost|floatformat:2 }}</td>
+              <td>{{ item.stock_days|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% empty %}
+      <p>No reorder items generated.</p>
+    {% endfor %}
+  </div>
+
+  <div class="ai-section">
+    <h2>Final AI Summary</h2>
+    <div class="ai-summary-grid">
+      <div>
+        <strong>Total Purchase Cost:</strong> {{ plan.summary.budget_used|floatformat:0 }}
+      </div>
+      <div>
+        <strong>Budget Used / Remaining:</strong> {{ plan.summary.budget_used|floatformat:0 }} / {{ plan.summary.budget_remaining|floatformat:0 }}
+      </div>
+      <div>
+        <strong>Total Items Reordered:</strong> {{ plan.summary.total_items_reordered }}
+      </div>
+      <div>
+        <strong>Expected Stock Stability:</strong> {{ plan.summary.expected_stock_stability_days }} days
+      </div>
+    </div>
+    <div class="ai-skipped">
+      <h3>Items Skipped (with reason)</h3>
+      {% if plan.summary.items_skipped %}
+      <ul>
+        {% for item in plan.summary.items_skipped %}
+        <li>{{ item.name }} - {{ item.reason }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No items skipped.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+.ai-plan-page {
+  padding: 18px;
+}
+.ai-plan-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+.ai-plan-header h1 {
+  margin-bottom: 4px;
+}
+.ai-plan-actions {
+  display: flex;
+  gap: 10px;
+}
+.ai-btn {
+  background: #0f766e;
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  border: none;
+  font-weight: 600;
+}
+.ai-btn-ghost {
+  background: transparent;
+  color: #0f766e;
+  border: 1px solid #0f766e;
+}
+.ai-plan-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+.ai-summary-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  background: #ffffff;
+}
+.ai-summary-card .label {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+.ai-summary-card .value {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+.ai-section {
+  margin-top: 22px;
+}
+.ai-supplier-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background: #ffffff;
+}
+.ai-supplier-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.ai-table-wrap {
+  overflow: auto;
+}
+.ai-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.ai-table th,
+.ai-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+}
+.ai-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+.ai-skipped ul {
+  margin-top: 8px;
+  padding-left: 20px;
+}
+</style>
+
+<script>
+  (function () {
+    const btn = document.getElementById('ai-generate-po');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      btn.disabled = true;
+      fetch(`/api/ai/generate-po/?budget={{ budget }}&target_days={{ target_days }}`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || 'PO generation complete');
+        btn.disabled = false;
+      })
+      .catch(() => {
+        alert('Unable to generate PO right now.');
+        btn.disabled = false;
+      });
+    });
+  })();
+</script>
+{% endblock %}

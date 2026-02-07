@@ -1,0 +1,520 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="settings-center">
+  <div class="settings-header">
+    <div>
+      <h1>Unified Settings Center</h1>
+      <p>All billing and accounting settings in one place.</p>
+    </div>
+    <div class="settings-actions">
+      <input id="settings-search" type="text" placeholder="Search settings..." aria-label="Search settings">
+    </div>
+  </div>
+
+  <div class="settings-layout">
+    <aside class="settings-sidebar">
+      <div class="sidebar-title">Categories</div>
+      <div id="category-list" class="category-list">
+        {% include "core_settings/settings_category_cards.html" %}
+      </div>
+      <div class="sidebar-title" style="margin-top:16px;">Admin</div>
+      <div class="category-list">
+        {% if request.user.is_staff or request.user.is_superuser %}
+          <a href="{% url 'core_settings:user_feature_overrides' %}" class="category-pill" style="text-decoration:none;">
+            <strong>User Overrides</strong>
+            <div class="muted">Per-user feature toggles</div>
+          </a>
+        {% else %}
+          <a href="{% url 'billing:upgrade_plan' %}" class="category-pill locked-feature" data-upgrade-url="{% url 'billing:upgrade_plan' %}" style="text-decoration:none;" title="Upgrade to unlock">
+            <strong>User Overrides</strong>
+            <div class="muted">Per-user feature toggles</div>
+          </a>
+        {% endif %}
+      </div>
+    </aside>
+
+    <section class="settings-content">
+      <div class="settings-cards" id="settings-cards">
+        {% include "core_settings/settings_form_engine.html" %}
+      </div>
+    </section>
+  </div>
+
+  <div class="settings-footer">
+    <div class="ai-assistant">
+      <h3>AI Assistant</h3>
+      <ul id="ai-hints">
+        {% for hint in ai_hints %}
+          <li>{{ hint }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<style>
+  :root {
+    --settings-bg: #f8fafc;
+    --settings-card: #ffffff;
+    --settings-border: #e2e8f0;
+    --settings-text: #0f172a;
+    --settings-muted: #64748b;
+    --settings-accent: #0f766e;
+    --settings-accent-soft: rgba(15, 118, 110, 0.08);
+  }
+
+  body.dark {
+    --settings-bg: #0b1220;
+    --settings-card: #0f172a;
+    --settings-border: #1f2937;
+    --settings-text: #e2e8f0;
+    --settings-muted: #94a3b8;
+    --settings-accent: #22c55e;
+    --settings-accent-soft: rgba(34, 197, 94, 0.12);
+  }
+
+  .settings-center {
+    background: radial-gradient(circle at top, #ecfeff 0%, var(--settings-bg) 40%, var(--settings-bg) 100%);
+    padding: 24px;
+    border-radius: 18px;
+    border: 1px solid var(--settings-border);
+  }
+
+  .settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .settings-header h1 {
+    margin: 0;
+    font-size: 26px;
+    color: var(--settings-text);
+  }
+
+  .settings-header p {
+    margin-top: 6px;
+    color: var(--settings-muted);
+    font-size: 13px;
+  }
+
+  .settings-actions input {
+    border: 1px solid var(--settings-border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 13px;
+    min-width: 240px;
+    background: var(--settings-card);
+    color: var(--settings-text);
+  }
+
+  .settings-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 18px;
+    margin-top: 18px;
+  }
+
+  .settings-sidebar {
+    background: var(--settings-card);
+    border: 1px solid var(--settings-border);
+    border-radius: 16px;
+    padding: 14px;
+  }
+
+  .sidebar-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--settings-muted);
+    margin-bottom: 10px;
+  }
+
+  .category-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .category-pill {
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: var(--settings-accent-soft);
+    color: var(--settings-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .category-pill.active {
+    border-color: var(--settings-accent);
+    background: var(--settings-card);
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.12);
+  }
+
+  .settings-content {
+    display: grid;
+    gap: 16px;
+  }
+
+  .settings-card {
+    background: var(--settings-card);
+    border: 1px solid var(--settings-border);
+    border-radius: 16px;
+    padding: 16px;
+  }
+
+  .settings-card h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--settings-text);
+  }
+
+  .settings-card p {
+    margin: 4px 0 12px;
+    color: var(--settings-muted);
+    font-size: 12px;
+  }
+
+  .settings-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .setting-row {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(148, 163, 184, 0.07);
+  }
+
+  .setting-meta strong {
+    display: block;
+    color: var(--settings-text);
+  }
+
+  .setting-meta span {
+    font-size: 11px;
+    color: var(--settings-muted);
+  }
+
+  .setting-control input,
+  .setting-control select,
+  .setting-control textarea {
+    width: 100%;
+    border: 1px solid var(--settings-border);
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 12px;
+    background: var(--settings-card);
+    color: var(--settings-text);
+  }
+
+  .setting-control textarea {
+    min-height: 60px;
+    resize: vertical;
+  }
+
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+  }
+
+  .toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #cbd5f5;
+    border-radius: 999px;
+    transition: 0.2s;
+  }
+
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+
+  .toggle input:checked + .toggle-slider {
+    background: var(--settings-accent);
+  }
+
+  .toggle input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+  }
+
+  .undo-btn {
+    margin-top: 6px;
+    background: transparent;
+    border: 1px solid var(--settings-accent);
+    color: var(--settings-accent);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 10px;
+    cursor: pointer;
+  }
+
+  .settings-footer {
+    margin-top: 18px;
+  }
+
+  .ai-assistant {
+    background: var(--settings-card);
+    border: 1px solid var(--settings-border);
+    border-radius: 16px;
+    padding: 14px;
+  }
+
+  .ai-assistant h3 {
+    margin: 0 0 8px;
+  }
+
+  .ai-assistant ul {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--settings-muted);
+    font-size: 12px;
+  }
+
+  @media (max-width: 960px) {
+    .settings-layout {
+      grid-template-columns: 1fr;
+    }
+    .setting-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ settings_payload|json_script:"settingsPayload" }}
+<script>
+  const apiAllUrl = "{% url 'core_settings:api_settings_all' %}";
+  const apiUpdateUrl = "{% url 'core_settings:api_settings_update' %}";
+
+  const categoryList = document.getElementById("category-list");
+  const settingsCards = document.getElementById("settings-cards");
+  const aiHints = document.getElementById("ai-hints");
+  const searchInput = document.getElementById("settings-search");
+
+  const csrfToken = "{{ csrf_token }}";
+  const settingsPayloadScript = document.getElementById("settingsPayload");
+  let settingsPayload = settingsPayloadScript ? JSON.parse(settingsPayloadScript.textContent) : {};
+
+  function renderCategories(categories) {
+    categoryList.innerHTML = "";
+    categories.forEach((category, index) => {
+      const pill = document.createElement("div");
+      pill.className = "category-pill" + (index === 0 ? " active" : "");
+      pill.dataset.slug = category.slug;
+      pill.innerHTML = `<strong>${category.label}</strong><div class="muted">${category.description || ""}</div>`;
+      pill.addEventListener("click", () => {
+        document.querySelectorAll(".category-pill").forEach(el => el.classList.remove("active"));
+        pill.classList.add("active");
+        renderSettings([category]);
+      });
+      categoryList.appendChild(pill);
+    });
+  }
+
+  function renderSettings(categories) {
+    settingsCards.innerHTML = "";
+    categories.forEach(category => {
+      const card = document.createElement("div");
+      card.className = "settings-card";
+      card.innerHTML = `<h3>${category.label}</h3><p>${category.description || ""}</p>`;
+      const grid = document.createElement("div");
+      grid.className = "settings-grid";
+
+      category.settings.forEach(setting => {
+        const row = document.createElement("div");
+        row.className = "setting-row";
+        row.dataset.key = setting.key;
+
+        const meta = document.createElement("div");
+        meta.className = "setting-meta";
+        meta.innerHTML = `<strong>${setting.label}</strong><span>${setting.help_text || ""}</span>`;
+
+        const control = document.createElement("div");
+        control.className = "setting-control";
+        control.appendChild(buildControl(setting));
+
+        if (setting.editable) {
+          const undoBtn = document.createElement("button");
+          undoBtn.className = "undo-btn";
+          undoBtn.type = "button";
+          undoBtn.textContent = "Undo last change";
+          undoBtn.addEventListener("click", () => undoSetting(setting.key));
+          control.appendChild(undoBtn);
+        }
+
+        row.appendChild(meta);
+        row.appendChild(control);
+        grid.appendChild(row);
+      });
+
+      card.appendChild(grid);
+      settingsCards.appendChild(card);
+    });
+  }
+
+  function buildControl(setting) {
+    if (setting.data_type === "boolean") {
+      const wrapper = document.createElement("label");
+      wrapper.className = "toggle";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = Boolean(setting.value);
+      input.disabled = !setting.editable;
+      input.addEventListener("change", () => saveSetting(setting.key, input.checked));
+      const slider = document.createElement("span");
+      slider.className = "toggle-slider";
+      wrapper.appendChild(input);
+      wrapper.appendChild(slider);
+      const container = document.createElement("div");
+      container.className = "toggle-wrap";
+      container.appendChild(wrapper);
+      return container;
+    }
+
+    if (setting.data_type === "select") {
+      const select = document.createElement("select");
+      (setting.options || []).forEach(option => {
+        const opt = document.createElement("option");
+        opt.value = option;
+        opt.textContent = option;
+        if (option === setting.value) {
+          opt.selected = true;
+        }
+        select.appendChild(opt);
+      });
+      select.disabled = !setting.editable;
+      select.addEventListener("change", () => saveSetting(setting.key, select.value));
+      return select;
+    }
+
+    if (setting.data_type === "text" || setting.data_type === "json") {
+      const textarea = document.createElement("textarea");
+      textarea.value = setting.data_type === "json" ? JSON.stringify(setting.value || {}, null, 2) : (setting.value || "");
+      textarea.disabled = !setting.editable;
+      textarea.addEventListener("blur", () => {
+        const value = setting.data_type === "json" ? safeJson(textarea.value) : textarea.value;
+        saveSetting(setting.key, value);
+      });
+      return textarea;
+    }
+
+    const input = document.createElement("input");
+    input.type = setting.data_type === "number" ? "number" : "text";
+    input.value = setting.value || "";
+    input.disabled = !setting.editable;
+    input.addEventListener("blur", () => saveSetting(setting.key, input.value));
+    return input;
+  }
+
+  function safeJson(value) {
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      return value;
+    }
+  }
+
+  function saveSetting(key, value) {
+    fetch(apiUpdateUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,
+      },
+      body: JSON.stringify({ updates: [{ key, value }] }),
+    })
+      .then(resp => resp.json())
+      .then(data => {
+        refreshAll();
+      });
+  }
+
+  function undoSetting(key) {
+    fetch(apiUpdateUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,
+      },
+      body: JSON.stringify({ action: "undo", key }),
+    })
+      .then(resp => resp.json())
+      .then(data => {
+        refreshAll();
+      });
+  }
+
+  function refreshAll() {
+    fetch(apiAllUrl)
+      .then(resp => resp.json())
+      .then(data => {
+        settingsPayload = data.settings;
+        renderCategories(settingsPayload.categories || []);
+        renderSettings(settingsPayload.categories ? [settingsPayload.categories[0]] : []);
+        renderHints(data.ai_hints || []);
+      });
+  }
+
+  function renderHints(hints) {
+    aiHints.innerHTML = "";
+    hints.forEach(hint => {
+      const li = document.createElement("li");
+      li.textContent = hint;
+      aiHints.appendChild(li);
+    });
+  }
+
+  function filterSettings(term) {
+    const termLower = term.toLowerCase();
+    const filtered = settingsPayload.categories.map(category => {
+      const settings = category.settings.filter(setting =>
+        setting.label.toLowerCase().includes(termLower) ||
+        setting.key.toLowerCase().includes(termLower)
+      );
+      return { ...category, settings };
+    }).filter(category => category.settings.length > 0 || category.label.toLowerCase().includes(termLower));
+    renderCategories(filtered);
+    renderSettings(filtered.length ? [filtered[0]] : []);
+  }
+
+  searchInput.addEventListener("input", () => filterSettings(searchInput.value));
+
+  if (settingsPayload && settingsPayload.categories) {
+    renderCategories(settingsPayload.categories);
+    renderSettings([settingsPayload.categories[0]]);
+  } else {
+    refreshAll();
+  }
+</script>
+{% endblock %}

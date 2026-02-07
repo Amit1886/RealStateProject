@@ -78,7 +78,7 @@
             background: #0056b3;
         }
 
-        /* ✅ Message Notification Styles */
+        /*  Message Notification Styles */
         .messages {
             margin-bottom: 15px;
         }
@@ -103,7 +103,7 @@
             border: 2px solid #f5c6cb;
         }
 
-        /* ✅ Dashboard Button */
+        /*  Dashboard Button */
         .dashboard-btn {
             display: inline-block;
             margin-top: 10px;
@@ -138,9 +138,9 @@
 <body>
 
 <div class="container">
-    <h2>🏢 Add New Warehouse</h2>
+    <h2> Add New Warehouse</h2>
 
-    <!-- ✅ Django Message Display -->
+    <!--  Django Message Display -->
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
@@ -160,7 +160,7 @@
 
         <button type="submit">Add Warehouse</button>
     </form>
-      <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary px-4 rounded-pill">← Back to Dashboard</a>
+      <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary px-4 rounded-pill"> Back to Dashboard</a>
 
     </div>
 

@@ -1,0 +1,164 @@
+<div class="loyalty-wrap">
+  <div class="loyalty-header">
+    <div>
+      <h3>Loyalty, Scratch, Membership</h3>
+      <p>Smart rewards and membership insights for every account.</p>
+    </div>
+    <a href="{% url 'accounts:loyalty_dashboard' %}" class="loyalty-btn">
+      Open Loyalty
+    </a>
+  </div>
+
+  <div class="loyalty-grid">
+    <div class="loyalty-card">
+      <div class="loyalty-label">Loyalty Points</div>
+      <div class="loyalty-value">
+        {% if loyalty_account %}
+          {{ loyalty_account.available_points }}
+        {% else %}
+          0
+        {% endif %}
+      </div>
+      <div class="loyalty-buttons">
+        <button class="loyalty-pill">Redeem</button>
+        <button class="loyalty-pill">Earn More</button>
+      </div>
+    </div>
+
+    <div class="loyalty-card">
+      <div class="loyalty-label">Membership Tier</div>
+      <div class="loyalty-value">
+        {% if loyalty_account and loyalty_account.current_tier %}
+          {{ loyalty_account.current_tier.display_name }}
+        {% else %}
+          Bronze
+        {% endif %}
+      </div>
+      <div class="loyalty-buttons">
+        {% for tier in membership_tiers %}
+          <button class="loyalty-pill">{{ tier.display_name }}</button>
+        {% empty %}
+          <button class="loyalty-pill">No Tiers</button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="loyalty-card">
+      <div class="loyalty-label">Scratch Coupons</div>
+      <div class="loyalty-value">
+        {{ scratch_coupons|length }}
+      </div>
+      <div class="loyalty-buttons">
+        {% for coupon in scratch_coupons %}
+          <button class="loyalty-pill" onclick="applyCoupon('{{ coupon.code }}')">
+            {{ coupon.code }}
+          </button>
+        {% empty %}
+          <button class="loyalty-pill">No Scratch Coupons</button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="loyalty-card">
+      <div class="loyalty-label">Special Offers</div>
+      <div class="loyalty-value">
+        {{ active_offers|length }}
+      </div>
+      <div class="loyalty-buttons">
+        {% for offer in active_offers %}
+          <button class="loyalty-pill">{{ offer.name }}</button>
+        {% empty %}
+          <button class="loyalty-pill">No Offers</button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.loyalty-wrap {
+  margin: 18px 0;
+  padding: 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ecfeff 100%);
+  border: 1px solid #e5e7eb;
+}
+body.dark .loyalty-wrap {
+  background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+  border-color: #1f2937;
+}
+.loyalty-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.loyalty-header h3 {
+  margin: 0;
+  font-size: 20px;
+}
+.loyalty-header p {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+.loyalty-btn {
+  background: #ea580c;
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 12px;
+}
+.loyalty-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+.loyalty-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+body.dark .loyalty-card {
+  background: #0b1220;
+  border-color: #1f2937;
+  color: #e5e7eb;
+}
+.loyalty-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+.loyalty-value {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 6px 0 10px;
+}
+.loyalty-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.loyalty-pill {
+  border: 1px solid #fb923c;
+  background: #fff7ed;
+  color: #c2410c;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  cursor: pointer;
+}
+body.dark .loyalty-pill {
+  background: #111827;
+  border-color: #fb923c;
+  color: #fb923c;
+}
+</style>
+
+

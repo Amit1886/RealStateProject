@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Cash Book{% endblock %}
+
+{% block content %}
+<h2>Cash Book</h2>
+
+<p><strong>Balance:</strong> {{ balance }}</p>
+
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Amount</th>
+    </tr>
+    {% for t in transactions %}
+    <tr>
+        <td>{{ t.date }}</td>
+        <td>{{ t.type }}</td>
+        <td>{{ t.amount }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

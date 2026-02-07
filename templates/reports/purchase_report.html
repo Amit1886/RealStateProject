@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Purchase Report{% endblock %}
+
+{% block content %}
+<h2>Purchase Report</h2>
+
+<<<<<<< HEAD
+<p><strong>Total Purchase:</strong> {{ total_purchase }}</p>
+=======
+<p><strong>Total Purchase:</strong> ₹{{ total_purchase }}</p>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Party</th>
+        <th>Amount</th>
+        <th>Mode</th>
+    </tr>
+    {% for purchase in purchases %}
+    <tr>
+        <td>{{ purchase.date }}</td>
+        <td>{{ purchase.party.name }}</td>
+        <td>{{ purchase.amount }}</td>
+        <td>{{ purchase.txn_mode }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

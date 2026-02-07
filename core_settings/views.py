@@ -1,12 +1,24 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+import json
+from django.urls import reverse
 
 from core_settings.permissions import has_feature
 from core_settings.models import CompanySettings, UISettings, AppSettings
+from core_settings.services import (
+    get_settings_payload,
+    apply_updates,
+    undo_last_change,
+    build_ai_hints,
+    get_status_cards,
+)
 from khataapp.models import UserProfile
 from billing.models import Plan, PlanPermissions
+from billing.models import FeatureRegistry, UserFeatureOverride
+from django.contrib.auth import get_user_model
 
 
 def party_disabled(request):
@@ -65,11 +77,105 @@ def plan_permissions_view(request):
     
     if not request.user.is_staff and not request.user.is_superuser:
         return HttpResponse("❌ Admin access required")
+
+    if request.method == "POST":
+        plan_id = request.POST.get("plan_id")
+        plan = Plan.objects.filter(id=plan_id).first()
+        if not plan:
+            messages.error(request, "Plan not found.")
+            return redirect("core_settings:plan_permissions")
+
+        perms = plan.get_permissions()
+
+        bool_fields = [
+            "allow_dashboard",
+            "allow_reports",
+            "allow_pdf_export",
+            "allow_excel_export",
+            "allow_analytics",
+            "allow_add_party",
+            "allow_edit_party",
+            "allow_delete_party",
+            "allow_add_transaction",
+            "allow_edit_transaction",
+            "allow_delete_transaction",
+            "allow_bulk_transaction",
+            "allow_commerce",
+            "allow_warehouse",
+            "allow_orders",
+            "allow_inventory",
+            "allow_whatsapp",
+            "allow_sms",
+            "allow_email",
+            "allow_ledger",
+            "allow_credit_report",
+            "allow_settings",
+            "allow_users",
+            "allow_api_access",
+        ]
+
+        for field in bool_fields:
+            setattr(perms, field, request.POST.get(field) == "on")
+
+        max_parties = request.POST.get("max_parties")
+        if max_parties is not None and str(max_parties).isdigit():
+            perms.max_parties = int(max_parties)
+
+        perms.save()
+        messages.success(request, f"Permissions updated for {plan.name}.")
+        return redirect("core_settings:plan_permissions")
     
     plans = Plan.objects.filter(active=True).prefetch_related('permissions')
     
     return render(request, "core_settings/plan_permissions.html", {
         "plans": plans,
+    })
+
+
+@login_required
+def user_feature_overrides_view(request):
+    if not request.user.is_staff and not request.user.is_superuser:
+        return HttpResponse("❌ Admin access required")
+
+    User = get_user_model()
+    users = User.objects.filter(is_active=True).order_by("email")
+    features = FeatureRegistry.objects.filter(active=True).order_by("group", "label")
+
+    selected_user_id = request.GET.get("user_id") or (users.first().id if users.exists() else None)
+    selected_user = User.objects.filter(id=selected_user_id).first() if selected_user_id else None
+
+    if request.method == "POST":
+        selected_user_id = request.POST.get("user_id")
+        selected_user = User.objects.filter(id=selected_user_id).first()
+        if not selected_user:
+            messages.error(request, "User not found.")
+            return redirect("core_settings:user_feature_overrides")
+
+        # Clear existing overrides
+        UserFeatureOverride.objects.filter(user=selected_user).delete()
+
+        for feature in features:
+            field_name = f"feature_{feature.id}"
+            if field_name in request.POST:
+                UserFeatureOverride.objects.create(
+                    user=selected_user,
+                    feature=feature,
+                    is_enabled=True
+                )
+
+        messages.success(request, "User overrides updated.")
+        return redirect(f"{reverse('core_settings:user_feature_overrides')}?user_id={selected_user.id}")
+
+    overrides = {}
+    if selected_user:
+        for ov in UserFeatureOverride.objects.filter(user=selected_user):
+            overrides[ov.feature_id] = ov.is_enabled
+
+    return render(request, "core_settings/user_feature_overrides.html", {
+        "users": users,
+        "features": features,
+        "selected_user": selected_user,
+        "overrides": overrides,
     })
 
 
@@ -132,3 +238,52 @@ def user_permissions_view(request):
         "user_plan": user_plan,
         "permission_categories": permission_categories,
     })
+
+
+# ---------------- Unified Settings Center ----------------
+
+@login_required
+def settings_center(request):
+    payload = get_settings_payload(request.user)
+    ai_hints = build_ai_hints(payload)
+    status_cards = get_status_cards(payload)
+    return render(request, "core_settings/settings_dashboard.html", {
+        "settings_payload": payload,
+        "ai_hints": ai_hints,
+        "status_cards": status_cards,
+    })
+
+
+@login_required
+def api_settings_all(request):
+    payload = get_settings_payload(request.user)
+    response = {
+        "status": "ok",
+        "settings": payload,
+        "ai_hints": build_ai_hints(payload),
+        "status_cards": get_status_cards(payload),
+    }
+    return JsonResponse(response)
+
+
+@login_required
+@require_POST
+def api_settings_update(request):
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+
+    action = payload.get("action", "update")
+    if action == "undo":
+        key = payload.get("key")
+        if not key:
+            return JsonResponse({"status": "error", "message": "Missing key"}, status=400)
+        value = undo_last_change(request.user, key)
+        if value is None:
+            return JsonResponse({"status": "error", "message": "Nothing to undo"}, status=400)
+        return JsonResponse({"status": "ok", "key": key, "value": value})
+
+    updates = payload.get("updates", [])
+    results = apply_updates(request.user, updates)
+    return JsonResponse({"status": "ok", "results": results})

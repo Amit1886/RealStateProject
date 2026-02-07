@@ -14,29 +14,29 @@
         <!-- Header -->
         <div class="card-header">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 1rem;">
-                <h3 class="mb-0">💳 Transaction History</h3>
+                <h3 class="mb-0"> Transaction History</h3>
                 <div class="txn-actions" style="gap: 0.5rem; background: none; border: none; padding: 0;">
-                    <button class="btn btn-dark btn-sm" id="btnPrint">🖨️ Print</button>
-                    <button class="btn btn-success btn-sm" id="btnExcel">📊 Excel</button>
-                    <button class="btn btn-danger btn-sm" id="btnPdf">📄 PDF</button>
+                    <button class="btn btn-dark btn-sm" id="btnPrint"> Print</button>
+                    <button class="btn btn-success btn-sm" id="btnExcel"> Excel</button>
+                    <button class="btn btn-danger btn-sm" id="btnPdf"> PDF</button>
                 </div>
             </div>
         </div>
 
         <!-- Filters -->
         <div class="filter-row" style="margin-bottom: 0; border-radius: 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
-            <input type="text" id="partyFilter" class="form-control form-control-sm" placeholder="🔍 Search Party Name..." style="flex: 1; min-width: 200px;">
+            <input type="text" id="partyFilter" class="form-control form-control-sm" placeholder=" Search Party Name..." style="flex: 1; min-width: 200px;">
             
             <select id="typeFilter" class="form-select form-select-sm" style="min-width: 150px;">
-                <option value="">📌 All Types</option>
-                <option value="credit">✅ Credit (Received)</option>
-                <option value="debit">❌ Debit (Paid)</option>
+                <option value=""> All Types</option>
+                <option value="credit"> Credit (Received)</option>
+                <option value="debit"> Debit (Paid)</option>
             </select>
             
             <input type="date" id="fromDate" class="form-control form-control-sm" placeholder="From Date" style="min-width: 150px;">
             <input type="date" id="toDate" class="form-control form-control-sm" placeholder="To Date" style="min-width: 150px;">
             
-            <button class="btn btn-primary-small" onclick="applyFilters()">🔎 Apply</button>
+            <button class="btn btn-primary-small" onclick="applyFilters()"> Apply</button>
         </div>
 
         <!-- Table -->
@@ -45,12 +45,12 @@
                 <table id="transactionTable" class="table">
                     <thead>
                         <tr>
-                            <th>👤 Party</th>
-                            <th>💰 Type</th>
-                            <th>💵 Amount</th>
-                            <th>📅 Date</th>
-                            <th>📝 Notes</th>
-                            <th class="text-center">⚙️ Actions</th>
+                            <th> Party</th>
+                            <th> Type</th>
+                            <th> Amount</th>
+                            <th> Date</th>
+                            <th> Notes</th>
+                            <th class="text-center"> Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -59,23 +59,23 @@
                             <td><span class="font-semibold">{{ txn.party.name }}</span></td>
                             <td>
                                 {% if txn.txn_type == 'credit' %}
-                                    <span class="badge credit">✅ Credit</span>
+                                    <span class="badge credit"> Credit</span>
                                 {% else %}
-                                    <span class="badge debit">❌ Debit</span>
+                                    <span class="badge debit"> Debit</span>
                                 {% endif %}
                             </td>
-                            <td class="text-right"><strong>₹{{ txn.amount|floatformat:2 }}</strong></td>
+                            <td class="text-right"><strong>{{ txn.amount|floatformat:2 }}</strong></td>
                             <td>{{ txn.date|date:"d M Y" }}</td>
-                            <td>{{ txn.notes|default:"—" }}</td>
+                            <td>{{ txn.notes|default:"" }}</td>
                             <td class="text-center">
-                                <a href="{% url 'khataapp:transaction_view' txn.id %}" class="btn btn-table view btn-sm" title="View">👁️</a>
-                                <a href="{% url 'khataapp:transaction_edit' txn.id %}" class="btn btn-table edit btn-sm" title="Edit">✏️</a>
-                                <a href="{% url 'khataapp:transaction_delete' txn.id %}" onclick="return confirm('Are you sure?')" class="btn btn-table delete btn-sm" title="Delete">🗑️</a>
+                                <a href="{% url 'khataapp:transaction_view' txn.id %}" class="btn btn-table view btn-sm" title="View"></a>
+                                <a href="{% url 'khataapp:transaction_edit' txn.id %}" class="btn btn-table edit btn-sm" title="Edit"></a>
+                                <a href="{% url 'khataapp:transaction_delete' txn.id %}" onclick="return confirm('Are you sure?')" class="btn btn-table delete btn-sm" title="Delete"></a>
                             </td>
                         </tr>
                         {% empty %}
                         <tr><td colspan="6" class="text-center text-muted" style="padding: 2rem;">
-                            <p style="font-size: 1.1rem; margin: 0;">📭 No transactions found</p>
+                            <p style="font-size: 1.1rem; margin: 0;"> No transactions found</p>
                             <p style="font-size: 0.9rem; margin: 0.5rem 0 0 0; color: #9ca3af;">Create your first transaction to get started</p>
                         </td></tr>
                         {% endfor %}

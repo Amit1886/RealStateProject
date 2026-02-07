@@ -4,15 +4,15 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h4>📊 Business Snapshot (Today)</h4>
+  <h4> Business Snapshot (Today)</h4>
 
   <div class="row g-3 mt-3">
 
     <div class="col-md-3">
       <div class="card shadow">
         <div class="card-body">
-          <h6>💰 Sales</h6>
-          <h4>₹ {{ snapshot.sales_amount }}</h4>
+          <h6> Sales</h6>
+          <h4> {{ snapshot.sales_amount }}</h4>
           <small>{{ snapshot.sales_orders }} Orders</small>
         </div>
       </div>
@@ -21,8 +21,8 @@
     <div class="col-md-3">
       <div class="card shadow">
         <div class="card-body">
-          <h6>🛒 Purchase</h6>
-          <h4>₹ {{ snapshot.purchase_amount }}</h4>
+          <h6> Purchase</h6>
+          <h4> {{ snapshot.purchase_amount }}</h4>
           <small>{{ snapshot.purchase_orders }} Orders</small>
         </div>
       </div>
@@ -31,8 +31,8 @@
     <div class="col-md-3">
       <div class="card shadow">
         <div class="card-body">
-          <h6>📥 Received</h6>
-          <h4>₹ {{ snapshot.payment_received }}</h4>
+          <h6> Received</h6>
+          <h4> {{ snapshot.payment_received }}</h4>
         </div>
       </div>
     </div>
@@ -40,8 +40,8 @@
     <div class="col-md-3">
       <div class="card shadow">
         <div class="card-body">
-          <h6>📤 Given</h6>
-          <h4>₹ {{ snapshot.payment_given }}</h4>
+          <h6> Given</h6>
+          <h4> {{ snapshot.payment_given }}</h4>
         </div>
       </div>
     </div>
@@ -49,8 +49,8 @@
     <div class="col-md-3">
       <div class="card shadow">
         <div class="card-body">
-          <h6>📊 Receivable</h6>
-          <h4 class="text-success">₹ {{ snapshot.receivable_amount }}</h4>
+          <h6> Receivable</h6>
+          <h4 class="text-success"> {{ snapshot.receivable_amount }}</h4>
         </div>
       </div>
     </div>
@@ -58,8 +58,8 @@
     <div class="col-md-3">
       <div class="card shadow">
         <div class="card-body">
-          <h6>⚠️ Payable</h6>
-          <h4 class="text-danger">₹ {{ snapshot.payable_amount }}</h4>
+          <h6> Payable</h6>
+          <h4 class="text-danger"> {{ snapshot.payable_amount }}</h4>
         </div>
       </div>
     </div>

@@ -1,5 +1,17 @@
 from django.contrib import admin
-from .models import UISettings, CompanySettings, AppSettings, ModuleSettings, FeatureSettings, SaaSSettings
+from .models import (
+    UISettings,
+    CompanySettings,
+    AppSettings,
+    ModuleSettings,
+    FeatureSettings,
+    SaaSSettings,
+    SettingCategory,
+    SettingDefinition,
+    SettingValue,
+    SettingHistory,
+    SettingPermission,
+)
 
 @admin.register(UISettings)
 class UISettingsAdmin(admin.ModelAdmin):
@@ -62,4 +74,35 @@ class SaaSSettingsAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return not SaaSSettings.objects.exists()
+
+
+@admin.register(SettingCategory)
+class SettingCategoryAdmin(admin.ModelAdmin):
+    list_display = ("label", "slug", "sort_order")
+    list_editable = ("sort_order",)
+
+
+@admin.register(SettingDefinition)
+class SettingDefinitionAdmin(admin.ModelAdmin):
+    list_display = ("label", "key", "category", "data_type", "scope")
+    list_filter = ("category", "data_type", "scope")
+    search_fields = ("label", "key")
+
+
+@admin.register(SettingValue)
+class SettingValueAdmin(admin.ModelAdmin):
+    list_display = ("definition", "owner", "updated_at")
+    list_filter = ("definition__category",)
+
+
+@admin.register(SettingHistory)
+class SettingHistoryAdmin(admin.ModelAdmin):
+    list_display = ("definition", "owner", "created_at", "updated_by")
+    list_filter = ("definition__category",)
+
+
+@admin.register(SettingPermission)
+class SettingPermissionAdmin(admin.ModelAdmin):
+    list_display = ("role", "category", "can_view", "can_edit", "hidden")
+    list_filter = ("role", "category")
 

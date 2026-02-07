@@ -12,7 +12,7 @@
     <div class="card">
 
         <div class="card-header">
-            <h3 class="mb-0">📊 Ledger Entries</h3>
+            <h3 class="mb-0"> Ledger Entries</h3>
         </div>
 
         <!-- FILTER BAR -->
@@ -20,7 +20,7 @@
             <form method="GET" class="row w-100" style="gap: 0.5rem;">
                 <div class="col-md-3">
                     <select name="party" class="form-control form-control-sm">
-                        <option value="">📌 All Parties</option>
+                        <option value=""> All Parties</option>
                         {% for p in parties %}
                             <option value="{{ p.id }}" {% if selected_party == p.id|stringformat:"s" %}selected{% endif %}>
                                {{ p.name }}
@@ -42,7 +42,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary-small w-100">🔎 Apply Filters</button>
+                    <button type="submit" class="btn btn-primary-small w-100"> Apply Filters</button>
                 </div>
             </form>
         </div>
@@ -53,19 +53,19 @@
                 <div class="col-md-4">
                     <div class="text-center p-3 bg-white rounded" style="box-shadow: var(--shadow); border-left: 4px solid var(--danger-color);">
                         <p class="text-muted mb-1 font-semibold">Total Debit (Paid)</p>
-                        <p class="text-danger" style="font-size: 1.75rem; font-weight: 700; margin: 0;">₹{{ totals.total_debit|floatformat:2 }}</p>
+                        <p class="text-danger" style="font-size: 1.75rem; font-weight: 700; margin: 0;">{{ totals.total_debit|floatformat:2 }}</p>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="text-center p-3 bg-white rounded" style="box-shadow: var(--shadow); border-left: 4px solid var(--success-color);">
                         <p class="text-muted mb-1 font-semibold">Total Credit (Received)</p>
-                        <p class="text-success" style="font-size: 1.75rem; font-weight: 700; margin: 0;">₹{{ totals.total_credit|floatformat:2 }}</p>
+                        <p class="text-success" style="font-size: 1.75rem; font-weight: 700; margin: 0;">{{ totals.total_credit|floatformat:2 }}</p>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="text-center p-3 bg-white rounded" style="box-shadow: var(--shadow); border-left: 4px solid var(--primary-color);">
                         <p class="text-muted mb-1 font-semibold">Closing Balance</p>
-                        <p class="text-primary" style="font-size: 1.75rem; font-weight: 700; margin: 0;">₹{{ closing|floatformat:2 }}</p>
+                        <p class="text-primary" style="font-size: 1.75rem; font-weight: 700; margin: 0;">{{ closing|floatformat:2 }}</p>
                     </div>
                 </div>
             </div>
@@ -107,15 +107,15 @@
                     <td>{{ e.description }}</td>
 
                     <td class="text-end credit">
-                        {% if e.credit %}₹{{ e.credit }}{% else %}-{% endif %}
+                        {% if e.credit %}{{ e.credit }}{% else %}-{% endif %}
                     </td>
 
                     <td class="text-end debit">
-                        {% if e.debit %}₹{{ e.debit }}{% else %}-{% endif %}
+                        {% if e.debit %}{{ e.debit }}{% else %}-{% endif %}
                     </td>
 
-                    <td class="text-end amount">₹{{ e.amount }}</td>
-                    <td class="text-end balance">₹{{ e.balance }}</td>
+                    <td class="text-end amount">{{ e.amount }}</td>
+                    <td class="text-end balance">{{ e.balance }}</td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -162,17 +162,17 @@
                 <div class="body">
                     <div class="head">
                         <h4>{{ card.party.name }}</h4>
-                        <div class="balance-badge">₹{{ card.balance }}</div>
+                        <div class="balance-badge">{{ card.balance }}</div>
                     </div>
 
                     <div class="contact-row">
-                        <div>📞 {{ card.party.mobile_number|default:"-" }}</div>
-                        <div>🏢 {{ card.party.business_name|default:"-" }}</div>
+                        <div> {{ card.party.mobile_number|default:"-" }}</div>
+                        <div> {{ card.party.business_name|default:"-" }}</div>
                     </div>
 
                     <div class="small-summary">
-                        <div><strong>Debit:</strong> ₹{{ card.total_debit|default:"0" }}</div>
-                        <div><strong>Credit:</strong> ₹{{ card.total_credit|default:"0" }}</div>
+                        <div><strong>Debit:</strong> {{ card.total_debit|default:"0" }}</div>
+                        <div><strong>Credit:</strong> {{ card.total_credit|default:"0" }}</div>
                     </div>
 
                     <div class="entries-scroll" style="max-height:140px; overflow-y:auto; margin-top:10px; border-top:1px solid #172028; padding-top:8px;">
@@ -183,7 +183,7 @@
                                 <div class="type-badge">{{ e.type }}</div>
                                 <div class="desc">{{ e.desc }}</div>
                                 <div class="amount" style="color:{% if e.amount < 0 %}#059669{% else %}#dc2626{% endif %};">
-                                    ₹{{ e.amount }}
+                                    {{ e.amount }}
                                 </div>
                             </div>
                             {% endfor %}
@@ -194,11 +194,11 @@
 
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px;">
                         <a href="{% url 'accounts:party_ledger' card.party.id %}">
-                            📄 View Ledger
+                             View Ledger
                         </a>
 
                         <a href="{% url 'accounts:party_ledger_pdf' card.party.id %}">
-                            ⬇ Export PDF
+                             Export PDF
                         </a>
                     </div>
                 </div>

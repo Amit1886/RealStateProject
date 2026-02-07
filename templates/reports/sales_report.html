@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Sales Report{% endblock %}
+
+{% block content %}
+<h2>Sales Report</h2>
+
+<<<<<<< HEAD
+<p><strong>Total Sales:</strong> {{ total_sales }}</p>
+=======
+<p><strong>Total Sales:</strong> ₹{{ total_sales }}</p>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Party</th>
+        <th>Amount</th>
+        <th>Mode</th>
+    </tr>
+    {% for sale in sales %}
+    <tr>
+        <td>{{ sale.date }}</td>
+        <td>{{ sale.party.name }}</td>
+        <td>{{ sale.amount }}</td>
+        <td>{{ sale.txn_mode }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

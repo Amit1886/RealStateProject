@@ -5,7 +5,7 @@ from decimal import Decimal
 import uuid
 import random
 import string
-from khataapp.models import Party
+from khataapp.models import Party, FieldAgent
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -170,8 +170,19 @@ class Order(models.Model):
     # ✅ New field for distinguishing Sale / Purchase
     order_type = models.CharField(max_length=10, choices=ORDER_TYPE, default="SALE")
 
+    # Purchase specific fields
+    invoice_number = models.CharField(max_length=50, blank=True, null=True, help_text="Purchase invoice number")
+    due_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Outstanding amount for purchase")
+    payment_due_date = models.DateField(blank=True, null=True, help_text="Date when payment is due")
+
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    order_source = models.CharField(
+        max_length=30,
+        default="Manual",
+        help_text="Origin of the order (e.g. Manual, WhatsApp, API).",
+    )
 
     assigned_to = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -181,8 +192,39 @@ class Order(models.Model):
         related_name="assigned_orders",
     )
 
+    agent = models.ForeignKey(
+        FieldAgent,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="agent_orders"
+    )
+
+    DISCOUNT_TYPES = (
+        ("none", "None"),
+        ("percent", "Percent"),
+        ("flat", "Flat"),
+    )
+    discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPES, default="none")
+    discount_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    tax_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    tax_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
     def total_amount(self):
-        """Sum all order item totals."""
+        """Sum all order item totals with discount and tax applied."""
+        agg = self.items.aggregate(
+            t=models.Sum(
+                models.F("qty") * models.F("price"),
+                output_field=models.DecimalField(max_digits=12, decimal_places=2),
+            )
+        )
+        subtotal = agg["t"] or Decimal("0.00")
+        discount_amount = self.discount_amount or Decimal("0.00")
+        tax_amount = self.tax_amount or Decimal("0.00")
+        return subtotal - discount_amount + tax_amount
+
+    def subtotal_amount(self):
         agg = self.items.aggregate(
             t=models.Sum(
                 models.F("qty") * models.F("price"),
@@ -190,6 +232,34 @@ class Order(models.Model):
             )
         )
         return agg["t"] or Decimal("0.00")
+
+    def compute_totals(self):
+        subtotal = self.items.aggregate(
+            t=models.Sum(
+                models.F("qty") * models.F("price"),
+                output_field=models.DecimalField(max_digits=12, decimal_places=2),
+            )
+        )["t"] or Decimal("0.00")
+
+        discount_amount = Decimal("0.00")
+        if self.discount_type == "percent":
+            discount_amount = (subtotal * (self.discount_value or Decimal("0.00"))) / Decimal("100")
+        elif self.discount_type == "flat":
+            discount_amount = self.discount_value or Decimal("0.00")
+
+        if discount_amount > subtotal:
+            discount_amount = subtotal
+
+        taxable = subtotal - discount_amount
+        tax_amount = (taxable * (self.tax_percent or Decimal("0.00"))) / Decimal("100")
+
+        self.discount_amount = discount_amount
+        self.tax_amount = tax_amount
+        return subtotal
+
+    def save(self, *args, **kwargs):
+        self.compute_totals()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Order #{self.pk} - {self.party.name if self.party else 'Unknown'} ({self.order_type} - {self.status})"
@@ -201,12 +271,110 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
     qty = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    raw_name = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Raw item name when product is not matched",
+    )
 
     def line_total(self):
         return self.qty * self.price
 
     def __str__(self):
         return f"{self.product.name if self.product else 'Unknown'} x {self.qty}"
+
+
+# ---------------- WhatsApp Order Inbox ----------------
+class WhatsAppOrderInbox(models.Model):
+    STATUS_CHOICES = (
+        ("new", "New"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+        ("manual_review", "Manual Review"),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="whatsapp_orders",
+    )
+    party = models.ForeignKey(
+        Party,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="whatsapp_orders",
+    )
+    mobile_number = models.CharField(max_length=20)
+    customer_name = models.CharField(max_length=120, blank=True)
+    raw_message = models.TextField()
+    parsed_items = models.JSONField(default=list, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="whatsapp_inbox_entries",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"WhatsApp Order #{self.id} - {self.mobile_number}"
+
+
+class WhatsAppSession(models.Model):
+    STATE_CHOICES = (
+        ("browsing", "Browsing"),
+        ("awaiting_payment", "Awaiting Payment"),
+        ("completed", "Completed"),
+    )
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="whatsapp_sessions",
+    )
+    party = models.ForeignKey(
+        Party,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="whatsapp_sessions",
+    )
+    mobile_number = models.CharField(max_length=20)
+    state = models.CharField(max_length=30, choices=STATE_CHOICES, default="browsing")
+    selected_payment_mode = models.CharField(max_length=40, blank=True)
+    unmatched_items = models.JSONField(default=list, blank=True)
+    last_message_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("owner", "mobile_number")
+        ordering = ["-last_message_at"]
+
+    def __str__(self):
+        return f"WhatsApp Session {self.mobile_number}"
+
+
+class WhatsAppCartItem(models.Model):
+    session = models.ForeignKey(
+        WhatsAppSession,
+        on_delete=models.CASCADE,
+        related_name="cart_items",
+    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        unique_together = ("session", "product")
+
+    def line_total(self):
+        return self.quantity * self.unit_price
 
 
 # ---------------- Invoice ----------------
@@ -313,3 +481,133 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.message[:50]
+
+
+# ---------------- Coupons ----------------
+class Coupon(models.Model):
+    COUPON_TYPES = (
+        ("discount", "Discount"),
+        ("offer", "Offer"),
+        ("spin_win", "Spin and Win"),
+        ("scratch", "Scratch Card"),
+    )
+
+    DISCOUNT_TYPES = (
+        ("percentage", "Percentage"),
+        ("fixed", "Fixed Amount"),
+    )
+
+    title = models.CharField(max_length=200)
+    code = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True, null=True)
+    coupon_type = models.CharField(max_length=20, choices=COUPON_TYPES, default="discount")
+
+    # Discount specific fields
+    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPES, blank=True, null=True)
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    max_discount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+    # Usage limits
+    usage_limit = models.PositiveIntegerField(default=1)  # Total usage limit
+    per_user_limit = models.PositiveIntegerField(default=1)  # Per user limit
+    min_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    # Validity
+    valid_from = models.DateTimeField(default=timezone.now)
+    valid_until = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    # For spin-win and scratch
+    win_probability = models.DecimalField(max_digits=5, decimal_places=2, default=0.1)  # 10% chance
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.code})"
+
+    def is_valid(self):
+        now = timezone.now()
+        return (
+            self.is_active and
+            self.valid_from <= now and
+            (self.valid_until is None or self.valid_until >= now)
+        )
+
+    def get_discount_amount(self, order_total):
+        if self.coupon_type != "discount":
+            return Decimal("0.00")
+
+        if self.discount_type == "percentage":
+            discount = (order_total * self.discount_value) / 100
+            if self.max_discount and discount > self.max_discount:
+                discount = self.max_discount
+        else:  # fixed
+            discount = self.discount_value
+
+        return min(discount, order_total)  # Never exceed order total
+
+
+class UserCoupon(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_coupons")
+    coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE, related_name="user_coupons")
+    is_used = models.BooleanField(default=False)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "coupon")
+
+    def __str__(self):
+        return f"{self.user.username} - {self.coupon.code}"
+
+
+class CouponUsage(models.Model):
+    coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE, related_name="usages")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="coupon_usages")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="coupon_usages", blank=True, null=True)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    used_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.coupon.code} used by {self.user.username} - ₹{self.discount_amount}"
+
+
+# ---------------- Stock Entry ----------------
+class StockEntry(models.Model):
+    ENTRY_TYPE_CHOICES = [
+        ("IN", "Stock In"),
+        ("OUT", "Stock Out"),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="stockentry")
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    entry_type = models.CharField(max_length=3, choices=ENTRY_TYPE_CHOICES)
+    date = models.DateField()
+
+    def __str__(self):
+        return f"{self.product.name} - {self.entry_type} {self.quantity}"
+<<<<<<< HEAD
+
+
+# ---------------- AI Reorder Settings ----------------
+class CommerceAISettings(models.Model):
+    """
+    Singleton-style settings for AI reorder planner thresholds.
+    Admin can update these values.
+    """
+    fast_daily_sales = models.DecimalField(max_digits=8, decimal_places=2, default=1.50)
+    medium_daily_sales = models.DecimalField(max_digits=8, decimal_places=2, default=0.60)
+    slow_daily_sales = models.DecimalField(max_digits=8, decimal_places=2, default=0.20)
+    safety_factor = models.DecimalField(max_digits=4, decimal_places=2, default=0.70)
+    default_budget = models.DecimalField(max_digits=14, decimal_places=2, default=50000)
+    default_target_days = models.PositiveIntegerField(default=30)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "Commerce AI Settings"
+
+    class Meta:
+        verbose_name = "AI Reorder Setting"
+        verbose_name_plural = "AI Reorder Settings"
+=======
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738

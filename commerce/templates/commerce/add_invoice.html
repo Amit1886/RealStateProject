@@ -7,7 +7,7 @@
 <div class="container py-4">
   <div class="invoice-card">
     <h3 class="section-title mb-4">
-      ➕ Add Invoice
+       Add Invoice
     </h3>
 
     <form method="POST" action="{% url 'commerce:add_invoice' %}">
@@ -20,7 +20,7 @@
           <option value="">-- Select Order --</option>
           {% for o in orders %}
             <option value="{{ o.id }}">
-              Order #{{ o.id }} — {{ o.party.name }} — ₹{{ o.total_amount }}
+              Order #{{ o.id }}  {{ o.party.name }}  {{ o.total_amount }}
             </option>
           {% endfor %}
         </select>
@@ -33,13 +33,13 @@
       </div>
 
       <button type="submit" class="btn-gradient">
-        💾 Create Invoice
+         Create Invoice
       </button>
     </form>
 
     <div class="text-center mt-4">
       <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary">
-        ← Back to Dashboard
+         Back to Dashboard
       </a>
     </div>
   </div>

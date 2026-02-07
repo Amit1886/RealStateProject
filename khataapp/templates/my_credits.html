@@ -3,7 +3,7 @@
 <div class="container">
   <h2>My Credits</h2>
 
-  <h4>Credit Limit: ₹{{ party.credit_limit }}</h4>
+  <h4>Credit Limit: {{ party.credit_limit }}</h4>
   <h4>Current Grade: {{ party.credit_grade }}</h4>
   <hr>
 
@@ -18,7 +18,7 @@
     {% for entry in entries %}
       <tr>
         <td>{{ entry.id }}</td>
-        <td>₹{{ entry.amount }}</td>
+        <td>{{ entry.amount }}</td>
         <td>{{ entry.created_at|date:"Y-m-d" }}</td>
         <td>{{ entry.status }}</td>
       </tr>
@@ -40,9 +40,9 @@
       <tr>
         <td>{{ emi.entry.id }}</td>
         <td>{{ emi.due_date }}</td>
-        <td>₹{{ emi.amount }}</td>
+        <td>{{ emi.amount }}</td>
         <td>{{ emi.status }}</td>
-        <td>₹{{ emi.penalty_amount }}</td>
+        <td>{{ emi.penalty_amount }}</td>
       </tr>
     {% empty %}
       <tr><td colspan="5">No EMIs yet.</td></tr>

@@ -43,12 +43,17 @@ urlpatterns = [
     path('download-invoice/<int:order_id>/', views.download_invoice, name='download_invoice'),
     path("orders/", views.order_list, name="order_list"),
     path('orders/sales/', views.sales_order_list, name='sales_order_list'),
+    path('orders/sales/<int:order_id>/', views.sales_order_detail, name='sales_order_detail'),
     path('orders/purchase/', views.purchase_order_list, name='purchase_order_list'),
     path("orders/<int:order_id>/<str:action>/",views.order_action,name="order_action"),
     path("orders/<int:pk>/", views.order_detail, name="order_detail"),
     path("sales/voucher/create/<int:order_id>/",views.sales_voucher_create,name="sales_voucher_create"),
     path("sales/voucher/<int:invoice_no>/", sales_voucher_detail, name="sales_voucher_detail"),
     path("invoices/add/", views.add_invoice, name="add_invoice"),
+
+    # ------------------- WhatsApp Orders -------------------
+    path("whatsapp/inbox/", views.whatsapp_order_inbox, name="whatsapp_order_inbox"),
+    path("whatsapp/inbox/<int:inbox_id>/<str:action>/", views.whatsapp_order_action, name="whatsapp_order_action"),
 
     # ------------------- Chat -------------------
     path("add-chat-thread/", views.add_chat_thread, name="add_chat_thread"),
@@ -57,4 +62,22 @@ urlpatterns = [
     path("api/chat/<int:thread_id>/messages/", views.api_chat_messages, name="api_chat_messages"),
     path("api/chat/<int:thread_id>/send/", views.api_chat_send, name="api_chat_send"),
 
+    # ------------------- Coupons -------------------
+    path("coupons/", views.coupon_list, name="coupon_list"),
+    path("coupons/create/", views.coupon_create, name="coupon_create"),
+    path("coupons/<int:pk>/edit/", views.coupon_edit, name="coupon_edit"),
+    path("coupons/<int:pk>/delete/", views.coupon_delete, name="coupon_delete"),
+    path("user-coupons/", views.user_coupon_list, name="user_coupon_list"),
+    path("apply-coupon/", views.apply_coupon, name="apply_coupon"),
+    path("spin-wheel/", views.spin_wheel, name="spin_wheel"),
+    path("scratch-card/", views.scratch_card, name="scratch_card"),
+    path("dashboard-with-coupons/", views.dashboard_with_coupons, name="dashboard_with_coupons"),
+
+<<<<<<< HEAD
+    # ------------------- AI Reorder Planner -------------------
+    path("ai/reorder-plan/", views.ai_reorder_plan_view, name="ai_reorder_plan"),
+    path("ai/supplier-po/", views.supplier_po_view, name="supplier_po"),
+
+=======
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
    ]

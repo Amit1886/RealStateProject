@@ -1,0 +1,279 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Collector Dashboard{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold">Collector Dashboard</h1>
+            <p class="text-sm text-gray-500">Today: {{ today }}</p>
+        </div>
+        <div class="text-sm text-gray-600">
+            Agent: <span class="font-medium">{{ agent.user.get_full_name|default:agent.user.email }}</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="p-4 rounded-lg border bg-white">
+            <div class="text-xs text-gray-500">Expected Collection</div>
+            <div class="text-2xl font-semibold">{{ total_expected }}</div>
+        </div>
+        <div class="p-4 rounded-lg border bg-white">
+            <div class="text-xs text-gray-500">Collected Today</div>
+            <div class="text-2xl font-semibold">{{ total_collected }}</div>
+        </div>
+        <div class="p-4 rounded-lg border bg-white">
+            <div class="text-xs text-gray-500">Remaining</div>
+            <div class="text-2xl font-semibold">{{ total_expected|add:-total_collected }}</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="p-3 rounded-lg border bg-white text-center">
+            <div class="text-xs text-gray-500">Planned</div>
+            <div class="text-lg font-semibold">{{ visit_counts.planned }}</div>
+        </div>
+        <div class="p-3 rounded-lg border bg-white text-center">
+            <div class="text-xs text-gray-500">Visited</div>
+            <div class="text-lg font-semibold">{{ visit_counts.visited }}</div>
+        </div>
+        <div class="p-3 rounded-lg border bg-white text-center">
+            <div class="text-xs text-gray-500">Partial</div>
+            <div class="text-lg font-semibold">{{ visit_counts.partial }}</div>
+        </div>
+        <div class="p-3 rounded-lg border bg-white text-center">
+            <div class="text-xs text-gray-500">Not Available</div>
+            <div class="text-lg font-semibold">{{ visit_counts.not_available }}</div>
+        </div>
+        <div class="p-3 rounded-lg border bg-white text-center">
+            <div class="text-xs text-gray-500">Cancelled</div>
+            <div class="text-lg font-semibold">{{ visit_counts.cancelled }}</div>
+        </div>
+    </div>
+
+    <div class="bg-white border rounded-lg overflow-hidden">
+        <div class="px-4 py-3 border-b font-medium">Todays Visit List</div>
+        {% if visits_today %}
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 text-left">
+                    <tr>
+                        <th class="px-4 py-2">Party</th>
+                        <th class="px-4 py-2">Mobile</th>
+                        <th class="px-4 py-2">Expected</th>
+                        <th class="px-4 py-2">Collected</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2">Update</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in visits_today %}
+                    <tr class="border-t">
+                        <td class="px-4 py-2">{{ v.party.name }}</td>
+                        <td class="px-4 py-2">{{ v.party.mobile }}</td>
+                        <td class="px-4 py-2">{{ v.expected_amount }}</td>
+                        <td class="px-4 py-2">{{ v.collected_amount }}</td>
+                        <td class="px-4 py-2">{{ v.get_status_display }}</td>
+                        <td class="px-4 py-2">
+                            <form method="post" class="flex items-center gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="visit_update">
+                                <input type="hidden" name="visit_id" value="{{ v.id }}">
+                                <select name="status" class="border rounded-md px-2 py-1 text-xs">
+                                    <option value="planned" {% if v.status == "planned" %}selected{% endif %}>Planned</option>
+                                    <option value="visited" {% if v.status == "visited" %}selected{% endif %}>Visited</option>
+                                    <option value="partial" {% if v.status == "partial" %}selected{% endif %}>Partial</option>
+                                    <option value="not_available" {% if v.status == "not_available" %}selected{% endif %}>Not Available</option>
+                                    <option value="cancelled" {% if v.status == "cancelled" %}selected{% endif %}>Cancelled</option>
+                                </select>
+                                <input type="number" name="collected_amount" class="w-24 border rounded-md px-2 py-1 text-xs" step="0.01" placeholder="Amount">
+                                <input type="text" name="payment_mode" class="w-24 border rounded-md px-2 py-1 text-xs" placeholder="Mode">
+                                <button type="submit" class="summary-modern-btn summary-modern-btn-ghost">Save</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="p-4 text-sm text-gray-500">No visits scheduled for today.</div>
+        {% endif %}
+    </div>
+
+    <div class="bg-white border rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+            <div>
+                <div class="font-medium">Create New Order (Agent)</div>
+                <div class="text-xs text-gray-500">This order will be tagged with Agent reference.</div>
+            </div>
+        </div>
+        <form method="post" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_order">
+            <div>
+                <label class="text-xs text-gray-500">Party</label>
+                <select name="party_id" class="w-full border rounded-md px-3 py-2 text-sm">
+                    <option value="">Select party</option>
+                    {% for p in agent.assigned_parties.all %}
+                        <option value="{{ p.id }}">{{ p.name }} ({{ p.mobile }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="md:col-span-3">
+                <div class="text-xs text-gray-500 mb-2">Items</div>
+                <div id="agentItems" class="space-y-2">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-2 agent-item-row">
+                        <select name="product_id[]" class="w-full border rounded-md px-3 py-2 text-sm">
+                            <option value="">Other / Manual</option>
+                            {% for prod in products %}
+                                <option value="{{ prod.id }}">{{ prod.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="text" name="raw_name[]" class="w-full border rounded-md px-3 py-2 text-sm" placeholder="Item name">
+                        <input type="number" name="qty[]" class="w-full border rounded-md px-3 py-2 text-sm" min="1" value="1">
+                        <input type="number" name="price[]" class="w-full border rounded-md px-3 py-2 text-sm" min="1" step="0.01" placeholder="Price">
+                        <button type="button" class="summary-modern-btn summary-modern-btn-ghost remove-row">Remove</button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 mt-2">
+                    <button type="button" id="addAgentItem" class="summary-modern-btn summary-modern-btn-ghost">Add Item</button>
+                    <div class="text-sm text-gray-600">Total: <span id="agentOrderTotal">0</span></div>
+                </div>
+            </div>
+            <div class="md:col-span-3">
+                <label class="text-xs text-gray-500">Notes</label>
+                <input type="text" name="notes" class="w-full border rounded-md px-3 py-2 text-sm" placeholder="Any special instruction">
+            </div>
+            <div>
+                <label class="text-xs text-gray-500">Discount Type</label>
+                <select name="discount_type" class="w-full border rounded-md px-3 py-2 text-sm">
+                    <option value="none">None</option>
+                    <option value="percent">Percent (%)</option>
+                    <option value="flat">Flat ()</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs text-gray-500">Discount Value</label>
+                <input type="number" name="discount_value" class="w-full border rounded-md px-3 py-2 text-sm" min="0" step="0.01" value="0">
+            </div>
+            <div>
+                <label class="text-xs text-gray-500">Tax %</label>
+                <input type="number" name="tax_percent" class="w-full border rounded-md px-3 py-2 text-sm" min="0" step="0.01" value="0">
+            </div>
+            <div class="md:col-span-3">
+                <button type="submit" class="summary-modern-btn">Create Order</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white border rounded-lg overflow-hidden">
+        <div class="px-4 py-3 border-b font-medium">Recent Agent Orders</div>
+        {% if recent_agent_orders %}
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 text-left">
+                    <tr>
+                        <th class="px-4 py-2">Order ID</th>
+                        <th class="px-4 py-2">Party</th>
+                        <th class="px-4 py-2">Amount</th>
+                        <th class="px-4 py-2">Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in recent_agent_orders %}
+                    <tr class="border-t">
+                        <td class="px-4 py-2">#{{ o.id }}</td>
+                        <td class="px-4 py-2">{{ o.party.name }}</td>
+                        <td class="px-4 py-2">{{ o.total_amount }}</td>
+                        <td class="px-4 py-2">{{ o.created_at|date:"d M Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="p-4 text-sm text-gray-500">No agent orders yet.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    const addBtn = document.getElementById('addAgentItem');
+    const wrap = document.getElementById('agentItems');
+    const totalEl = document.getElementById('agentOrderTotal');
+    if (!addBtn || !wrap) return;
+
+    function recalcTotal() {
+      let total = 0;
+      wrap.querySelectorAll('.agent-item-row').forEach(row => {
+        const qty = parseFloat(row.querySelector('input[name="qty[]"]')?.value || '0');
+        const price = parseFloat(row.querySelector('input[name="price[]"]')?.value || '0');
+        total += (qty * price);
+      });
+      const discountType = document.querySelector('select[name="discount_type"]')?.value || 'none';
+      const discountValue = parseFloat(document.querySelector('input[name="discount_value"]')?.value || '0');
+      const taxPercent = parseFloat(document.querySelector('input[name="tax_percent"]')?.value || '0');
+
+      let discountAmount = 0;
+      if (discountType === 'percent') {
+        discountAmount = (total * discountValue) / 100;
+      } else if (discountType === 'flat') {
+        discountAmount = discountValue;
+      }
+      if (discountAmount > total) discountAmount = total;
+
+      const taxable = total - discountAmount;
+      const taxAmount = (taxable * taxPercent) / 100;
+      const grandTotal = taxable + taxAmount;
+
+      if (totalEl) totalEl.textContent = grandTotal.toFixed(2);
+    }
+
+    document.addEventListener('input', (e) => {
+      if (!e.target) return;
+      const name = e.target.name;
+      if (name === 'qty[]' || name === 'price[]' || name === 'discount_value' || name === 'tax_percent') {
+        recalcTotal();
+      }
+    });
+
+    document.addEventListener('change', (e) => {
+      if (e.target && e.target.name === 'discount_type') {
+        recalcTotal();
+      }
+    });
+
+    wrap.addEventListener('click', (e) => {
+      const btn = e.target.closest('.remove-row');
+      if (!btn) return;
+      const row = btn.closest('.agent-item-row');
+      if (row && wrap.querySelectorAll('.agent-item-row').length > 1) {
+        row.remove();
+        recalcTotal();
+      }
+    });
+
+    addBtn.addEventListener('click', () => {
+      const row = document.createElement('div');
+      row.className = 'grid grid-cols-1 md:grid-cols-5 gap-2 agent-item-row';
+      row.innerHTML = `
+        <select name="product_id[]" class="w-full border rounded-md px-3 py-2 text-sm">
+          <option value="">Other / Manual</option>
+          {% for prod in products %}
+            <option value="{{ prod.id }}">{{ prod.name }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" name="raw_name[]" class="w-full border rounded-md px-3 py-2 text-sm" placeholder="Item name">
+        <input type="number" name="qty[]" class="w-full border rounded-md px-3 py-2 text-sm" min="1" value="1">
+        <input type="number" name="price[]" class="w-full border rounded-md px-3 py-2 text-sm" min="1" step="0.01" placeholder="Price">
+        <button type="button" class="summary-modern-btn summary-modern-btn-ghost remove-row">Remove</button>
+      `;
+      wrap.appendChild(row);
+      recalcTotal();
+    });
+
+    recalcTotal();
+  })();
+</script>
+{% endblock %}

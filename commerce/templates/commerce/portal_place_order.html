@@ -9,7 +9,7 @@
         <label for="product_id" class="form-label">Product</label>
         <select id="product_id" name="product_id" class="form-select">
             {% for product in portal.party.product_set.all %}
-            <option value="{{ product.id }}">{{ product.name }} (₹{{ product.price }})</option>
+            <option value="{{ product.id }}">{{ product.name }} ({{ product.price }})</option>
             {% endfor %}
         </select>
     </div>

@@ -9,13 +9,13 @@
 <div class="container mt-4">
     <div class="card shadow">
         <div class="card-header bg-dark text-white">
-            <h4>📦 Product Details</h4>
+            <h4> Product Details</h4>
         </div>
 
         <div class="card-body">
             <p><strong>Name:</strong> {{ product.name }}</p>
             <p><strong>Category:</strong> {{ product.category }}</p>
-            <p><strong>Price:</strong> ₹ {{ product.price }}</p>
+            <p><strong>Price:</strong>  {{ product.price }}</p>
             <p><strong>Stock:</strong> {{ product.stock_qty }}</p>
             <p><strong>SKU:</strong> {{ product.sku }}</p>
             <p><strong>HSN:</strong> {{ product.hsn_code }}</p>
@@ -25,7 +25,7 @@
 
         <div class="card-footer text-end">
             <a href="{% url 'commerce:product_list' %}" class="btn btn-secondary">
-                ⬅ Back
+                 Back
             </a>
         </div>
     </div>

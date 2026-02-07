@@ -18,4 +18,14 @@ urlpatterns = [
     path('transactions/edit/<int:id>/',views.transaction_edit,name='transaction_edit'),
     path('transactions/view/<int:id>/', views.transaction_view, name='transaction_view'),
     path("transactions/delete/<int:id>/",views.transaction_delete,name="transaction_delete"),
+    path("suppliers/dashboard/", views.supplier_dashboard, name="supplier_dashboard"),
+    path("suppliers/<int:supplier_id>/", views.supplier_detail, name="supplier_detail"),
+    path("suppliers/payments/add/", views.add_supplier_payment, name="add_supplier_payment"),
+<<<<<<< HEAD
+    path("agents/", views.field_agent_list, name="field_agent_list"),
+    path("agents/create/", views.field_agent_create, name="field_agent_create"),
+    path("agents/<int:agent_id>/edit/", views.field_agent_edit, name="field_agent_edit"),
+    path("agents/<int:agent_id>/login-link/", views.field_agent_generate_link, name="field_agent_login_link"),
+=======
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 ]
