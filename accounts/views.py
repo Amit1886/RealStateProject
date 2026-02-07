@@ -968,3 +968,8 @@ def expense_list(request):
     return render(request, "accounts/expense_list.html", {
         "expenses": expenses
     })
+    
+@login_required
+def settings_view(request):
+    return render(request, "accounts/settings.html")
+
