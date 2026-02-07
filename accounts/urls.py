@@ -10,7 +10,6 @@ urlpatterns = [
     path("dashboard/", views.dashboard, name="dashboard"),
     path("staff-dashboard/", views.staff_dashboard, name="staff_dashboard"),
     path("profile/", views.profile_settings, name="profile_settings"),
-    path("settings/", views.settings_view, name="settings"),
     path("signup/", views.signup_view, name="signup"),
     path("login/", views.login_view, name="login"),
     path("verify-otp/", views.verify_otp_view, name="verify_otp"),
