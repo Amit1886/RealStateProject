@@ -30,14 +30,36 @@
 
     <!-- Filter Section -->
     <div class="filter-row">
+<<<<<<< HEAD
       <input type="text" id="searchParty" class="form-control form-control-sm filter-input-flex" placeholder=" Search by party name...">
+=======
+      <input type="text" id="searchParty" class="form-control form-control-sm filter-input-flex" placeholder="🔍 Search by party name...">
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 
       <div>
         <label for="filterType" class="visually-hidden">Filter by Type</label>
         <select id="filterType" class="form-control form-control-sm filter-select-flex">
+<<<<<<< HEAD
           <option value=""> All Types</option>
           <option value="SALE"> Sale</option>
           <option value="PURCHASE"> Purchase</option>
+=======
+          <option value="">📌 All Types</option>
+          <option value="SALE">📤 Sale</option>
+          <option value="PURCHASE">📥 Purchase</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="filterStatus" class="visually-hidden">Filter by Status</label>
+        <select id="filterStatus" class="form-control form-control-sm filter-select-flex">
+          <option value="">📊 All Status</option>
+          <option value="pending">⏳ Pending</option>
+          <option value="accepted">✅ Accepted</option>
+          <option value="rejected">❌ Rejected</option>
+          <option value="cancelled">🚫 Cancelled</option>
+          <option value="fulfilled">🎉 Fulfilled</option>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
         </select>
       </div>
 
@@ -102,11 +124,19 @@
                 {% if order.status == "pending" %}
                   <span class="badge pending"> Pending</span>
                 {% elif order.status == "accepted" %}
+<<<<<<< HEAD
                   <span class="badge badge-accepted"> Accepted</span>
                 {% elif order.status == "rejected" %}
                   <span class="badge badge-rejected"> Rejected</span>
                 {% elif order.status == "cancelled" %}
                   <span class="badge badge-cancelled"> Cancelled</span>
+=======
+                  <span class="badge badge-accepted">✅ Accepted</span>
+                {% elif order.status == "rejected" %}
+                  <span class="badge badge-rejected">❌ Rejected</span>
+                {% elif order.status == "cancelled" %}
+                  <span class="badge badge-cancelled">🚫 Cancelled</span>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
                 {% else %}
                   <span class="badge completed"> Fulfilled</span>
                 {% endif %}

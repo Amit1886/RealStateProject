@@ -1,4 +1,5 @@
 from django.contrib import admin
+<<<<<<< HEAD
 from .models import (
     Warehouse, Category, Product, Stock,
     ChatThread, ChatMessage,
@@ -6,6 +7,14 @@ from .models import (
     Coupon, UserCoupon, CouponUsage, CommerceAISettings, WhatsAppOrderInbox,
     WhatsAppSession, WhatsAppCartItem
 )
+=======
+from .models import (
+    Warehouse, Category, Product, Stock,
+    ChatThread, ChatMessage,
+    Order, OrderItem, Invoice, Payment, Notification,
+    Coupon, UserCoupon, CouponUsage
+)
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 
 @admin.register(Warehouse)
 class WarehouseAdmin(admin.ModelAdmin):
@@ -66,6 +75,7 @@ class UserCouponAdmin(admin.ModelAdmin):
     list_filter = ("is_used", "assigned_at")
     search_fields = ("user__username", "coupon__code")
 
+<<<<<<< HEAD
 @admin.register(CouponUsage)
 class CouponUsageAdmin(admin.ModelAdmin):
     list_display = ("coupon", "user", "order", "discount_amount", "used_at")
@@ -103,3 +113,10 @@ class WhatsAppSessionAdmin(admin.ModelAdmin):
 @admin.register(WhatsAppCartItem)
 class WhatsAppCartItemAdmin(admin.ModelAdmin):
     list_display = ("session", "product", "quantity", "unit_price")
+=======
+@admin.register(CouponUsage)
+class CouponUsageAdmin(admin.ModelAdmin):
+    list_display = ("coupon", "user", "order", "discount_amount", "used_at")
+    list_filter = ("used_at",)
+    search_fields = ("coupon__code", "user__username")
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738

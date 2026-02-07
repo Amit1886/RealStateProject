@@ -26,9 +26,9 @@ import uuid
 import json
 from .models import LoyaltyPoints
 from khataapp.models import UserProfile as KhataProfile
+import json
+from django.views.decorators.http import require_POST
 
-from accounts.models import UserProfile, LoyaltyPoints, MembershipTier, SpecialOffer
-from core_settings.services import get_settings_payload, get_status_cards
 
 
 # Accounts
@@ -41,10 +41,7 @@ from .forms import SignupForm, LoginForm, OTPForm, UserProfileForm
 from khataapp.models import Party, UserProfile, FieldAgent, CollectorVisit, LoginLink, CompanySettings, OfflineMessage
 from khataapp.utils.whatsapp_utils import send_whatsapp_message
 from billing.models import Plan, Subscription
-from billing.services import get_locked_feature_count, get_usage_summary, get_active_subscription
-from billing.services import ensure_free_plan, user_has_feature, get_locked_feature_count, get_usage_summary, get_active_subscription
-from commerce.models import Order, Payment, Invoice, Coupon, UserCoupon
-from accounts.models import LoyaltyProgram, MembershipTier, SpecialOffer
+from commerce.models import Order, Payment, Invoice
 
 
 User = get_user_model()
@@ -200,9 +197,8 @@ def dashboard(request):
         ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
 
         invoice_total = Invoice.objects.filter(
-            order__party=party,
-            status="confirmed"
-        ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+            order__party=party
+        ).aggregate(total=Sum('amount'))['total'] or 0
 
         payment_total = Payment.objects.filter(
             invoice__order__party=party
@@ -213,13 +209,13 @@ def dashboard(request):
 
         party_cards.append({
             "party": party,
-            "total_debit": total_debit,
-            "total_credit": total_credit,
-            "balance": total_debit - total_credit,
+            "total_debit": p_total_debit,
+            "total_credit": p_total_credit,
+            "balance": p_balance,
         })
 
     # =========================
-    # COUPONS + LOYALTY
+    # COUPONS
     # =========================
     active_coupons = Coupon.objects.filter(
         is_active=True
@@ -229,27 +225,9 @@ def dashboard(request):
         user=user
     ).select_related("coupon")
 
-    loyalty_account = LoyaltyPoints.objects.filter(user=user).select_related("program", "current_tier").first()
-    membership_tiers = MembershipTier.objects.filter(is_active=True).order_by("min_points_required")
-    active_offers = [o for o in SpecialOffer.objects.filter(is_active=True) if o.is_valid_for_user(user)]
-    scratch_coupons = Coupon.objects.filter(coupon_type="scratch", is_active=True).order_by("-created_at")[:5]
-
     # =========================
     # CONTEXT
     # =========================
-    settings_payload = get_settings_payload(user)
-    settings_status_cards = get_status_cards(settings_payload)
-    subscription = get_active_subscription(user)
-    locked_count = get_locked_feature_count(user)
-    usage_summary = get_usage_summary(user)
-    feature_access = {
-        "settings.advanced": user_has_feature(user, "settings.advanced"),
-        "reports.advanced": user_has_feature(user, "reports.advanced"),
-        "billing.invoices": user_has_feature(user, "billing.invoices"),
-        "commerce.orders": user_has_feature(user, "commerce.orders"),
-        "field.agents": user_has_feature(user, "field.agents"),
-    }
-
     context = {
         "user": user,
         "profile": profile,
@@ -263,17 +241,6 @@ def dashboard(request):
         "snapshot": snapshot,
         "period": period,
         "greeting": greeting,
-        "active_coupons": active_coupons,
-        "user_coupons": user_coupons,
-        "loyalty_account": loyalty_account,
-        "membership_tiers": membership_tiers,
-        "active_offers": active_offers,
-        "scratch_coupons": scratch_coupons,
-        "settings_status_cards": settings_status_cards,
-        "subscription": subscription,
-        "locked_features_count": locked_count,
-        "usage_summary": usage_summary,
-        "feature_access": feature_access,
     }
 
     return render(request, "accounts/dashboard.html", context)

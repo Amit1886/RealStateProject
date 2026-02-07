@@ -586,6 +586,7 @@ class StockEntry(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.entry_type} {self.quantity}"
+<<<<<<< HEAD
 
 
 # ---------------- AI Reorder Settings ----------------
@@ -608,3 +609,5 @@ class CommerceAISettings(models.Model):
     class Meta:
         verbose_name = "AI Reorder Setting"
         verbose_name_plural = "AI Reorder Settings"
+=======
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738

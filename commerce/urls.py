@@ -73,8 +73,11 @@ urlpatterns = [
     path("scratch-card/", views.scratch_card, name="scratch_card"),
     path("dashboard-with-coupons/", views.dashboard_with_coupons, name="dashboard_with_coupons"),
 
+<<<<<<< HEAD
     # ------------------- AI Reorder Planner -------------------
     path("ai/reorder-plan/", views.ai_reorder_plan_view, name="ai_reorder_plan"),
     path("ai/supplier-po/", views.supplier_po_view, name="supplier_po"),
 
+=======
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
    ]

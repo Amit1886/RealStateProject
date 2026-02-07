@@ -57,7 +57,10 @@ class Party(models.Model):
     credit_period = models.PositiveIntegerField(default=30, help_text="Credit period in days")
     opening_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Opening balance for supplier")
     is_active = models.BooleanField(default=True)
+<<<<<<< HEAD
     customer_category = models.CharField(max_length=60, blank=True, null=True, help_text="Customer segment/category")
+=======
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 
     # Helper / Computed Fields
     def get_payment_link(self):

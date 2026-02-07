@@ -3,7 +3,11 @@ from django.contrib.auth.admin import UserAdmin
 from .models import (
     User, UserProfile, DailySummary, BusinessSnapshot,
     ExpenseCategory, Expense, LoyaltyProgram, MembershipTier,
+<<<<<<< HEAD
     LoyaltyPoints, PointsTransaction, SpecialOffer, OTP 
+=======
+    LoyaltyPoints, PointsTransaction, SpecialOffer
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 )
 
 # Custom User Admin
@@ -15,6 +19,7 @@ class CustomUserAdmin(UserAdmin):
 # Register User with custom admin
 admin.site.register(User, CustomUserAdmin)
 
+<<<<<<< HEAD
 # Otp View Admin
 @admin.register(OTP)
 class OTPAdmin(admin.ModelAdmin):
@@ -41,6 +46,28 @@ class MembershipTierAdmin(admin.ModelAdmin):
     list_editable = ('min_points_required', 'min_transaction_amount', 'upgrade_price', 'is_active')
     list_filter = ('is_active', 'name')
 
+=======
+# Other models
+admin.site.register(UserProfile)
+admin.site.register(DailySummary)
+admin.site.register(BusinessSnapshot)
+admin.site.register(ExpenseCategory)
+admin.site.register(Expense)
+
+# Loyalty Program Admin
+@admin.register(LoyaltyProgram)
+class LoyaltyProgramAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_active', 'points_per_rupee', 'points_to_rupee_ratio', 'min_redeem_points')
+    list_editable = ('is_active', 'points_per_rupee', 'points_to_rupee_ratio', 'min_redeem_points')
+
+# Membership Tier Admin
+@admin.register(MembershipTier)
+class MembershipTierAdmin(admin.ModelAdmin):
+    list_display = ('display_name', 'name', 'min_points_required', 'min_transaction_amount', 'upgrade_price', 'is_active')
+    list_editable = ('min_points_required', 'min_transaction_amount', 'upgrade_price', 'is_active')
+    list_filter = ('is_active', 'name')
+
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 # Loyalty Points Admin
 @admin.register(LoyaltyPoints)
 class LoyaltyPointsAdmin(admin.ModelAdmin):

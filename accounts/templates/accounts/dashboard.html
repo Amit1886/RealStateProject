@@ -155,6 +155,65 @@
 
 </div>
 
+<!-- Coupon Slider -->
+{% if active_coupons %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-tags"></i> Active Coupons</h3>
+            </div>
+            <div class="card-body">
+                <div id="coupon-slider" class="coupon-slider">
+                    <div class="coupon-track">
+                        {% for coupon in active_coupons %}
+                        <div class="coupon-item">
+                            <div class="coupon-card">
+                                <div class="coupon-header">
+                                    <h5>{{ coupon.title }}</h5>
+                                    <span class="coupon-code">{{ coupon.code }}</span>
+                                </div>
+                                <div class="coupon-body">
+                                    <p>{{ coupon.description|truncatechars:50 }}</p>
+                                    {% if coupon.coupon_type == 'discount' %}
+                                    <div class="coupon-discount">
+                                        {% if coupon.discount_type == 'percentage' %}
+                                            <span class="discount-badge">{{ coupon.discount_value }}% OFF</span>
+                                        {% else %}
+                                            <span class="discount-badge">₹{{ coupon.discount_value }} OFF</span>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    <div class="coupon-details">
+                                        <small>Min Order: ₹{{ coupon.min_order_amount }}</small>
+                                        {% if coupon.valid_until %}
+                                        <small>Valid till: {{ coupon.valid_until|date:"M d" }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="coupon-footer">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="applyCoupon('{{ coupon.code }}')">
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="slider-controls mt-3">
+                    <button class="btn btn-sm btn-outline-secondary" id="prev-btn" aria-label="Previous coupon">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" id="next-btn" aria-label="Next coupon">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 
 <!-- Coupon Slider -->
@@ -265,6 +324,22 @@
       <div class="title">WhatsApp Connected</div>
       <div class="value">{{ settings_status_cards.whatsapp_connected_status|default:"Not Connected" }}</div>
     </div>
+    {% if loyalty_account %}
+      <div class="summary-card loyalty-card">
+        <div class="title">
+          <i class="fas fa-star"></i> Loyalty Points
+        </div>
+        <div class="value" style="color:#f59e0b">{{ loyalty_account.available_points }}</div>
+        <div class="loyalty-tier">
+          {% if loyalty_account.current_tier %}
+            <span class="tier-badge {{ loyalty_account.current_tier.name }}">{{ loyalty_account.current_tier.display_name }}</span>
+          {% else %}
+            <span class="tier-badge bronze">Bronze</span>
+          {% endif %}
+        </div>
+        <a href="{% url 'accounts:loyalty_dashboard' %}" class="loyalty-link">View Details</a>
+      </div>
+    {% endif %}
   </div>
 
   {% include "commerce/dashboard_ai_cards.html" %}
@@ -427,6 +502,7 @@
           Due
         {% endif %}
       </div>
+<<<<<<< HEAD
     </div>
   </div>
   {% else %}
@@ -447,6 +523,12 @@
     </div>
     <form method="get" class="snapshot-period">
       <select name="period" class="summary-modern-select" onchange="this.form.submit()" aria-label="Select period">
+=======
+      <form method="get" class="mb-3">
+  <div class="row g-2 align-items-center">
+    <div class="col-auto">
+      <select name="period" class="form-select" onchange="this.form.submit()" aria-label="Select period">
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
         <option value="today" {% if period == 'today' %}selected{% endif %}>Today</option>
         <option value="yesterday" {% if period == 'yesterday' %}selected{% endif %}>Yesterday</option>
         <option value="month" {% if period == 'month' %}selected{% endif %}>This Month</option>
@@ -499,12 +581,60 @@
   </div>
 </div>
 
+<<<<<<< HEAD
   <!-- Commerce quick actions (Smart card) -->
 <div class="smart-card smart-card-wide">
   <div class="smart-card-header">
     <div>
       <h3>' Commerce</h3>
       <p>Quick business actions</p>
+=======
+  <!-- Commerce quick actions -->
+<div class="col-md-4 col-sm-6 mb-3">
+
+  <div class="action-card">
+    <div class="action-card-header">
+      <div>
+        <h5>🛒 Commerce</h5>
+        <p>Quick business actions</p>
+      </div>
+
+      <button class="toggle-btn"
+              onclick="toggleActionMenu('commerceActions')"
+              aria-label="Toggle menu">
+        ⋮
+      </button>
+    </div>
+
+    <div class="action-menu" id="commerceActions">
+      <a href="{% url 'commerce:add_product' %}">
+        ➕ Add Product
+      </a>
+
+      <a href="{% url 'commerce:add_order' %}">
+        ➕ Add Order
+      </a>
+
+      <!-- ✅ FIXED -->
+      <a href="{% url 'commerce:add_payment' %}">
+        ➕ Add Payment
+      </a>
+
+      <!-- ✅ FIXED -->
+      <a href="{% url 'commerce:add_invoice' %}">
+        ➕ Add Invoice
+      </a>
+
+     <!-- ✅ FIXED -->
+      <a href="{% url 'commerce:order_list' %}">
+        ➕ Create Sales Voucher
+      </a>
+
+      <!-- Expense always belongs to Accounts -->
+      <a href="{% url 'accounts:expense_create' %}" class="danger">
+        ➖ Add Expense
+      </a>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
     </div>
     <a href="{% url 'commerce:order_list' %}" class="summary-modern-btn summary-modern-btn-ghost">Open Orders '</a>
   </div>
@@ -1015,6 +1145,92 @@ body.dark .smart-action-btn.danger {
 
 {% endblock %}
 
+<<<<<<< HEAD
+=======
+<style>
+.coupon-slider {
+    overflow: hidden;
+    width: 100%;
+}
+
+.coupon-track {
+    display: flex;
+    transition: transform 0.3s ease;
+}
+
+.coupon-item {
+    flex: 0 0 300px;
+    margin-right: 20px;
+}
+
+.coupon-card {
+    border: 2px solid #007bff;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.coupon-header {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.coupon-header h5 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.coupon-code {
+    background: rgba(255,255,255,0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.coupon-body {
+    flex: 1;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.coupon-discount {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.discount-badge {
+    background: #ff6b6b;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.coupon-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.coupon-footer {
+    padding: 10px 15px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    text-align: center;
+}
+
+.slider-controls {
+    text-align: center;
+}
+</style>
+
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 {% block extra_js %}
 <script>
 // Redeem Points Modal
@@ -1029,7 +1245,11 @@ function openRedeemModal() {
                     </div>
                     <div class="modal-body">
                         <p>You have <strong>{{ loyalty_account.available_points }}</strong> available points.</p>
+<<<<<<< HEAD
                         <p>Each {{ loyalty_account.program.min_redeem_points }} points = {{ loyalty_account.program.points_to_rupee_ratio }}</p>
+=======
+                        <p>Each {{ loyalty_account.program.min_redeem_points }} points = ₹{{ loyalty_account.program.points_to_rupee_ratio }}</p>
+>>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
                         <form id="redeemForm">
                             <div class="mb-3">
                                 <label for="points" class="form-label">Points to Redeem</label>
