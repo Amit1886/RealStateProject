@@ -8,13 +8,18 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ---------------- SECURITY ----------------
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "default-secret-key")
-DEBUG = True
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "change-me-please")
+
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 # TEMP: OTP bypass for Render free deploy
-OTP_BYPASS = True
+OTP_BYPASS = os.getenv("OTP_BYPASS", "True") == "True"
 
-ALLOWED_HOSTS = ["*", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["*"]
+RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
 # ---------------- INSTALLED APPS ----------------
@@ -76,6 +81,8 @@ SOCIALACCOUNT_PROVIDERS = {
 # ---------------- MIDDLEWARE ----------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -141,6 +148,8 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -188,12 +197,6 @@ JAZZMIN_SETTINGS = {
     "show_sidebar": True,
     "navigation_expanded": True,
     "order_with_respect_to": ["accounts", "khataapp", "billing", "commerce", "chatbot"],
-    "icons": {
-        "accounts.user": "fas fa-user",
-        "khataapp.*": "fas fa-book",
-        "billing.*": "fas fa-credit-card",
-        "commerce.*": "fas fa-shopping-cart",
-    },
 }
 
 JAZZMIN_UI_TWEAKS = {
