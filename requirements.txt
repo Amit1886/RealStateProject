@@ -18,7 +18,6 @@ reportlab==3.6.13
 requests==2.32.4
 sqlparse==0.5.3
 django-jazzmin==2.6.0
-
 typing_extensions==4.14.1
 openai>=1.0.0
 urllib3==2.2.3
