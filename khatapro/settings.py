@@ -11,12 +11,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ---------------- SECURITY ----------------
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "default-secret-key")
 DEBUG = True
-<<<<<<< HEAD
 
 # TEMP: OTP bypass for Render free deploy
-OTP_BYPASS = True
-=======
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+OTP_BYPASS = True  fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 
 ALLOWED_HOSTS = ["*", "khataapp.pythonanywhere.com", "127.0.0.1", "localhost"]
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
@@ -297,11 +294,8 @@ JAZZMIN_SETTINGS = {
     "hide_models": [],
 
     # List of apps (and/or models) to base side menu ordering off of (does not need to contain all apps/models)
-<<<<<<< HEAD
     "order_with_respect_to": ["accounts", "khataapp", "billing", "commerce", "chatbot"],
-=======
-    "order_with_respect_to": ["accounts", "khataapp", "billing", "commerce"],
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+    "order_with_respect_to": ["accounts", "khataapp", "billing", "commerce"], fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 
     # Custom links to append to app groups, keyed on app name
     "custom_links": {
@@ -317,16 +311,13 @@ JAZZMIN_SETTINGS = {
 
             # Whether link opens in a new window
             "new_window": True
-<<<<<<< HEAD
         }],
         "chatbot": [{
             "name": "Flow Builder",
             "url": "/chatbot/flows/",
             "icon": "fas fa-project-diagram",
             "permissions": ["chatbot.can_manage_flows"],
-            "new_window": True
-=======
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+            "new_window": True fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
         }]
     },
 
