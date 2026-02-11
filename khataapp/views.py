@@ -2,24 +2,20 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
-<<<<<<< HEAD
-from .models import ContactMessage
 from django.views.decorators.csrf import csrf_exempt
-from khataapp.models import Party, SupplierPayment
-from khataapp.forms import SupplierPaymentForm
-from khataapp.services.supplier_services import SupplierService
-from datetime import timedelta
-from billing.services import user_has_feature
-from django.contrib.auth import get_user_model
-from .models import FieldAgent, LoginLink, OfflineMessage
-from .forms import FieldAgentForm
-=======
+from django.urls import reverse
+
 from django.utils import timezone
 from datetime import timedelta
+
 from khataapp.models import Party, Order, SupplierPayment
 from khataapp.forms import SupplierPaymentForm
 from khataapp.services.supplier_services import SupplierService
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
+from billing.services import user_has_feature
+from .models import ContactMessage, FieldAgent, LoginLink, OfflineMessage
+from .forms import FieldAgentForm
+
 
 def submit_contact(request):
     if request.method == 'POST':
@@ -124,7 +120,6 @@ def add_supplier_payment(request):
             except Order.DoesNotExist:
                 pass
 
-<<<<<<< HEAD
 @csrf_exempt
 def submit_contact(request):
     if request.method == "POST":
@@ -340,6 +335,4 @@ def add_supplier_payment(request):
 
     return render(request, 'khataapp/add_supplier_payment.html', {'form': form})
 
-=======
-    return render(request, 'khataapp/add_supplier_payment.html', {'form': form})
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+    
