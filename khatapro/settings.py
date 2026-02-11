@@ -13,7 +13,8 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "default-secret-key")
 DEBUG = True
 
 # TEMP: OTP bypass for Render free deploy
-OTP_BYPASS = True  fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+OTP_BYPASS = True    
+# fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 
 ALLOWED_HOSTS = ["*", "khataapp.pythonanywhere.com", "127.0.0.1", "localhost"]
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
