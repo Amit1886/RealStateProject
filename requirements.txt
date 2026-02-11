@@ -23,5 +23,7 @@ openai>=1.0.0
 urllib3==2.2.3
 xhtml2pdf==0.2.11
 python-dotenv==1.0.1
+whitenoise==6.7.0
+
 
 
