@@ -110,9 +110,5 @@ class WhatsAppSessionAdmin(admin.ModelAdmin):
 class WhatsAppCartItemAdmin(admin.ModelAdmin):
     list_display = ("session", "product", "quantity", "unit_price")
 
-@admin.register(CouponUsage)
-class CouponUsageAdmin(admin.ModelAdmin):
-    list_display = ("coupon", "user", "order", "discount_amount", "used_at")
-    list_filter = ("used_at",)
-    search_fields = ("coupon__code", "user__username")
+
 
