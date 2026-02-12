@@ -8,7 +8,9 @@ from django.urls import reverse
 from django.utils import timezone
 from datetime import timedelta
 
-from khataapp.models import Party, Order, SupplierPayment
+from khataapp.models import Party, SupplierPayment
+from commerce.models import Order
+
 from khataapp.forms import SupplierPaymentForm
 from khataapp.services.supplier_services import SupplierService
 
