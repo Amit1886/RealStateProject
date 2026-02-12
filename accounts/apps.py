@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 import os
+import sys
 
 
 class AccountsConfig(AppConfig):
@@ -7,10 +8,12 @@ class AccountsConfig(AppConfig):
     name = "accounts"
 
     def ready(self):
-        # ---- load signals ----
         import accounts.signals
 
-        # ---- optional auto superuser create (Render free workaround) ----
+        # ❌ avoid DB work during migrate / collectstatic
+        if "runserver" not in sys.argv and "gunicorn" not in sys.argv:
+            return
+
         if os.environ.get("AUTO_CREATE_SUPERUSER", "false").lower() != "true":
             return
 
@@ -23,12 +26,8 @@ class AccountsConfig(AppConfig):
             password = os.environ.get("DJANGO_SUPERUSER_PASSWORD", "Admin@123")
 
             if not User.objects.filter(username=username).exists():
-                User.objects.create_superuser(
-                    username=username,
-                    email=email,
-                    password=password,
-                )
+                User.objects.create_superuser(username, email, password)
                 print("✅ Auto superuser created")
 
         except Exception as e:
-            print("⚠️ Superuser auto-create skipped:", e)
+            print("⚠️ Superuser create skipped:", e)
