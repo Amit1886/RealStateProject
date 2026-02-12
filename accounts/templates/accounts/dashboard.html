@@ -418,7 +418,7 @@
   </div>
 
 
-<!-- ======================= Party Ledger Summary ======================= -->
+<!-- == Party Ledger Summary == -->
 <div class="smart-card smart-card-wide">
   <div class="smart-card-header">
     <div>
@@ -466,7 +466,7 @@
     </table>
   </div>
 </div>
-<!-- ======================= END ======================= -->
+<!-- == END == -->
 
 
 <div class="summary-modern-wrap">
@@ -502,7 +502,7 @@
           Due
         {% endif %}
       </div>
-<<<<<<< HEAD
+
     </div>
   </div>
   {% else %}
@@ -523,12 +523,12 @@
     </div>
     <form method="get" class="snapshot-period">
       <select name="period" class="summary-modern-select" onchange="this.form.submit()" aria-label="Select period">
-=======
+
       <form method="get" class="mb-3">
   <div class="row g-2 align-items-center">
     <div class="col-auto">
       <select name="period" class="form-select" onchange="this.form.submit()" aria-label="Select period">
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
         <option value="today" {% if period == 'today' %}selected{% endif %}>Today</option>
         <option value="yesterday" {% if period == 'yesterday' %}selected{% endif %}>Yesterday</option>
         <option value="month" {% if period == 'month' %}selected{% endif %}>This Month</option>
@@ -581,14 +581,14 @@
   </div>
 </div>
 
-<<<<<<< HEAD
+
   <!-- Commerce quick actions (Smart card) -->
 <div class="smart-card smart-card-wide">
   <div class="smart-card-header">
     <div>
       <h3>' Commerce</h3>
       <p>Quick business actions</p>
-=======
+
   <!-- Commerce quick actions -->
 <div class="col-md-4 col-sm-6 mb-3">
 
@@ -634,7 +634,7 @@
       <a href="{% url 'accounts:expense_create' %}" class="danger">
         ➖ Add Expense
       </a>
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
     </div>
     <a href="{% url 'commerce:order_list' %}" class="summary-modern-btn summary-modern-btn-ghost">Open Orders '</a>
   </div>
@@ -1145,8 +1145,8 @@ body.dark .smart-action-btn.danger {
 
 {% endblock %}
 
-<<<<<<< HEAD
-=======
+
+
 <style>
 .coupon-slider {
     overflow: hidden;
@@ -1230,7 +1230,7 @@ body.dark .smart-action-btn.danger {
 }
 </style>
 
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
 {% block extra_js %}
 <script>
 // Redeem Points Modal
@@ -1245,11 +1245,11 @@ function openRedeemModal() {
                     </div>
                     <div class="modal-body">
                         <p>You have <strong>{{ loyalty_account.available_points }}</strong> available points.</p>
-<<<<<<< HEAD
+
                         <p>Each {{ loyalty_account.program.min_redeem_points }} points = {{ loyalty_account.program.points_to_rupee_ratio }}</p>
-=======
+
                         <p>Each {{ loyalty_account.program.min_redeem_points }} points = ₹{{ loyalty_account.program.points_to_rupee_ratio }}</p>
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
                         <form id="redeemForm">
                             <div class="mb-3">
                                 <label for="points" class="form-label">Points to Redeem</label>

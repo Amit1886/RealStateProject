@@ -10,18 +10,18 @@ document.addEventListener("DOMContentLoaded", function () {
     // false = collapsed (hover open)
     let pinned = true;
 
-    /* =========================
+    /* ====
        TOGGLE (PIN / UNPIN)
-    ========================== */
+    ===== */
     toggleBtn.addEventListener("click", function () {
         sidebar.classList.toggle("collapsed");
         pinned = !sidebar.classList.contains("collapsed");
         sidebar.classList.remove("hover-open");
     });
 
-    /* =========================
+    /* ====
        HOVER OPEN WHEN COLLAPSED
-    ========================== */
+    ===== */
     sidebar.addEventListener("mouseenter", function () {
         if (!pinned) {
             sidebar.classList.add("hover-open");
@@ -34,9 +34,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    /* =========================
+    /* ====
        SUBMENU TOGGLE
-    ========================== */
+    ===== */
     document.querySelectorAll(".submenu-toggle").forEach(btn => {
         btn.addEventListener("click", function (e) {
             e.preventDefault();

@@ -45,11 +45,11 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Opening Balance:</strong></td>
-<<<<<<< HEAD
+
                                     <td>{{ supplier.opening_balance|floatformat:2 }}</td>
-=======
+
                                     <td>₹{{ supplier.opening_balance|floatformat:2 }}</td>
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
                                 </tr>
                                 <tr>
                                     <td><strong>Status:</strong></td>
@@ -67,11 +67,11 @@
                                 <div class="col-6">
                                     <div class="card bg-primary text-white">
                                         <div class="card-body text-center">
-<<<<<<< HEAD
+
                                             <h6>{{ summary.total_purchase|floatformat:2 }}</h6>
-=======
+
                                             <h6>₹{{ summary.total_purchase|floatformat:2 }}</h6>
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
                                             <small>Total Purchased</small>
                                         </div>
                                     </div>
@@ -79,11 +79,11 @@
                                 <div class="col-6">
                                     <div class="card bg-success text-white">
                                         <div class="card-body text-center">
-<<<<<<< HEAD
+
                                             <h6>{{ summary.total_paid|floatformat:2 }}</h6>
-=======
+
                                             <h6>₹{{ summary.total_paid|floatformat:2 }}</h6>
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
                                             <small>Total Paid</small>
                                         </div>
                                     </div>
@@ -93,11 +93,11 @@
                                 <div class="col-12">
                                     <div class="card bg-warning text-white">
                                         <div class="card-body text-center">
-<<<<<<< HEAD
+
                                             <h6>{{ summary.outstanding_amount|floatformat:2 }}</h6>
-=======
+
                                             <h6>₹{{ summary.outstanding_amount|floatformat:2 }}</h6>
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
                                             <small>Outstanding Amount</small>
                                         </div>
                                     </div>
@@ -131,15 +131,15 @@
                                             <td>{{ order.id }}</td>
                                             <td>{{ order.invoice_number|default:"N/A" }}</td>
                                             <td>{{ order.created_at|date }}</td>
-<<<<<<< HEAD
+
                                             <td>{{ order.total_amount|floatformat:2 }}</td>
                                             <td>{{ order.total_amount|sub:order.due_amount|floatformat:2 }}</td>
                                             <td>{{ order.due_amount|floatformat:2 }}</td>
-=======
+
                                             <td>₹{{ order.total_amount|floatformat:2 }}</td>
                                             <td>₹{{ order.total_amount|sub:order.due_amount|floatformat:2 }}</td>
                                             <td>₹{{ order.due_amount|floatformat:2 }}</td>
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
                                             <td>
                                                 {% if order.payment_due_date %}
                                                 {{ order.payment_due_date|date }}
@@ -192,11 +192,11 @@
                                         <tr>
                                             <td>{{ payment.payment_date|date }}</td>
                                             <td>{{ payment.order.id }} ({{ payment.order.invoice_number|default:"N/A" }})</td>
-<<<<<<< HEAD
+
                                             <td>{{ payment.amount|floatformat:2 }}</td>
-=======
+
                                             <td>₹{{ payment.amount|floatformat:2 }}</td>
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
                                             <td>{{ payment.get_payment_mode_display }}</td>
                                             <td>{{ payment.reference|default:"N/A" }}</td>
                                             <td>{{ payment.notes|default:"N/A" }}</td>
@@ -234,15 +234,15 @@
                                             <td>{{ entry.date|date }}</td>
                                             <td>{{ entry.type|title }}</td>
                                             <td>{{ entry.description }}</td>
-<<<<<<< HEAD
+
                                             <td>{{ entry.debit|floatformat:2 }}</td>
                                             <td>{{ entry.credit|floatformat:2 }}</td>
                                             <td>{{ entry.balance|floatformat:2 }}</td>
-=======
+
                                             <td>₹{{ entry.debit|floatformat:2 }}</td>
                                             <td>₹{{ entry.credit|floatformat:2 }}</td>
                                             <td>₹{{ entry.balance|floatformat:2 }}</td>
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+
                                         </tr>
                                         {% endfor %}
                                     </tbody>

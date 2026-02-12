@@ -9,9 +9,9 @@ from decimal import Decimal
 from khataapp.models import Party
 
 
-# =========================
+# ====
 # 🎛 FEATURE TOGGLE MODEL
-# =========================
+# ====
 class FeatureToggle(models.Model):
     allow_credit_report = models.BooleanField(default=False)
     allow_whatsapp = models.BooleanField(default=False)
@@ -22,9 +22,9 @@ class FeatureToggle(models.Model):
         return f"Features (Commerce: {'ON' if self.allow_commerce else 'OFF'})"
 
 
-# =========================
+# ====
 # � PLAN PERMISSIONS MODEL
-# =========================
+# ====
 class PlanPermissions(models.Model):
     """Plan-wise feature and module permissions"""
     plan = models.OneToOneField(
@@ -83,9 +83,9 @@ class PlanPermissions(models.Model):
         verbose_name_plural = "Plan Permissions"
 
 
-# =========================
+# ====
 # 💎 PLAN MODEL
-# =========================
+# ====
 class Plan(models.Model):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -143,9 +143,9 @@ class Plan(models.Model):
         return perm
 
 
-# =========================
+# ====
 # 🧾 INVOICE MODEL
-# =========================
+# ====
 class BillingInvoice(models.Model):
     STATUS_CHOICES = [
         ('unpaid', 'Unpaid'),
@@ -184,9 +184,9 @@ class BillingInvoice(models.Model):
         return f"{self.invoice_number} - {self.user}"
 
 
-# =========================
+# ====
 # 📦 SUBSCRIPTION MODEL
-# =========================
+# ====
 class Subscription(models.Model):
     STATUS_CHOICES = (
         ("pending", "Pending"),
@@ -244,9 +244,9 @@ class Subscription(models.Model):
     def __str__(self):
         return f"Subscription: {self.user} → {self.plan} [{self.status}]"
 
-# =========================
+# ====
 # 🏦 PAYMENT GATEWAY MODEL
-# =========================
+# ====
 class PaymentGateway(models.Model):
     PROVIDER_CHOICES = (
         ('razorpay', 'Razorpay'),
@@ -272,9 +272,9 @@ class PaymentGateway(models.Model):
         return f"{self.name} ({self.provider})"
 
 
-# =========================
+# ====
 # 🔑 FEATURE REGISTRY
-# =========================
+# ====
 class FeatureRegistry(models.Model):
     key = models.SlugField(max_length=120, unique=True)
     label = models.CharField(max_length=160)
@@ -324,9 +324,9 @@ class UserFeatureOverride(models.Model):
         return f"{self.user} -> {self.feature.key} ({'ON' if self.is_enabled else 'OFF'})"
 
 
-# =========================
+# ====
 # 🧾 SUBSCRIPTION HISTORY
-# =========================
+# ====
 class SubscriptionHistory(models.Model):
     EVENT_CHOICES = [
         ("created", "Created"),
@@ -345,9 +345,9 @@ class SubscriptionHistory(models.Model):
         return f"{self.user} - {self.event_type}"
 
 
-# =========================
+# ====
 # 🏬 COMMERCE & BILLING
-# =========================
+# ====
 class Commerce(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

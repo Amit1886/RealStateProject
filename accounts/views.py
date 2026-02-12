@@ -120,9 +120,9 @@ def users_list(request):
 def dashboard(request):
     user = request.user
 
-    # =========================
+    # ====
     # PERIOD FILTER
-    # =========================
+    # ====
     period = request.GET.get("period", "today")
     today = now().date()
 
@@ -133,14 +133,14 @@ def dashboard(request):
     else:
         selected_date = today
 
-    # =========================
+    # ====
     # BUSINESS SNAPSHOT
-    # =========================
+    # ====
     snapshot = build_business_snapshot(user, selected_date)
 
-    # =========================
+    # ====
     # GREETING
-    # =========================
+    # ====
     hour = datetime.now().hour
     if hour < 12:
         greeting = "Good Morning"
@@ -149,27 +149,27 @@ def dashboard(request):
     else:
         greeting = "Good Evening"
 
-    # =========================
+    # ====
     # PROFILE
-    # =========================
+    # ====
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
-    # =========================
+    # ====
     # DAILY SUMMARY
-    # =========================
+    # ====
     summary = update_daily_summary(user)
 
-    # =========================
+    # ====
     # RECENT DATA
-    # =========================
+    # ====
     recent_parties = Party.objects.filter(owner=user).order_by("-id")[:5]
     recent_transactions = Transaction.objects.filter(
         party__owner=user
     ).order_by("-id")[:5]
 
-    # =========================
+    # ====
     # OVERALL TOTALS
-    # =========================
+    # ====
     total_credit_all = Transaction.objects.filter(
         party__owner=user, txn_type="credit"
     ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
@@ -180,9 +180,9 @@ def dashboard(request):
 
     net_balance = total_debit_all - total_credit_all
 
-    # =========================
+    # ====
     # PARTY CARDS
-    # =========================
+    # ====
     party_cards = []
     parties = Party.objects.filter(owner=user).order_by("name")
 
@@ -214,9 +214,9 @@ def dashboard(request):
             "balance": p_balance,
         })
 
-    # =========================
+    # ====
     # COUPONS
-    # =========================
+    # ====
     active_coupons = Coupon.objects.filter(
         is_active=True
     ).order_by("-created_at")[:10]
@@ -225,9 +225,9 @@ def dashboard(request):
         user=user
     ).select_related("coupon")
 
-    # =========================
+    # ====
     # CONTEXT
-    # =========================
+    # ====
     context = {
         "user": user,
         "profile": profile,

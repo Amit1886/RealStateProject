@@ -1,7 +1,7 @@
-/* =========================================
+/* ======
    KHATAPRO – FINAL DASHBOARD CSS
    SAFE • RESPONSIVE • HOVER SIDEBAR
-========================================= */
+====== */
 
 /* -------- RESET -------- */
 * {
@@ -161,9 +161,9 @@ footer {
   }
 }
 
-/* ===============================
+/* ===
    FORCE PROFILE CARD FIX
-================================ */
+==== */
 
 .profile-card {
   display: flex !important;
@@ -251,10 +251,10 @@ footer {
   }
 }
 
-/* ===============================
+/* ===
    DASHBOARD HEADER + ACTIONS
    FINAL & CLEAN VERSION
-================================ */
+==== */
 
 /* HEADER LAYOUT */
 .page-head {
@@ -284,9 +284,9 @@ footer {
   gap: 12px;
 }
 
-/* ===============================
+/* ===
    ACTION BUTTON BASE
-================================ */
+==== */
 
 .action-btn {
   display: inline-flex;
@@ -329,9 +329,9 @@ footer {
   box-shadow: 0 10px 22px rgba(124, 58, 237, 0.45);
 }
 
-/* ===============================
+/* ===
    MOBILE RESPONSIVE
-================================ */
+==== */
 
 @media (max-width: 768px) {
   .page-head {
@@ -355,10 +355,10 @@ footer {
   }
 }
 
-/* =========================================================
+/* =
    DASHBOARD – ACTION CARDS (COMMERCE / BILLING / ACCOUNTS)
    SAFE OVERRIDE – ADD AT END
-   ========================================================= */
+   = */
 
 /* ACTION CARD */
 .action-card {

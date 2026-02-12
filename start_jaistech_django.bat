@@ -1,7 +1,7 @@
 @echo off
-echo ================================
+echo ====
 echo Starting Django Server...
-echo ================================
+echo ====
 cd /d "%~dp0"
 start cmd /k "python manage.py runserver 8080"
 timeout /t 3 > nul

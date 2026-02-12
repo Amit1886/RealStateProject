@@ -1,6 +1,6 @@
-// ==============================
+// ==
 // PRODUCT DETAIL JS
-// ==============================
+// ==
 
 document.addEventListener("DOMContentLoaded", function () {
     const deleteBtn = document.querySelector(".btn-delete");

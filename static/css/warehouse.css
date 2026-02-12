@@ -1,4 +1,4 @@
-/* ================= Card ================= */
+/* === Card === */
 .warehouse-card {
     border-radius: 6px;
     border: 1px solid #e5e7eb;
@@ -6,7 +6,7 @@
     background: #fff;
 }
 
-/* ================= Header ================= */
+/* === Header === */
 .card.warehouse-card > .warehouse-header {
     background: #f8fafc !important;
     color: #020617;
@@ -35,7 +35,7 @@
     background: #1d4ed8;
 }
 
-/* ================= Table ================= */
+/* === Table === */
 .warehouse-table {
     width: 100% !important;
     margin-bottom: 0;
@@ -63,7 +63,7 @@
     background: #f1f5f9;
 }
 
-/* ================= Action Buttons ================= */
+/* === Action Buttons === */
 .btn-icon {
     display: inline-flex;
     align-items: center;
@@ -89,7 +89,7 @@
     background: #dc2626;
 }
 
-/* ================= Datatable Controls ================= */
+/* === Datatable Controls === */
 .dataTables_wrapper {
     padding-top: 6px;
 }

@@ -25,9 +25,9 @@ from .utils.credit_report import (
     generate_credit_report_pdf_for_party
 )
 
-# =====================================================
+# ====
 # PARTY
-# =====================================================
+# ====
 
 @admin.register(Party)
 class PartyAdmin(admin.ModelAdmin):
@@ -216,9 +216,9 @@ class PartyAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
-# =====================================================
+# ====
 # REPORT SCHEDULE
-# =====================================================
+# ====
 
 @admin.register(ReportSchedule)
 class ReportScheduleAdmin(admin.ModelAdmin):
@@ -226,9 +226,9 @@ class ReportScheduleAdmin(admin.ModelAdmin):
     list_filter = ('is_active',)
 
 
-# =====================================================
+# ====
 # TRANSACTION
-# =====================================================
+# ====
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
@@ -282,9 +282,9 @@ class TransactionAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
-# =====================================================
+# ====
 # SETTINGS & USERS
-# =====================================================
+# ====
 
 @admin.register(CompanySettings)
 class CompanySettingsAdmin(admin.ModelAdmin):
@@ -298,9 +298,9 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_filter = ("plan", "created_from")
 
 
-# =====================================================
+# ====
 # CREDIT MODULE
-# =====================================================
+# ====
 
 @admin.register(CreditSettings)
 class CreditSettingsAdmin(admin.ModelAdmin):
@@ -332,9 +332,9 @@ class ContactMessageAdmin(admin.ModelAdmin):
     list_display = ("name", "mobile", "email", "created_at", "assigned_to")
 
 
-# =====================================================
+# ====
 # LOGIN LINKS & REMINDERS
-# =====================================================
+# ====
 
 @admin.register(LoginLink)
 class LoginLinkAdmin(admin.ModelAdmin):
@@ -352,9 +352,9 @@ class ReminderLogAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
 
 
-# =====================================================
+# ====
 # FIELD AGENTS & VISITS
-# =====================================================
+# ====
 
 @admin.register(FieldAgent)
 class FieldAgentAdmin(admin.ModelAdmin):

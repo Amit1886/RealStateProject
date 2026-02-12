@@ -1,6 +1,6 @@
-/* =========================
+/* ====
    SMART TRANSACTION UI – MODERN CSS
-   ========================= */
+   ==== */
 
 :root {
     --primary: #0d6efd;
@@ -29,9 +29,9 @@
     --gradient-info: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
 }
 
-/* =========================
+/* ====
    KEYBOARD HELP MODAL
-   ========================= */
+   ==== */
 
 .keyboard-help-modal {
     position: fixed;
@@ -83,9 +83,9 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* =========================
+/* ====
    STEP WIZARD
-   ========================= */
+   ==== */
 
 .wizard-steps {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -136,9 +136,9 @@
     color: #6c757d;
 }
 
-/* =========================
+/* ====
    BOLD AND COLORFUL BUTTONS
-   ========================= */
+   ==== */
 
 .btn {
     font-weight: 900 !important;
@@ -232,9 +232,9 @@
     transform: translateY(-2px);
 }
 
-/* =========================
+/* ====
    PULSE ANIMATIONS
-   ========================= */
+   ==== */
 
 @keyframes pulse {
     0% { transform: scale(1); }
@@ -250,9 +250,9 @@
     animation: pulse 1.5s infinite;
 }
 
-/* =========================
+/* ====
    TEXT SHADOWS AND BOLD TEXT
-   ========================= */
+   ==== */
 
 .fw-bold, .font-weight-bold {
     font-weight: 900 !important;
@@ -263,9 +263,9 @@
     text-shadow: var(--text-shadow);
 }
 
-/* =========================
+/* ====
    RAINBOW BORDER
-   ========================= */
+   ==== */
 
 .rainbow-border {
     background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
@@ -281,9 +281,9 @@
     100% { background-position: 0% 50%; }
 }
 
-/* =========================
+/* ====
    GRADIENT BACKGROUNDS
-   ========================= */
+   ==== */
 
 .bg-gradient-primary {
     background: var(--gradient-primary) !important;
@@ -293,9 +293,9 @@
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
 }
 
-/* =========================
+/* ====
    THEME CLASSES
-   ========================= */
+   ==== */
 
 .theme-dark {
     --theme-bg: #1a1a1a;
@@ -319,9 +319,9 @@
     --primary-dark: #bd2130;
 }
 
-/* =========================
+/* ====
    MODE CLASSES
-   ========================= */
+   ==== */
 
 .mode-pos {
     --border-radius: 8px;
@@ -354,9 +354,9 @@
     font-size: 14px;
 }
 
-/* =========================
+/* ====
    AI SUGGESTIONS
-   ========================= */
+   ==== */
 
 .ai-suggestions {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -373,9 +373,9 @@
     margin-bottom: 0;
 }
 
-/* =========================
+/* ====
    GLOBAL SEARCH
-   ========================= */
+   ==== */
 
 #globalSearchResults {
     max-height: 200px;
@@ -401,9 +401,9 @@
     border-bottom: none;
 }
 
-/* =========================
+/* ====
    GLASS CARD
-   ========================= */
+   ==== */
 
 .order-card {
     border-radius: var(--border-radius);
@@ -419,9 +419,9 @@
     box-shadow: var(--shadow);
 }
 
-/* =========================
+/* ====
    HEADER
-   ========================= */
+   ==== */
 
 .title {
     text-align: center;
@@ -429,9 +429,9 @@
     margin-bottom: 20px;
 }
 
-/* =========================
+/* ====
    FORM CONTROLS
-   ========================= */
+   ==== */
 
 .form-control,
 .form-select,
@@ -449,9 +449,9 @@ textarea:focus {
     box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.25);
 }
 
-/* =========================
+/* ====
    BUTTONS
-   ========================= */
+   ==== */
 
 .btn {
     border-radius: 10px;
@@ -491,9 +491,9 @@ textarea:focus {
     color: #fff;
 }
 
-/* =========================
+/* ====
    SCAN SECTION
-   ========================= */
+   ==== */
 
 .scan-section {
     background: rgba(13, 110, 253, 0.08);
@@ -501,9 +501,9 @@ textarea:focus {
     border-radius: 12px;
 }
 
-/* =========================
+/* ====
    TABLE
-   ========================= */
+   ==== */
 
 .table {
     border-radius: 12px;
@@ -519,9 +519,9 @@ textarea:focus {
     background: rgba(13, 110, 253, 0.05);
 }
 
-/* =========================
+/* ====
    SUMMARY CARD
-   ========================= */
+   ==== */
 
 .summary-card {
     border-radius: 14px;
@@ -529,9 +529,9 @@ textarea:focus {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
-/* =========================
+/* ====
    ACTION BAR
-   ========================= */
+   ==== */
 
 .card-footer {
     display: flex;
@@ -540,9 +540,9 @@ textarea:focus {
     gap: 10px;
 }
 
-/* =========================
+/* ====
    REMOVE BUTTON
-   ========================= */
+   ==== */
 
 .remove-btn {
     padding: 6px 10px;
@@ -550,9 +550,9 @@ textarea:focus {
     font-size: 14px;
 }
 
-/* =========================
+/* ====
    DROPDOWN MENU
-   ========================= */
+   ==== */
 
 .dropdown-menu {
     position: absolute;
@@ -593,9 +593,9 @@ textarea:focus {
     background-color: #f8f9fa;
 }
 
-/* =========================
+/* ====
    CARD STYLES
-   ========================= */
+   ==== */
 
 .card {
     border-radius: 12px;
@@ -606,9 +606,9 @@ textarea:focus {
     padding: 1rem;
 }
 
-/* =========================
+/* ====
    RESPONSIVE
-   ========================= */
+   ==== */
 
 @media (max-width: 768px) {
     .card-footer {
@@ -624,9 +624,9 @@ textarea:focus {
     }
 }
 
-/* =========================
+/* ====
    INLINE STYLE REPLACEMENTS
-   ========================= */
+   ==== */
 
 .dropdown-hidden {
     display: none;

@@ -6,9 +6,9 @@ from .models import (
 )
 
 
-# =========================
+# ====
 # 🔐 PLAN PERMISSIONS ADMIN
-# =========================
+# ====
 @admin.register(PlanPermissions)
 class PlanPermissionsAdmin(admin.ModelAdmin):
     list_display = ('plan', 'allow_dashboard', 'allow_commerce', 'allow_reports', 'allow_settings')
@@ -43,9 +43,9 @@ class PlanPermissionsAdmin(admin.ModelAdmin):
     )
 
 
-# =========================
+# ====
 # 💳 PLAN ADMIN
-# =========================
+# ====
 class PlanFeatureInline(admin.TabularInline):
     model = PlanFeature
     extra = 0
@@ -73,18 +73,18 @@ class PlanAdmin(admin.ModelAdmin):
         PlanPermissions.objects.get_or_create(plan=obj)
 
 
-# =========================
+# ====
 # 🧾 INVOICE ADMIN
-# =========================
+# ====
 @admin.register(BillingInvoice)
 class BillingInvoiceAdmin(admin.ModelAdmin):
     list_display = ("invoice_number", "user", "plan", "amount", "status", "created_at")
     search_fields = ("invoice_number", "user__username")
 
 
-# =========================
+# ====
 # 📦 SUBSCRIPTION ADMIN
-# =========================
+# ====
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user', 'plan', 'status', 'start_date', 'end_date', 'created_at')
@@ -92,9 +92,9 @@ class SubscriptionAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'plan__name')
 
 
-# =========================
+# ====
 # 🏦 PAYMENT GATEWAY ADMIN
-# =========================
+# ====
 @admin.register(PaymentGateway)
 class PaymentGatewayAdmin(admin.ModelAdmin):
     list_display = ('name', 'provider', 'active', 'created_at')
@@ -102,9 +102,9 @@ class PaymentGatewayAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
-# =========================
+# ====
 # 🏪 COMMERCE ADMIN
-# =========================
+# ====
 @admin.register(Commerce)
 class CommerceAdmin(admin.ModelAdmin):
     list_display = ('business_name', 'user', 'category', 'contact_number', 'created_at')
@@ -112,9 +112,9 @@ class CommerceAdmin(admin.ModelAdmin):
     list_filter = ('category',)
 
 
-# =========================
+# ====
 # 💰 PAYMENT ADMIN
-# =========================
+# ====
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ('id', 'order', 'amount', 'payment_method', 'payment_status', 'created_at')

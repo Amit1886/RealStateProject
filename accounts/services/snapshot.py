@@ -15,9 +15,9 @@ def build_business_snapshot(user, date=None):
         date=date
     )
 
-    # =========================
+    # ====
     # 🔹 SALES
-    # =========================
+    # ====
     sales_qs = Order.objects.filter(
         owner=user,
         created_at__date=date
@@ -29,9 +29,9 @@ def build_business_snapshot(user, date=None):
         Decimal("0.00")
     )
 
-    # =========================
+    # ====
     # 🔹 PURCHASE
-    # =========================
+    # ====
     purchase_qs = Order.objects.filter(
         owner=user,
         created_at__date=date
@@ -43,9 +43,9 @@ def build_business_snapshot(user, date=None):
         Decimal("0.00")
     )
 
-    # =========================
+    # ====
     # 🔹 PAYMENTS
-    # =========================
+    # ====
     snapshot.payment_received = Payment.objects.filter(
         created_at__date=date,
         amount__gt=0
@@ -60,18 +60,18 @@ def build_business_snapshot(user, date=None):
         t=Sum("amount")
     )["t"] or Decimal("0.00")
 
-    # =========================
+    # ====
     # 🔹 RECEIVABLE (Customer se lena)
-    # =========================
+    # ====
     snapshot.receivable_amount = Transaction.objects.filter(
         txn_type__in=["SALE", "RECEIVABLE"]
     ).aggregate(
         t=Sum("amount")
     )["t"] or Decimal("0.00")
 
-    # =========================
+    # ====
     # 🔹 PAYABLE (Supplier ko dena)
-    # =========================
+    # ====
     snapshot.payable_amount = Transaction.objects.filter(
         txn_type__in=["PURCHASE", "PAYABLE"]
     ).aggregate(
@@ -82,9 +82,9 @@ def build_business_snapshot(user, date=None):
         snapshot.receivable_amount - snapshot.payable_amount
     )
 
-    # =========================
+    # ====
     # 🔹 COUNTS
-    # =========================
+    # ====
     snapshot.total_parties = Party.objects.count()
 
     snapshot.total_transactions = Transaction.objects.filter(

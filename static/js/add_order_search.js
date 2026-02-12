@@ -16,9 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
     cardBody.insertBefore(globalSearchInput, cardBody.firstChild);
     cardBody.insertBefore(searchResultsDiv, globalSearchInput.nextSibling);
 
-    /* ==========================
+    /* =====
        GLOBAL SEARCH
-    ========================== */
+    ===== */
     let searchTimeout;
     globalSearchInput.addEventListener('input', () => {
         clearTimeout(searchTimeout);
@@ -126,9 +126,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    /* ==========================
+    /* =====
        PARTY SEARCH
-    ========================== */
+    ===== */
     const partySearch = document.getElementById("partySearch");
     const partySelect = document.getElementById("partySelect");
 
@@ -140,9 +140,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    /* ==========================
+    /* =====
        PRODUCT SEARCH PER ROW
-    ========================== */
+    ===== */
     function setupProductRow(row) {
 
         const searchInput = row.querySelector(".product-search");
@@ -171,9 +171,9 @@ document.addEventListener("DOMContentLoaded", () => {
         priceInput.addEventListener("input", () => calculateRow(row));
     }
 
-    /* ==========================
+    /* =====
        CALCULATION
-    ========================== */
+    ===== */
     function calculateRow(row) {
         const qty = parseFloat(row.querySelector(".qty").value) || 0;
         const price = parseFloat(row.querySelector(".price").value) || 0;
@@ -190,9 +190,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("totalBox").innerText = `Total: ₹${total.toFixed(2)}`;
     }
 
-    /* ==========================
+    /* =====
        ADD ITEM
-    ========================== */
+    ===== */
     document.getElementById("addItem").addEventListener("click", () => {
         const body = document.getElementById("orderBody");
         const row = body.querySelector(".item-row").cloneNode(true);
@@ -204,9 +204,9 @@ document.addEventListener("DOMContentLoaded", () => {
         setupProductRow(row);
     });
 
-    /* ==========================
+    /* =====
        REMOVE ITEM
-    ========================== */
+    ===== */
     document.addEventListener("click", e => {
         if (e.target.classList.contains("remove-btn")) {
             e.target.closest("tr").remove();
