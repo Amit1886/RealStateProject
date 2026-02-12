@@ -15,10 +15,11 @@ import os
 from django.contrib.auth import get_user_model
 
 from .models import (
-    Product, Warehouse, Order,                     # OrderItem removed because unused
-    Payment, Stock, Invoice,ChatThread, ChatMessage, OrderItem, Category, SalesVoucher, SalesVoucherItem,
-    Coupon, UserCoupon, CouponUsage, WhatsAppOrderInbox, WhatsAppSession, WhatsAppCartItem
-    Coupon, UserCoupon, CouponUsage
+    Product, Warehouse, Order,
+    Payment, Stock, Invoice, ChatThread, ChatMessage, OrderItem,
+    Category, SalesVoucher, SalesVoucherItem,
+    Coupon, UserCoupon, CouponUsage,
+    WhatsAppOrderInbox, WhatsAppSession, WhatsAppCartItem,
 )
 from khataapp.models import UserProfile
 from django.db import transaction
