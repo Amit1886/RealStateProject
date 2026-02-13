@@ -36,6 +36,18 @@ def party_list(request):
         "parties": parties
     })
 
+@login_required
+def party_view(request, party_id):
+    party = get_object_or_404(Party, id=party_id)
+
+    txns = party.transaction_set.all().order_by("-id")[:50]
+
+    context = {
+        "party": party,
+        "transactions": txns,
+    }
+    return render(request, "khataapp/party_view.html", context)
+
 # ---------------- Supplier Management Views ----------------
 @login_required
 def supplier_dashboard(request):
