@@ -15,13 +15,16 @@ import os
 from django.contrib.auth import get_user_model
 
 from .models import (
-    Product, Warehouse, Order,                     # OrderItem removed because unused
-    Payment, Stock, Invoice,ChatThread, ChatMessage, OrderItem, Category, SalesVoucher, SalesVoucherItem,
-<<<<<<< HEAD
-    Coupon, UserCoupon, CouponUsage, WhatsAppOrderInbox, WhatsAppSession, WhatsAppCartItem
-=======
-    Coupon, UserCoupon, CouponUsage
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
+    Product,
+    Warehouse,
+    Order,
+    OrderItem,
+    Invoice,
+    Payment,
+    ChatMessage,
+    Coupon,
+    UserCoupon,
+    CouponUsage,
 )
 from khataapp.models import UserProfile
 from django.db import transaction
@@ -848,8 +851,6 @@ def api_chat_send(request, thread_id):
         })
     return JsonResponse({"error": "Only POST method allowed"}, status=405)
 
-
-<<<<<<< HEAD
 # ---------------- WhatsApp Orders ----------------
 PAYMENT_MODES = {
     "cash": "Cash",
@@ -1247,9 +1248,6 @@ def api_orders_live_feed(request):
     }
     return JsonResponse(data)
 
-
-=======
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
 # ---------------- Coupons ----------------
 @login_required
 def coupon_list(request):
@@ -1357,7 +1355,6 @@ def dashboard_with_coupons(request):
         "available_coupons": available_coupons,
     }
     return render(request, "commerce/dashboard_with_coupons.html", context)
-<<<<<<< HEAD
 
 
 # ---------------- AI Reorder Planner ----------------
@@ -1506,5 +1503,3 @@ def api_ai_generate_po(request):
             "message": "Purchase orders created" if created_orders else "No purchase orders created",
         }
     )
-=======
->>>>>>> fc1dc1ed70d9c9c0a937d50fa66837bc7585d738
