@@ -1,12 +1,14 @@
 from django import forms
 from django.forms import inlineformset_factory
 from .models import (
-    Product, Warehouse, OrderItem, ChatMessage,
-
-     Order, Invoice, Coupon, Payment
-
-     Order, Invoice, Coupon
-
+    Product,
+    Warehouse,
+    Order,
+    OrderItem,
+    Invoice,
+    Coupon,
+    Payment,
+    ChatMessage,
 )
 
 # ---------------- Product Form ----------------
@@ -132,7 +134,6 @@ class CouponForm(forms.ModelForm):
             code = code.upper()
         return code
 
-
 # ---------------- Payment Form ----------------
 class PaymentForm(forms.ModelForm):
     class Meta:
@@ -145,5 +146,3 @@ class PaymentForm(forms.ModelForm):
             "reference": forms.TextInput(attrs={"class": "form-control"}),
             "note": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
         }
-
-
