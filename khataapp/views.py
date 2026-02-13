@@ -8,21 +8,26 @@ from django.urls import reverse
 from django.utils import timezone
 from datetime import timedelta
 
-from khataapp.models import Party, Order, SupplierPayment
+from khataapp.models import Party, SupplierPayment
+from commerce.models import Order
 from khataapp.forms import SupplierPaymentForm
 from khataapp.services.supplier_services import SupplierService
 
 from billing.services import user_has_feature
 from .models import ContactMessage, FieldAgent, LoginLink, OfflineMessage
 from .forms import FieldAgentForm
+from .forms import PartyForm
 
-
-def submit_contact(request):
-    if request.method == 'POST':
-        # handle contact form
-        return JsonResponse({"status": "success"})
+def add_party(request):
+    if request.method == "POST":
+        form = PartyForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("party_list")   # ya dashboard url
     else:
-        return JsonResponse({"status": "error", "message": "Invalid request"})
+        form = PartyForm()
+
+    return render(request, "khataapp/add_party.html", {"form": form})
 
 # ---------------- Supplier Management Views ----------------
 @login_required
@@ -119,6 +124,8 @@ def add_supplier_payment(request):
                 form.initial['order'] = order
             except Order.DoesNotExist:
                 pass
+                return render(request, 'khataapp/add_supplier_payment.html', {'form': form})
+
 
 @csrf_exempt
 def submit_contact(request):
@@ -144,7 +151,6 @@ def submit_contact(request):
         })
 
     return JsonResponse({"status": "error", "message": "Invalid request"})
-
 
 # ---------------- Field Agent Management ----------------
 def _owner_agent_access(request):
@@ -236,21 +242,6 @@ def field_agent_generate_link(request, agent_id):
 
     messages.success(request, "Agent login link queued.")
     return redirect("khataapp:field_agent_list")
-
-# ---------------- Supplier Management Views ----------------
-@login_required
-def supplier_dashboard(request):
-    """Supplier purchase and due management dashboard"""
-    suppliers = SupplierService.get_supplier_summary(request.user)
-    summary = SupplierService.get_dashboard_summary(request.user)
-    alerts = SupplierService.get_payment_alerts(request.user)
-
-    context = {
-        'suppliers': suppliers,
-        'summary': summary,
-        'alerts': alerts,
-    }
-    return render(request, 'khataapp/supplier_dashboard.html', context)
 
 
 @login_required
