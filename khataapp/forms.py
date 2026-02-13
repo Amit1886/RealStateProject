@@ -1,11 +1,10 @@
-# full path: ~/myproject/khatapro/khataapp/forms.py
+# full path: khataapp/forms.py
+
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import Party, Transaction, SupplierPayment, FieldAgent
-from khataapp.models import UserProfile
-from .models import ContactMessage
-from commerce.models import Order
 
+from .models import Party, Transaction, SupplierPayment, FieldAgent, ContactMessage
+from commerce.models import Order
 
 
 # ----------------- Party Form -----------------
@@ -24,12 +23,14 @@ class TransactionForm(forms.ModelForm):
 
 # ----------------- User Profile (Dashboard) -----------------
 class UserProfileDashboardForm(forms.ModelForm):
+
     class Meta:
-        from accounts.models import UserProfile   # ✅ lazy import here
-        model = UserProfile
+        model = None   # set in __init__
         exclude = ["user"]
 
     def __init__(self, *args, **kwargs):
+        from accounts.models import UserProfile   # ✅ lazy import (safe)
+        self._meta.model = UserProfile
         super().__init__(*args, **kwargs)
 
         if self.instance and getattr(self.instance, "user", None):
@@ -38,21 +39,28 @@ class UserProfileDashboardForm(forms.ModelForm):
             if "mobile" in self.fields:
                 self.fields["mobile"].disabled = True
 
+
 # ----------------- User Profile Plan Change Form -----------------
 def get_plan_model():
     """Lazy import of Plan model to avoid circular import"""
     from plans.models import Plan
     return Plan
 
+
 class UserProfilePlanForm(forms.ModelForm):
+
     class Meta:
-        model = UserProfile
+        model = None   # set in __init__
         fields = ['plan']
 
     def __init__(self, *args, **kwargs):
+        from accounts.models import UserProfile   # ✅ lazy import
+        self._meta.model = UserProfile
         super().__init__(*args, **kwargs)
-        Plan = get_plan_model()  # imported lazily
+
+        Plan = get_plan_model()
         self.fields['plan'].queryset = Plan.objects.all()
+
 
 # ----------------- Contact Form -----------------
 class ContactForm(forms.ModelForm):
@@ -76,7 +84,6 @@ class SupplierPaymentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if user:
-            # Filter orders to show only purchase orders for this user with outstanding amounts
             self.fields['order'].queryset = Order.objects.filter(
                 owner=user,
                 order_type='PURCHASE',
@@ -100,6 +107,7 @@ class FieldAgentForm(forms.ModelForm):
 
         User = get_user_model()
         qs = User.objects.filter(is_active=True).exclude(is_superuser=True)
+
         if owner:
             qs = qs.exclude(id=owner.id)
 
