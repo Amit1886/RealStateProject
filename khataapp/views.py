@@ -29,6 +29,13 @@ def add_party(request):
 
     return render(request, "khataapp/add_party.html", {"form": form})
 
+@login_required
+def party_list(request):
+    parties = Party.objects.filter(owner=request.user)
+    return render(request, "khataapp/party_list.html", {
+        "parties": parties
+    })
+
 # ---------------- Supplier Management Views ----------------
 @login_required
 def supplier_dashboard(request):
