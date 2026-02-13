@@ -5,7 +5,6 @@ from .models import Party, Transaction, SupplierPayment, FieldAgent
 from khataapp.models import UserProfile
 from .models import ContactMessage
 from commerce.models import Order
-from .models import Supplier
 
 
 
