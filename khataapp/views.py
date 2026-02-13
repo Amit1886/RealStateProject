@@ -18,6 +18,7 @@ from .models import ContactMessage, FieldAgent, LoginLink, OfflineMessage
 from .forms import FieldAgentForm
 from .forms import PartyForm
 
+@login_required
 def add_party(request):
     if request.method == "POST":
         form = PartyForm(request.POST)
@@ -47,6 +48,24 @@ def party_view(request, party_id):
         "transactions": txns,
     }
     return render(request, "khataapp/party_view.html", context)
+
+@login_required
+def edit_party(request, party_id):
+    party = get_object_or_404(Party, id=party_id)
+
+    if request.method == "POST":
+        form = PartyForm(request.POST, instance=party)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Party updated successfully")
+            return redirect("party_list")
+    else:
+        form = PartyForm(instance=party)
+
+    return render(request, "khataapp/add_party.html", {
+        "form": form,
+        "party": party
+    })
 
 # ---------------- Supplier Management Views ----------------
 @login_required
