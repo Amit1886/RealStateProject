@@ -67,6 +67,13 @@ def edit_party(request, party_id):
         "party": party
     })
 
+@login_required
+def delete_party(request, party_id):
+    party = get_object_or_404(Party, id=party_id)
+    party.delete()
+    messages.success(request, "Party deleted")
+    return redirect("party_list")
+
 # ---------------- Supplier Management Views ----------------
 @login_required
 def supplier_dashboard(request):
