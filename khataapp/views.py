@@ -18,6 +18,41 @@ from .models import ContactMessage, FieldAgent, LoginLink, OfflineMessage
 from .forms import FieldAgentForm
 from .forms import PartyForm
 
+
+@login_required
+def profile_view(request):
+    return render(request, "khataapp/profile.html")
+
+
+@login_required
+def update_plan(request):
+    return HttpResponse("update_plan working")
+
+@login_required
+def my_credits(request):
+    return HttpResponse("my_credits working")
+
+
+@login_required
+def add_transaction(request):
+    return HttpResponse("add_transaction working")
+
+@login_required
+def transaction_list(request):
+    return HttpResponse("transaction_list working")
+
+@login_required
+def transaction_edit(request, id):
+    return HttpResponse(f"transaction_edit {id}")
+
+@login_required
+def transaction_view(request, id):
+    return HttpResponse(f"transaction_view {id}")
+
+@login_required
+def transaction_delete(request, id):
+    return HttpResponse(f"transaction_delete {id}")
+
 @login_required
 def add_party(request):
     if request.method == "POST":
@@ -73,6 +108,13 @@ def delete_party(request, party_id):
     party.delete()
     messages.success(request, "Party deleted")
     return redirect("party_list")
+
+@login_required
+def credit_report_view(request):
+    parties = Party.objects.all()
+    return render(request, "khataapp/credit_report.html", {
+        "parties": parties
+    })
 
 # ---------------- Supplier Management Views ----------------
 @login_required
