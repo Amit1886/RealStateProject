@@ -42,6 +42,8 @@ from khataapp.models import Party, UserProfile, FieldAgent, CollectorVisit, Logi
 from khataapp.utils.whatsapp_utils import send_whatsapp_message
 from billing.models import Plan, Subscription
 from commerce.models import Order, Payment, Invoice
+from commerce.models import Coupon, UserCoupon
+
 
 
 User = get_user_model()
