@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-2 unified-list-screen" data-master-list-wrap>
+  <div class="unified-list-card">
+    <div class="unified-list-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h3>Payment List</h3>
+        <div class="unified-subtitle">All recorded payments in one standardized table</div>
+      </div>
+      <a href="{% url 'commerce:add_payment' %}" class="btn unified-btn-primary">Add Payment</a>
+    </div>
+
+    <div class="unified-list-body">
+      <div class="unified-filter-row d-flex flex-wrap gap-2 align-items-end mb-2">
+        <div class="flex-grow-1" style="min-width:220px;">
+          <label class="unified-label" for="paymentSearchInput">Search</label>
+          <input id="paymentSearchInput" data-master-search type="text" class="form-control" placeholder="Search invoice/party/method/ref">
+        </div>
+        <div style="min-width:160px;">
+          <label class="unified-label" for="paymentMethodFilter">Method</label>
+          <select id="paymentMethodFilter" data-master-filter="4" class="form-select">
+            <option value="">All Methods</option>
+            <option value="cash">Cash</option>
+            <option value="upi">UPI</option>
+            <option value="card">Card</option>
+            <option value="bank_transfer">Bank Transfer</option>
+            <option value="cheque">Cheque</option>
+            <option value="wallet">Wallet</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="unified-table-wrap">
+        <table class="table unified-table" data-master-list data-page-size="10">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Invoice</th>
+              <th>Order</th>
+              <th>Party</th>
+              <th>Method</th>
+              <th>Amount</th>
+              <th>Reference</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for payment in payments %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ payment.invoice.number }}</td>
+              <td>#{{ payment.invoice.order.id }}</td>
+              <td>{{ payment.invoice.order.party.name }}</td>
+              <td>{{ payment.method|default:'-' }}</td>
+              <td>{{ payment.amount }}</td>
+              <td>{{ payment.reference|default:'-' }}</td>
+              <td>{{ payment.created_at|date:"d M Y" }}</td>
+              <td>
+                <div class="unified-row-actions">
+                  <a href="{% url 'commerce:payment_view' payment.id %}" class="btn unified-btn-outline btn-sm">View</a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" class="text-center">No payments found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-end mt-2" data-master-pagination></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-2 unified-screen busy-unified-add">
+  <div class="unified-card">
+    <div class="unified-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h3>E-Way Bill View</h3>
+        <div class="unified-subtitle">E-way bill detail with shipment summary and printable actions</div>
+      </div>
+      <a href="{% url 'commerce:order_detail' order.id %}" class="btn unified-btn-outline">Back</a>
+    </div>
+
+    <div class="unified-body" data-master-list-wrap>
+      <div class="report-summary-grid">
+        <div class="report-summary-card">
+          <div class="label">E-Way No</div>
+          <div class="value">{{ eway_number }}</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="label">Order</div>
+          <div class="value">#{{ order.id }}</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="label">Party</div>
+          <div class="value">{{ order.party.name }}</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="label">Valid Upto</div>
+          <div class="value">{{ valid_upto }}</div>
+        </div>
+      </div>
+
+      <div class="unified-grid cols-2">
+        <div class="unified-section">
+          <label class="unified-label">Order Date</label>
+          <div>{{ order.created_at|date:"d M Y H:i" }}</div>
+        </div>
+        <div class="unified-section">
+          <label class="unified-label">Status</label>
+          <div>{{ order.status|title }}</div>
+        </div>
+      </div>
+
+      <div class="unified-filter-row d-flex flex-wrap gap-2 align-items-end mb-2">
+        <div class="flex-grow-1" style="min-width:220px;">
+          <label class="unified-label" for="ewaySearch">Search Item</label>
+          <input id="ewaySearch" data-master-search type="text" class="form-control" placeholder="Search product/qty">
+        </div>
+      </div>
+
+      <div class="unified-table-wrap">
+        <table class="table unified-table" data-master-list data-page-size="12">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Qty</th>
+              <th>Unit Price</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.product.name|default:item.raw_name|default:"-" }}</td>
+              <td>{{ item.qty }}</td>
+              <td>{{ item.price }}</td>
+              <td>{{ item.line_total }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center">No e-way bill items found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-end mt-2" data-master-pagination></div>
+      {% include "core/includes/document_action_bar.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

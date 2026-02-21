@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-2 unified-screen busy-unified-add">
+  <div class="unified-card">
+    <div class="unified-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h3>Payment View</h3>
+        <div class="unified-subtitle">Payment detail page with summary and print/share actions</div>
+      </div>
+      <a href="{% url 'commerce:payment_list' %}" class="btn unified-btn-outline">Back</a>
+    </div>
+
+    <div class="unified-body">
+      <div class="report-summary-grid">
+        <div class="report-summary-card">
+          <div class="label">Amount</div>
+          <div class="value">{{ payment.amount }}</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="label">Method</div>
+          <div class="value">{{ payment.method|default:'-' }}</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="label">Reference</div>
+          <div class="value">{{ payment.reference|default:'-' }}</div>
+        </div>
+      </div>
+
+      <div class="unified-grid cols-2">
+        <div class="unified-section">
+          <label class="unified-label">Invoice</label>
+          <div>{{ payment.invoice.number }}</div>
+        </div>
+        <div class="unified-section">
+          <label class="unified-label">Order</label>
+          <div>#{{ payment.invoice.order.id }}</div>
+        </div>
+        <div class="unified-section">
+          <label class="unified-label">Party</label>
+          <div>{{ payment.invoice.order.party.name }}</div>
+        </div>
+        <div class="unified-section">
+          <label class="unified-label">Date</label>
+          <div>{{ payment.created_at }}</div>
+        </div>
+      </div>
+
+      <div class="unified-section">
+        <label class="unified-label">Notes</label>
+        <div>{{ payment.note|default:'-' }}</div>
+      </div>
+
+      {% include 'core/includes/document_action_bar.html' %}
+    </div>
+  </div>
+</div>
+{% endblock %}
