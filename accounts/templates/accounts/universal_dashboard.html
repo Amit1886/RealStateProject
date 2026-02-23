@@ -1,0 +1,83 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block content %}
+<div style="padding:20px; background:linear-gradient(120deg,#fff8ec,#eef7ff); min-height:100vh;">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+    <div>
+      <h2 style="margin:0; font-size:28px;">{{ greeting }}, {{ profile.full_name|default:request.user.username }}</h2>
+      <p style="margin:4px 0 0; color:#4b5563;">Universal Billing + POS + Quick Commerce Control Tower</p>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <a href="/settings/center/" style="padding:10px 14px; border-radius:10px; background:#0d6f5b; color:#fff; text-decoration:none;">Settings</a>
+      <a href="{{ upgrade_url }}" style="padding:10px 14px; border-radius:10px; background:#111827; color:#fff; text-decoration:none;">Upgrade Plan</a>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; margin-bottom:14px;">
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px;"><div style="font-size:12px; color:#6b7280;">Plan</div><div style="font-size:22px; font-weight:700;">{{ plan.name|default:"No Plan" }}</div></div>
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px;"><div style="font-size:12px; color:#6b7280;">Sales ({{ period }})</div><div style="font-size:22px; font-weight:700;">{{ total_sales }}</div></div>
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px;"><div style="font-size:12px; color:#6b7280;">Margin ({{ period }})</div><div style="font-size:22px; font-weight:700;">{{ total_margin }}</div></div>
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px;"><div style="font-size:12px; color:#6b7280;">Locked Features</div><div style="font-size:22px; font-weight:700;">{{ locked_features_count }}</div></div>
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px;"><div style="font-size:12px; color:#6b7280;">Products</div><div style="font-size:22px; font-weight:700;">{{ product_count }}</div></div>
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px;"><div style="font-size:12px; color:#6b7280;">Warehouses</div><div style="font-size:22px; font-weight:700;">{{ warehouse_count }}</div></div>
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px;"><div style="font-size:12px; color:#6b7280;">Low Stock SKUs</div><div style="font-size:22px; font-weight:700;">{{ low_stock_count }}</div></div>
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px;"><div style="font-size:12px; color:#6b7280;">Usage</div><div style="font-size:22px; font-weight:700;">{{ usage_summary.usage }}/{{ usage_summary.limit }}</div></div>
+  </div>
+
+  <h3 style="margin:8px 0;">Module Access</h3>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; margin-bottom:14px;">
+    {% for m in modules %}
+      <div style="background:#fff; border:1px solid {% if m.enabled %}#0d6f5b{% else %}#f59e0b{% endif %}; border-radius:12px; padding:12px; position:relative;">
+        <div style="font-size:18px; font-weight:700;">{{ m.name }}</div>
+        <p style="color:#4b5563; margin:6px 0 10px;">{{ m.desc }}</p>
+        {% if m.enabled %}
+          <a href="{{ m.url }}" style="display:inline-block; padding:8px 10px; border-radius:8px; background:#0d6f5b; color:#fff; text-decoration:none;">Open</a>
+        {% else %}
+          <span style="display:inline-block; padding:4px 8px; border-radius:999px; background:#fff3cd; color:#8a5a00; font-size:12px;">Locked by Plan</span>
+          <a href="{{ upgrade_url }}" style="display:inline-block; margin-left:6px; padding:8px 10px; border-radius:8px; background:#111827; color:#fff; text-decoration:none;">Unlock</a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:10px;">
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px;">
+      <h3 style="margin-top:0;">Recent Unified Orders</h3>
+      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <thead><tr><th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Order</th><th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Type</th><th style="text-align:left; padding:8px; border-bottom:1px solid #e5e7eb;">Status</th><th style="text-align:right; padding:8px; border-bottom:1px solid #e5e7eb;">Amount</th></tr></thead>
+        <tbody>
+        {% for o in recent_orders %}
+          <tr>
+            <td style="padding:8px; border-bottom:1px solid #f3f4f6;">{{ o.order_number }}</td>
+            <td style="padding:8px; border-bottom:1px solid #f3f4f6;">{{ o.order_type }}</td>
+            <td style="padding:8px; border-bottom:1px solid #f3f4f6;">{{ o.status }}</td>
+            <td style="padding:8px; border-bottom:1px solid #f3f4f6; text-align:right;">{{ o.total_amount }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" style="padding:10px; color:#6b7280;">No orders yet.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px;">
+      <h3 style="margin-top:0;">Plan Permission Flags</h3>
+      {% if plan_permissions %}
+        <div style="display:grid; gap:6px; font-size:14px;">
+          <div>Dashboard: <strong>{{ plan_permissions.allow_dashboard }}</strong></div>
+          <div>Commerce: <strong>{{ plan_permissions.allow_commerce }}</strong></div>
+          <div>Warehouse: <strong>{{ plan_permissions.allow_warehouse }}</strong></div>
+          <div>Orders: <strong>{{ plan_permissions.allow_orders }}</strong></div>
+          <div>Inventory: <strong>{{ plan_permissions.allow_inventory }}</strong></div>
+          <div>Analytics: <strong>{{ plan_permissions.allow_analytics }}</strong></div>
+          <div>Settings: <strong>{{ plan_permissions.allow_settings }}</strong></div>
+          <div>API Access: <strong>{{ plan_permissions.allow_api_access }}</strong></div>
+        </div>
+      {% else %}
+        <p style="color:#6b7280;">No plan assigned. Assign a plan from admin.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

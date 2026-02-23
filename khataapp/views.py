@@ -1,14 +1,15 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 
 from django.utils import timezone
-from datetime import timedelta
+from datetime import datetime, timedelta
+from decimal import Decimal, InvalidOperation
 
-from khataapp.models import Party, SupplierPayment
+from khataapp.models import Party, SupplierPayment, Transaction
 from commerce.models import Order
 from khataapp.forms import SupplierPaymentForm
 from khataapp.services.supplier_services import SupplierService
@@ -35,23 +36,117 @@ def my_credits(request):
 
 @login_required
 def add_transaction(request):
-    return HttpResponse("add_transaction working")
+    parties = Party.objects.filter(owner=request.user).order_by("name")
+
+    if request.method == "POST":
+        party_id = request.POST.get("party")
+        txn_type = request.POST.get("txn_type")
+        txn_mode = request.POST.get("txn_mode") or "cash"
+        notes = request.POST.get("notes") or ""
+        receipt = request.FILES.get("receipt")
+        gst_type = request.POST.get("gst_type") or None
+
+        amount_raw = request.POST.get("amount") or ""
+        date_raw = request.POST.get("date") or ""
+
+        if not party_id or not txn_type or not amount_raw:
+            messages.error(request, "Please fill Party, Type and Amount.")
+            return render(request, "khataapp/add_transaction.html", {"parties": parties})
+
+        party = Party.objects.filter(id=party_id, owner=request.user).first()
+        if not party:
+            messages.error(request, "Invalid party selected.")
+            return render(request, "khataapp/add_transaction.html", {"parties": parties})
+
+        try:
+            amount = Decimal(str(amount_raw))
+        except (InvalidOperation, TypeError):
+            messages.error(request, "Invalid amount.")
+            return render(request, "khataapp/add_transaction.html", {"parties": parties})
+
+        txn_date = timezone.now().date()
+        if date_raw:
+            try:
+                txn_date = datetime.fromisoformat(date_raw).date()
+            except ValueError:
+                pass
+
+        Transaction.objects.create(
+            party=party,
+            txn_type=txn_type,
+            txn_mode=txn_mode,
+            amount=amount,
+            date=txn_date,
+            notes=notes,
+            receipt=receipt,
+            gst_type=gst_type,
+        )
+        messages.success(request, "✅ Transaction saved.")
+        return redirect("khataapp:transaction_list")
+
+    return render(request, "khataapp/add_transaction.html", {"parties": parties})
 
 @login_required
 def transaction_list(request):
-    return HttpResponse("transaction_list working")
+    transactions = (
+        Transaction.objects.select_related("party")
+        .filter(party__owner=request.user)
+        .order_by("-id")
+    )
+    return render(request, "khataapp/transaction_list.html", {"transactions": transactions})
 
 @login_required
 def transaction_edit(request, id):
-    return HttpResponse(f"transaction_edit {id}")
+    txn = get_object_or_404(Transaction, id=id, party__owner=request.user)
+    parties = Party.objects.filter(owner=request.user).order_by("name")
+
+    if request.method == "POST":
+        party_id = request.POST.get("party")
+        txn_type = request.POST.get("txn_type")
+        amount_raw = request.POST.get("amount") or ""
+        date_raw = request.POST.get("date") or ""
+        notes = request.POST.get("notes") or ""
+
+        party = Party.objects.filter(id=party_id, owner=request.user).first()
+        if not party:
+            messages.error(request, "Invalid party selected.")
+            return render(request, "khataapp/transaction_edit.html", {"txn": txn, "parties": parties})
+
+        try:
+            amount = Decimal(str(amount_raw))
+        except (InvalidOperation, TypeError):
+            messages.error(request, "Invalid amount.")
+            return render(request, "khataapp/transaction_edit.html", {"txn": txn, "parties": parties})
+
+        txn_date = txn.date
+        if date_raw:
+            try:
+                txn_date = datetime.fromisoformat(date_raw).date()
+            except ValueError:
+                pass
+
+        txn.party = party
+        txn.txn_type = txn_type
+        txn.amount = amount
+        txn.date = txn_date
+        txn.notes = notes
+        txn.save(update_fields=["party", "txn_type", "amount", "date", "notes"])
+        messages.success(request, "✅ Transaction updated.")
+        return redirect("khataapp:transaction_view", id=txn.id)
+
+    return render(request, "khataapp/transaction_edit.html", {"txn": txn, "parties": parties})
 
 @login_required
 def transaction_view(request, id):
-    return HttpResponse(f"transaction_view {id}")
+    txn = get_object_or_404(Transaction.objects.select_related("party"), id=id, party__owner=request.user)
+    return render(request, "khataapp/transaction_view.html", {"txn": txn})
 
 @login_required
 def transaction_delete(request, id):
-    return HttpResponse(f"transaction_delete {id}")
+    txn = get_object_or_404(Transaction, id=id, party__owner=request.user)
+    txn.delete()
+    messages.success(request, "✅ Transaction deleted.")
+    return redirect("khataapp:transaction_list")
 
 @login_required
 def add_party(request):

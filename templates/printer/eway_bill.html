@@ -1,0 +1,7 @@
+{% extends "printer/_base_print.html" %}
+{% block print_body %}
+<div class="meta-grid">
+  <div class="meta-card"><div class="meta-label">E-Way Bill No</div><div class="meta-value">{{ eway_number|default:'-' }}</div></div>
+  <div class="meta-card"><div class="meta-label">Valid Upto</div><div class="meta-value">{{ valid_upto|default:'-' }}</div></div>
+</div>
+{% endblock %}

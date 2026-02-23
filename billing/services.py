@@ -1,5 +1,7 @@
 from datetime import timedelta
+from threading import Lock
 
+from django.db.utils import OperationalError
 from django.db import transaction
 from django.utils import timezone
 
@@ -42,22 +44,57 @@ FEATURE_REGISTRY = [
 ]
 
 
+_registry_sync_lock = Lock()
+_registry_synced = False
+
+
 def sync_feature_registry():
-    for index, item in enumerate(FEATURE_REGISTRY):
-        FeatureRegistry.objects.update_or_create(
-            key=item["key"],
-            defaults={
-                "label": item["label"],
-                "group": item.get("group", "General"),
-                "description": item.get("description", ""),
-                "sort_order": index,
-                "active": True,
-            },
-        )
-    # Ensure every plan has entries for newly added features
-    for plan in Plan.objects.all():
-        for feature in FeatureRegistry.objects.filter(active=True):
-            PlanFeature.objects.get_or_create(plan=plan, feature=feature, defaults={"enabled": True})
+    """
+    Ensure FeatureRegistry/PlanFeature rows exist.
+
+    Important: this function writes to DB. It must not be called repeatedly per-request
+    (especially on SQLite). It is safe to call on-demand; it will run at most once
+    per-process and is resilient to transient SQLite lock errors.
+    """
+    global _registry_synced
+    if _registry_synced:
+        return
+
+    with _registry_sync_lock:
+        if _registry_synced:
+            return
+
+        try:
+            desired_keys = [x["key"] for x in FEATURE_REGISTRY]
+            existing_keys = set(
+                FeatureRegistry.objects.filter(key__in=desired_keys).values_list("key", flat=True)
+            )
+            needs_sync = len(existing_keys) != len(desired_keys)
+            if not needs_sync:
+                _registry_synced = True
+                return
+
+            for index, item in enumerate(FEATURE_REGISTRY):
+                FeatureRegistry.objects.update_or_create(
+                    key=item["key"],
+                    defaults={
+                        "label": item["label"],
+                        "group": item.get("group", "General"),
+                        "description": item.get("description", ""),
+                        "sort_order": index,
+                        "active": True,
+                    },
+                )
+            # Ensure every plan has entries for newly added features
+            for plan in Plan.objects.all():
+                for feature in FeatureRegistry.objects.filter(active=True):
+                    PlanFeature.objects.get_or_create(plan=plan, feature=feature, defaults={"enabled": True})
+
+            _registry_synced = True
+        except OperationalError:
+            # SQLite can throw "database is locked" under concurrent access.
+            # Don't crash templates/pages; callers should behave read-only on failure.
+            return
 
 
 def get_active_subscription(user):
@@ -67,7 +104,10 @@ def get_active_subscription(user):
 def user_has_feature(user, feature_key):
     if user.is_superuser:
         return True
-    sync_feature_registry()
+    try:
+        sync_feature_registry()
+    except OperationalError:
+        pass
     override = UserFeatureOverride.objects.filter(
         user=user, feature__key=feature_key
     ).select_related("feature").first()
@@ -80,7 +120,10 @@ def user_has_feature(user, feature_key):
 
 
 def get_locked_feature_count(user):
-    sync_feature_registry()
+    try:
+        sync_feature_registry()
+    except OperationalError:
+        pass
     subscription = get_active_subscription(user)
     if not subscription or not subscription.plan:
         return FeatureRegistry.objects.filter(active=True).count()

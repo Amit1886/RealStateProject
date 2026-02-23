@@ -15,10 +15,17 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/unified-theme.css' %}">
+    <link rel="stylesheet" href="{% static 'css/master_ui_system.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pc_add_mode.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 
-<body class="{{ ui.theme_mode|default:'light' }}{% if hide_sidebar %} no-sidebar{% endif %}">
+{% with resolved_system_mode_css|default:'desktop' as mode_css %}
+<body class="{{ ui.theme_mode|default:'light' }}{% if hide_sidebar %} no-sidebar{% endif %} {% if mode_css == 'pos' %}mode-pos{% elif mode_css == 'tablet' %}mode-tablet{% elif mode_css == 'mobile' %}mode-mobile{% else %}mode-pc{% endif %}"
+      data-system-mode="{{ resolved_system_mode|default:system_mode_name|default:'DESKTOP' }}"
+      data-system-mode-locked="{{ system_mode_locked|default:'0' }}">
+{% endwith %}
 
 <div class="layout">
 
@@ -61,6 +68,8 @@
 <!-- JS -->
 <script src="{% static 'js/dashboard.js' %}"></script>
 <script src="{% static 'js/sidebar.js' %}"></script>
+<script src="{% static 'js/unified-layout.js' %}" defer></script>
+<script src="{% static 'js/system_mode_client.js' %}" defer></script>
 
 {% block extra_js %}{% endblock %}
 

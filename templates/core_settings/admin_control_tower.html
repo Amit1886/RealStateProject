@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid" style="padding:24px; background:linear-gradient(135deg,#eef7ff,#fff8ef); min-height:100vh;">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <div>
+      <h2 style="margin:0;">Admin Control Tower</h2>
+      <p style="margin:4px 0 0; color:#4b5563;">Plan-based governance for Billing + POS + Quick Commerce</p>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <a href="{% url 'core_settings:plan_permissions' %}" class="btn btn-primary">Plan Permissions</a>
+      <a href="{% url 'core_settings:user_feature_overrides' %}" class="btn btn-dark">User Overrides</a>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:12px;">
+    <div class="col-md-2 col-6"><div class="card p-3"><div style="font-size:12px;color:#6b7280;">Active Plans</div><div style="font-size:24px;font-weight:700;">{{ metrics.active_plans }}</div></div></div>
+    <div class="col-md-2 col-6"><div class="card p-3"><div style="font-size:12px;color:#6b7280;">Products</div><div style="font-size:24px;font-weight:700;">{{ metrics.total_products }}</div></div></div>
+    <div class="col-md-2 col-6"><div class="card p-3"><div style="font-size:12px;color:#6b7280;">Warehouses</div><div style="font-size:24px;font-weight:700;">{{ metrics.total_warehouses }}</div></div></div>
+    <div class="col-md-2 col-6"><div class="card p-3"><div style="font-size:12px;color:#6b7280;">Low Stock</div><div style="font-size:24px;font-weight:700;">{{ metrics.low_stock_rows }}</div></div></div>
+    <div class="col-md-2 col-6"><div class="card p-3"><div style="font-size:12px;color:#6b7280;">Pending Orders</div><div style="font-size:24px;font-weight:700;">{{ metrics.pending_orders }}</div></div></div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <div class="card-header"><strong>Plan Permission Matrix</strong></div>
+    <div class="card-body" style="overflow:auto;">
+      <table class="table table-bordered" style="min-width:1000px;">
+        <thead>
+          <tr>
+            <th>Plan</th><th>Dashboard</th><th>Commerce</th><th>Warehouse</th><th>Orders</th><th>Inventory</th><th>Analytics</th><th>Settings</th><th>API</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for plan in plans %}
+          <tr>
+            <td><strong>{{ plan.name }}</strong><br><small>{{ plan.price }}</small></td>
+            <td>{{ plan.permissions.allow_dashboard|yesno:"Yes,No" }}</td>
+            <td>{{ plan.permissions.allow_commerce|yesno:"Yes,No" }}</td>
+            <td>{{ plan.permissions.allow_warehouse|yesno:"Yes,No" }}</td>
+            <td>{{ plan.permissions.allow_orders|yesno:"Yes,No" }}</td>
+            <td>{{ plan.permissions.allow_inventory|yesno:"Yes,No" }}</td>
+            <td>{{ plan.permissions.allow_analytics|yesno:"Yes,No" }}</td>
+            <td>{{ plan.permissions.allow_settings|yesno:"Yes,No" }}</td>
+            <td>{{ plan.permissions.allow_api_access|yesno:"Yes,No" }}</td>
+            <td><a class="btn btn-sm btn-outline-primary" target="_blank" href="/superadmin/billing/planpermissions/{{ plan.permissions.id }}/change/">Edit</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="10">No active plans found.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <div class="card-header"><strong>Latest Unified Orders</strong></div>
+    <div class="card-body" style="overflow:auto;">
+      <table class="table table-striped">
+        <thead><tr><th>Order No</th><th>Type</th><th>Status</th><th>Total</th><th>Created</th></tr></thead>
+        <tbody>
+          {% for o in latest_orders %}
+          <tr><td>{{ o.order_number }}</td><td>{{ o.order_type }}</td><td>{{ o.status }}</td><td>{{ o.total_amount }}</td><td>{{ o.created_at }}</td></tr>
+          {% empty %}
+          <tr><td colspan="5">No orders yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

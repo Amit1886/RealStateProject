@@ -1,0 +1,25 @@
+{% extends "printer/_base_print.html" %}
+{% block print_body %}
+<table>
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Qty</th>
+      <th>Wholesale Rate</th>
+      <th>Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+    <tr>
+      <td>{{ item.name|default:item.product|default:'-' }}</td>
+      <td>{{ item.qty|default:1 }}</td>
+      <td>{{ item.rate|default:item.price|default:'0.00' }}</td>
+      <td>{{ item.amount|default:item.line_total|default:'0.00' }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4">No items</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

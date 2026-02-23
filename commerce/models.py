@@ -176,6 +176,7 @@ class Order(models.Model):
     payment_due_date = models.DateField(blank=True, null=True, help_text="Date when payment is due")
 
     notes = models.TextField(blank=True, null=True)
+    bill_sundry = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     order_source = models.CharField(
@@ -222,7 +223,7 @@ class Order(models.Model):
         subtotal = agg["t"] or Decimal("0.00")
         discount_amount = self.discount_amount or Decimal("0.00")
         tax_amount = self.tax_amount or Decimal("0.00")
-        return subtotal - discount_amount + tax_amount
+        return subtotal - discount_amount + tax_amount + self.bill_sundry_total()
 
     def subtotal_amount(self):
         agg = self.items.aggregate(
@@ -232,6 +233,17 @@ class Order(models.Model):
             )
         )
         return agg["t"] or Decimal("0.00")
+
+    def bill_sundry_total(self):
+        total = Decimal("0.00")
+        for line in (self.bill_sundry or []):
+            if not isinstance(line, dict):
+                continue
+            try:
+                total += Decimal(str(line.get("amount") or "0"))
+            except Exception:
+                continue
+        return total
 
     def compute_totals(self):
         subtotal = self.items.aggregate(

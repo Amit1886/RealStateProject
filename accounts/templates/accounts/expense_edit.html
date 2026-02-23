@@ -1,0 +1,57 @@
+{% extends "accounts/base.html" %}
+
+{% block content %}
+<div class="container-fluid py-2 unified-screen busy-unified-add">
+  <div class="unified-card">
+    <div class="unified-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h3>Edit Expense</h3>
+        <div class="unified-subtitle">Update expense details using standardized form</div>
+      </div>
+    </div>
+
+    <form method="post" id="expenseEditForm" class="unified-body" action="{% url 'accounts:expense_edit' expense.id %}">
+      {% csrf_token %}
+
+      <div class="unified-grid cols-3">
+        <div class="unified-section">
+          <label class="unified-label" for="id_expense_date">Expense Date</label>
+          <input type="date" id="id_expense_date" name="expense_date" class="form-control" required value="{{ expense.expense_date|date:'Y-m-d' }}">
+        </div>
+
+        <div class="unified-section">
+          <label class="unified-label" for="id_category">Category</label>
+          <select id="id_category" name="category" class="form-select">
+            <option value="">Select existing category</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if expense.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="unified-section">
+          <label class="unified-label" for="id_new_category">Or New Category</label>
+          <input type="text" id="id_new_category" name="new_category" class="form-control" placeholder="Create new category">
+        </div>
+      </div>
+
+      <div class="unified-grid cols-2">
+        <div class="unified-section">
+          <label class="unified-label" for="id_amount_paid">Amount Paid</label>
+          <input type="number" id="id_amount_paid" name="amount_paid" class="form-control amount" step="0.01" min="0.01" required value="{{ expense.amount_paid }}">
+        </div>
+
+        <div class="unified-section">
+          <label class="unified-label" for="id_description">Description</label>
+          <textarea id="id_description" name="description" class="form-control" rows="3">{{ expense.description|default:'' }}</textarea>
+        </div>
+      </div>
+
+      <div class="unified-section d-flex justify-content-end gap-2">
+        <a href="{% url 'accounts:expense_view' expense.id %}" class="btn unified-btn-outline">Cancel</a>
+        <button type="submit" class="btn unified-btn-primary" data-enter-submit>Update Expense</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

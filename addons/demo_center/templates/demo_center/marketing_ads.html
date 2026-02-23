@@ -1,0 +1,33 @@
+{% extends "demo_center/base.html" %}
+{% block content %}
+  <div class="grid">
+    <div class="card span-12">
+      <h3>Marketing + Ads Demo</h3>
+      <div class="sub">Simulated campaign generation, creatives, and A/B split.</div>
+    </div>
+    <div class="card span-6">
+      <h3>Campaign Card</h3>
+      <div class="value">{{ state.campaign.name }}</div>
+      <div class="sub">Budget: ₹{{ state.campaign.budget }} • Projected Reach: {{ state.campaign.projected_reach }} • Expected CTR: {{ state.campaign.expected_ctr }}%</div>
+      <div class="sub">A/B Split: A {{ state.campaign.ab_split.variant_a }}% • B {{ state.campaign.ab_split.variant_b }}%</div>
+    </div>
+    <div class="card span-6">
+      <h3>Performance (Demo)</h3>
+      <ul>
+        <li>Reach: {{ state.campaign.stats.reach }}</li>
+        <li>Clicks: {{ state.campaign.stats.clicks }}</li>
+        <li>Conversions: {{ state.campaign.stats.conversions }}</li>
+        <li>ROI: {{ state.campaign.stats.roi_pct }}%</li>
+      </ul>
+    </div>
+    <div class="card span-12">
+      <h3>Auto-generated Captions (Demo)</h3>
+      <ul>
+        {% for c in state.campaign.captions %}
+          <li>{{ c }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}
+

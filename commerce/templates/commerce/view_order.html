@@ -9,6 +9,7 @@
     <p>
       <strong>Customer:</strong> {{ order.party.name }} <br>
       <strong>Status:</strong> {{ order.status }} <br>
+      {% if order.bill_sundry %}<strong>Bill Sundry:</strong> {{ order.bill_sundry_total }} <br>{% endif %}
       <strong>Total:</strong> {{ order.total_amount }}
     </p>
 

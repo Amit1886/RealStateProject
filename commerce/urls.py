@@ -40,6 +40,7 @@ urlpatterns = [
     path("add-order/", views.add_order, name="add_order"),
     path("view-order/<int:order_id>/", views.view_order, name="view_order"),
     path("get-price/<int:pk>/", views.get_product_price, name="get_price"),
+    path("api/product-stock/<int:product_id>/", views.get_product_stock, name="get_product_stock"),
     path('download-invoice/<int:order_id>/', views.download_invoice, name='download_invoice'),
     path("orders/", views.order_list, name="order_list"),
     path('orders/sales/', views.sales_order_list, name='sales_order_list'),

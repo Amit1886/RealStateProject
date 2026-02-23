@@ -1,0 +1,27 @@
+{% extends "demo_center/base.html" %}
+{% block content %}
+  <div class="grid">
+    <div class="card span-12">
+      <h3>User Demo Flow (Simulated)</h3>
+      <div class="sub">User calls → AI answers → order → invoice → payment → courier → delivery.</div>
+    </div>
+    <div class="card span-7">
+      <h3>Timeline</h3>
+      <div class="timeline">
+        {% for step in state.timeline %}
+          <div class="titem"><b>{{ step.title }}</b><span class="sub">{{ step.time }}</span></div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card span-5">
+      <h3>Sample Outputs</h3>
+      <ul>
+        <li>Invoice auto-generated (demo)</li>
+        <li>Payment link sent (demo)</li>
+        <li>Courier assigned (demo)</li>
+        <li>SMS/WhatsApp notification (demo)</li>
+      </ul>
+    </div>
+  </div>
+{% endblock %}
+

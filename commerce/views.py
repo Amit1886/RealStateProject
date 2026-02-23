@@ -15,12 +15,15 @@ import os
 from django.contrib.auth import get_user_model
 
 from .models import (
+    Category,
     Product,
     Warehouse,
     Order,
     OrderItem,
     Invoice,
     Payment,
+    Stock,
+    ChatThread,
     ChatMessage,
     Coupon,
     UserCoupon,
@@ -99,7 +102,7 @@ def download_invoice(request, order_id):
 
     # ✅ Party Details
     elements.append(Paragraph(f"<b>Order ID:</b> {order.id}", styles['Normal']))
-    elements.append(Paragraph(f"<b>Owner:</b> {order.owner.email}", styles['Normal']))
+    elements.append(Paragraph(f"<b>Owner:</b> {(order.owner.email if order.owner else '-')}", styles['Normal']))
     elements.append(Paragraph(f"<b>Placed by:</b> {order.placed_by}", styles['Normal']))
     elements.append(Paragraph(f"<b>Date:</b> {order.created_at.strftime('%d %b %Y, %I:%M %p')}", styles['Normal']))
 
@@ -107,21 +110,30 @@ def download_invoice(request, order_id):
     # ✅ Table Header
     table_data = [["Product", "Qty", "Price", "Subtotal"]]
     for item in items:
+        product_name = "-"
+        if getattr(item, "product", None):
+            product_name = item.product.name
+        elif getattr(item, "raw_name", None):
+            product_name = item.raw_name
+        line_total = item.line_total()
         table_data.append([
-            item.product.name,
+            product_name,
             f"{item.qty}",
             f"₹ {item.price:.2f}",
-            f"₹ {item.subtotal:.2f}"
+            f"₹ {line_total:.2f}"
         ])
 
     # ✅ Totals
     subtotal = order.subtotal_amount()
     discount = order.discount_amount or Decimal("0.00")
     tax = order.tax_amount or Decimal("0.00")
+    sundry = order.bill_sundry_total()
     total = order.total_amount()
     table_data.append(["", "", "Subtotal:", f"₹ {subtotal:.2f}"])
     table_data.append(["", "", "Discount:", f"₹ {discount:.2f}"])
     table_data.append(["", "", "Tax:", f"₹ {tax:.2f}"])
+    if sundry != Decimal("0.00"):
+        table_data.append(["", "", "Bill Sundry:", f"₹ {sundry:.2f}"])
     table_data.append(["", "", "Total:", f"₹ {total:.2f}"])
 
     # ✅ Create item table
@@ -194,6 +206,7 @@ def user_commerce_dashboard(request):
 
 
 # ---------------- Product ----------------
+@login_required
 def add_category(request):
     if request.method == "POST":
         name = request.POST.get("name")
@@ -212,6 +225,7 @@ def add_category(request):
     return render(request, "commerce/add_category.html", {"categories": categories})
 
 
+@login_required
 def add_product(request):
     categories = Category.objects.filter(owner=request.user)
     if request.method == "POST":
@@ -322,6 +336,40 @@ def get_product_price(request, product_id):
         return JsonResponse({"price": str(product.price)})
     except Product.DoesNotExist:
         return JsonResponse({"price": "0.00"})
+
+
+@login_required
+@require_GET
+def get_product_stock(request, product_id):
+    """
+    Return per-warehouse stock for a product (used by PC Busy add-order popups).
+    """
+    product = get_object_or_404(Product, id=product_id)
+
+    all_warehouses = Warehouse.objects.all().order_by("name")
+    stock_map = {
+        s["warehouse_id"]: (s["quantity"] or 0)
+        for s in Stock.objects.filter(product_id=product.id).values("warehouse_id", "quantity")
+    }
+    warehouses = [
+        {"id": w.id, "name": w.name, "quantity": int(stock_map.get(w.id, 0))}
+        for w in all_warehouses
+    ]
+
+    total = sum((w["quantity"] or 0) for w in warehouses) if warehouses else int(product.stock or 0)
+
+    return JsonResponse(
+        {
+            "product": {
+                "id": product.id,
+                "name": product.name,
+                "unit": product.unit,
+                "stock": int(product.stock or 0),
+            },
+            "total": total,
+            "warehouses": warehouses,
+        }
+    )
 
 # ---------------- Warehouse ----------------
 @login_required
@@ -435,8 +483,36 @@ def add_order(request):
 
                 # Basic fields
                 party_id = request.POST.get("party")
-                order_type = request.POST.get("order_type") or "sale"
+                order_type_raw = (request.POST.get("order_type") or "sale").strip()
+                order_type = {"sale": "SALE", "purchase": "PURCHASE"}.get(order_type_raw.lower(), order_type_raw)
                 notes = request.POST.get("notes")
+                bill_sundry_lines = []
+                raw_bill_sundry = request.POST.get("bill_sundry_json")
+                if raw_bill_sundry:
+                    try:
+                        parsed = json.loads(raw_bill_sundry)
+                        if isinstance(parsed, list):
+                            for line in parsed:
+                                if not isinstance(line, dict):
+                                    continue
+                                name = str(line.get("name") or "").strip()
+                                narration = str(line.get("narration") or "").strip()
+                                rate = str(line.get("rate") or "").strip()
+                                try:
+                                    amount = Decimal(str(line.get("amount") or "0")).quantize(Decimal("0.01"))
+                                except Exception:
+                                    amount = Decimal("0.00")
+                                if name or narration or rate or amount != Decimal("0.00"):
+                                    bill_sundry_lines.append(
+                                        {
+                                            "name": name,
+                                            "narration": narration,
+                                            "rate": rate,
+                                            "amount": str(amount),
+                                        }
+                                    )
+                    except Exception:
+                        bill_sundry_lines = []
 
                 if not party_id:
                     messages.error(request, "Please select a party.")
@@ -449,6 +525,7 @@ def add_order(request):
                     order_type=order_type,
                     status="pending",
                     notes=notes,
+                    bill_sundry=bill_sundry_lines,
                 )
 
                 # Lists
@@ -473,6 +550,9 @@ def add_order(request):
                     messages.error(request, "Order must contain at least one item.")
                     order.delete()
                     return redirect("commerce:add_order")
+
+                # Recompute totals after items are created
+                order.save()
 
                 messages.success(request, f"Order #{order.id} created successfully")
 

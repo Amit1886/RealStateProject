@@ -1,0 +1,194 @@
+/* Unified add/create template styling by user operating mode.
+   Applies only when body has class `add-screen` (set by unified-layout.js). */
+
+body.add-screen .page-content > .container-fluid,
+body.add-screen .page-content > .container,
+body .busy-unified-add {
+  max-width: none;
+}
+
+/* Absolute fallback: if mode class logic fails, busy-unified-add still gets PC style */
+body .busy-unified-add .card {
+  border-radius: 8px !important;
+  border: 1px solid #9ab8bc !important;
+  background: #dae9eb !important;
+}
+
+body .busy-unified-add .card-header {
+  background: linear-gradient(135deg, #5568d3, #6a46a8) !important;
+  color: #fff !important;
+  border-bottom: 1px solid #4a5fb8 !important;
+  padding: 10px 12px !important;
+}
+
+body .busy-unified-add .card-body {
+  background: #c9e1e4 !important;
+  padding: 10px !important;
+}
+
+body .busy-unified-add .card-footer {
+  background: #bdd8db !important;
+  border-top: 1px solid #89aeb3 !important;
+}
+
+body .busy-unified-add .form-control,
+body .busy-unified-add .form-select,
+body .busy-unified-add input,
+body .busy-unified-add select,
+body .busy-unified-add textarea {
+  min-height: 36px;
+  border-radius: 6px !important;
+  border: 1px solid #afc4c8 !important;
+  background: #f8fcfd !important;
+  font-size: 13px !important;
+  font-weight: 600;
+}
+
+body .busy-unified-add .form-control:focus,
+body .busy-unified-add .form-select:focus,
+body .busy-unified-add input:focus,
+body .busy-unified-add select:focus,
+body .busy-unified-add textarea:focus {
+  border-color: #103766 !important;
+  box-shadow: inset 0 0 0 1px #103766 !important;
+}
+
+/* PC Mode: dense Busy-like entry style */
+body.mode-pc.add-screen .card,
+body.mode-pc .busy-unified-add .card {
+  border-radius: 8px !important;
+  border: 1px solid #9ab8bc !important;
+  background: #d6e9ea !important;
+}
+
+body.mode-pc.add-screen .order-card,
+body.mode-pc.add-screen #mainPartyCard,
+body.mode-pc.add-screen #mainPaymentCard,
+body.mode-pc.add-screen #mainExpenseCard,
+body.mode-pc.add-screen .transaction-card,
+body.mode-pc .busy-unified-add .order-card,
+body.mode-pc .busy-unified-add #mainPartyCard,
+body.mode-pc .busy-unified-add #mainPaymentCard,
+body.mode-pc .busy-unified-add #mainExpenseCard,
+body.mode-pc .busy-unified-add .transaction-card {
+  background: #dae9eb !important;
+  border: 1px solid #97b2b6 !important;
+  box-shadow: 0 10px 24px rgba(15, 47, 63, 0.14) !important;
+}
+
+body.mode-pc.add-screen .card-header,
+body.mode-pc .busy-unified-add .card-header {
+  background: linear-gradient(135deg, #5568d3, #6a46a8) !important;
+  color: #fff !important;
+  border-bottom: 1px solid #4a5fb8 !important;
+  padding: 10px 12px !important;
+}
+
+body.mode-pc.add-screen .card-header h1,
+body.mode-pc.add-screen .card-header h2,
+body.mode-pc.add-screen .card-header h3,
+body.mode-pc.add-screen .card-header h4,
+body.mode-pc.add-screen .card-header h5,
+body.mode-pc.add-screen .card-header h6,
+body.mode-pc.add-screen .card-header .badge,
+body.mode-pc .busy-unified-add .card-header h1,
+body.mode-pc .busy-unified-add .card-header h2,
+body.mode-pc .busy-unified-add .card-header h3,
+body.mode-pc .busy-unified-add .card-header h4,
+body.mode-pc .busy-unified-add .card-header h5,
+body.mode-pc .busy-unified-add .card-header h6,
+body.mode-pc .busy-unified-add .card-header .badge {
+  color: #fff !important;
+}
+
+body.mode-pc.add-screen .card-body,
+body.mode-pc .busy-unified-add .card-body {
+  background: #c9e1e4 !important;
+  padding: 10px !important;
+}
+
+body.mode-pc.add-screen .row.g-3 > [class*="col-"],
+body.mode-pc .busy-unified-add .row.g-3 > [class*="col-"] {
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+}
+
+body.mode-pc.add-screen .card-footer,
+body.mode-pc .busy-unified-add .card-footer {
+  background: #bdd8db !important;
+  border-top: 1px solid #89aeb3 !important;
+}
+
+body.mode-pc.add-screen .form-control,
+body.mode-pc.add-screen .form-select,
+body.mode-pc.add-screen input,
+body.mode-pc.add-screen select,
+body.mode-pc.add-screen textarea,
+body.mode-pc .busy-unified-add .form-control,
+body.mode-pc .busy-unified-add .form-select,
+body.mode-pc .busy-unified-add input,
+body.mode-pc .busy-unified-add select,
+body.mode-pc .busy-unified-add textarea {
+  min-height: 36px;
+  border-radius: 6px !important;
+  border: 1px solid #afc4c8 !important;
+  background: #f8fcfd !important;
+  font-size: 13px !important;
+  font-weight: 600;
+}
+
+body.mode-pc.add-screen .form-control:focus,
+body.mode-pc.add-screen .form-select:focus,
+body.mode-pc.add-screen input:focus,
+body.mode-pc.add-screen select:focus,
+body.mode-pc.add-screen textarea:focus,
+body.mode-pc .busy-unified-add .form-control:focus,
+body.mode-pc .busy-unified-add .form-select:focus,
+body.mode-pc .busy-unified-add input:focus,
+body.mode-pc .busy-unified-add select:focus,
+body.mode-pc .busy-unified-add textarea:focus {
+  border-color: #103766 !important;
+  box-shadow: inset 0 0 0 1px #103766 !important;
+}
+
+body.mode-pc.add-screen .btn-success,
+body.mode-pc.add-screen button[type="submit"],
+body.mode-pc .busy-unified-add .btn-success,
+body.mode-pc .busy-unified-add button[type="submit"] {
+  min-width: 136px;
+  font-weight: 900 !important;
+  font-size: 15px !important;
+}
+
+/* POS / Tablet / Mobile: more touch-friendly controls */
+body.mode-pos.add-screen .form-control,
+body.mode-pos.add-screen .form-select,
+body.mode-tablet.add-screen .form-control,
+body.mode-tablet.add-screen .form-select,
+body.mode-mobile.add-screen .form-control,
+body.mode-mobile.add-screen .form-select,
+body.mode-pos .busy-unified-add .form-control,
+body.mode-pos .busy-unified-add .form-select,
+body.mode-tablet .busy-unified-add .form-control,
+body.mode-tablet .busy-unified-add .form-select,
+body.mode-mobile .busy-unified-add .form-control,
+body.mode-mobile .busy-unified-add .form-select {
+  min-height: 44px;
+  font-size: 15px !important;
+}
+
+body.mode-pos.add-screen .card,
+body.mode-tablet.add-screen .card,
+body.mode-mobile.add-screen .card,
+body.mode-pos .busy-unified-add .card,
+body.mode-tablet .busy-unified-add .card,
+body.mode-mobile .busy-unified-add .card {
+  border-radius: 14px !important;
+}
+
+body.mode-mobile.add-screen .card-header,
+body.mode-tablet.add-screen .card-header,
+body.mode-mobile .busy-unified-add .card-header,
+body.mode-tablet .busy-unified-add .card-header {
+  padding: 12px 14px !important;
+}

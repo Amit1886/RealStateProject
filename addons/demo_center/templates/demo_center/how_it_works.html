@@ -1,0 +1,40 @@
+{% extends "demo_center/base.html" %}
+{% block content %}
+  <div class="grid">
+    <div class="card span-12">
+      <h3>How It Works (Guide)</h3>
+      <div class="sub">Simple explanation for Admin and User. Demo-only pages.</div>
+    </div>
+    <div class="card span-6">
+      <h3>For Admin</h3>
+      <ol>
+        <li>Login to admin</li>
+        <li>Enable modules (toggles)</li>
+        <li>Connect APIs (demo configs)</li>
+        <li>Activate Autopilot rules</li>
+        <li>Monitor dashboard + logs</li>
+      </ol>
+    </div>
+    <div class="card span-6">
+      <h3>For User</h3>
+      <ol>
+        <li>Call or place order</li>
+        <li>Receive invoice/payment link</li>
+        <li>Pay</li>
+        <li>Track shipment</li>
+        <li>Receive delivery</li>
+      </ol>
+    </div>
+    <div class="card span-12">
+      <h3>Safe Integration Example</h3>
+      <div class="sub">Signals → publish event → Autopilot rule → action.</div>
+      <div class="log"># 1) Publish an event (from any addon)
+publish_event_safe(event_key="storefront_order_paid", payload={"order_number":"SF-..."}, source="ecommerce_engine")
+
+# 2) Autopilot rule (admin-configured)
+event_key: storefront_order_paid
+actions: assign_courier, notify_customer, update_ledger</div>
+    </div>
+  </div>
+{% endblock %}
+

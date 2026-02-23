@@ -1,0 +1,7 @@
+{% extends "printer/_base_print.html" %}
+{% block print_body %}
+<div class="meta-grid">
+  <div class="meta-card"><div class="meta-label">Received From</div><div class="meta-value">{{ payer_name|default:'-' }}</div></div>
+  <div class="meta-card"><div class="meta-label">Method</div><div class="meta-value">{{ payment_method|default:'-' }}</div></div>
+</div>
+{% endblock %}

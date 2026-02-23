@@ -1,0 +1,33 @@
+{% extends "printer/_base_print.html" %}
+{% block print_body %}
+<div class="meta-grid">
+  <div class="meta-card">
+    <div class="meta-label">Return Against</div>
+    <div class="meta-value">{{ return_against|default:order_number|default:'-' }}</div>
+  </div>
+  <div class="meta-card">
+    <div class="meta-label">Refund Mode</div>
+    <div class="meta-value">{{ refund_mode|default:'-' }}</div>
+  </div>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Qty</th>
+      <th>Refund</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+    <tr>
+      <td>{{ item.name|default:'-' }}</td>
+      <td>{{ item.qty|default:1 }}</td>
+      <td>{{ item.amount|default:'0.00' }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3">No return items.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

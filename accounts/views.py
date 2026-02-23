@@ -14,6 +14,7 @@ from django.db.models import Case, When, F, FloatField
 from django.http import HttpResponseForbidden
 from django.urls import reverse
 from django.conf import settings
+from requests import request
 from .models import DailySummary
 from khataapp.models import Transaction
 from django.utils.timezone import now
@@ -200,7 +201,7 @@ def dashboard(request):
 
         invoice_total = Invoice.objects.filter(
             order__party=party
-        ).aggregate(total=Sum('amount'))['total'] or 0
+        ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
 
         payment_total = Payment.objects.filter(
             invoice__order__party=party
@@ -209,11 +210,13 @@ def dashboard(request):
         total_debit = invoice_total + party_cash_debit
         total_credit = payment_total + party_cash_credit
 
+        balance = total_debit - total_credit   # 👈 yaha balance define kiya
+
         party_cards.append({
             "party": party,
-            "total_debit": p_total_debit,
-            "total_credit": p_total_credit,
-            "balance": p_balance,
+            "total_debit": total_debit,     # ✅ correct variable
+            "total_credit": total_credit,   # ✅ correct variable
+            "balance": balance,             # ✅ correct variable
         })
 
     # ====

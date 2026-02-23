@@ -1,0 +1,14 @@
+{% extends "demo_center/base.html" %}
+{% block content %}
+  <div class="grid">
+    <div class="card span-12">
+      <h3>HR Demo Output</h3>
+      <div class="sub">Dummy attendance and payroll summary.</div>
+    </div>
+    <div class="card span-3"><h3>Employees Present</h3><div class="value">{{ state.hr.present }}</div></div>
+    <div class="card span-3"><h3>On Leave</h3><div class="value">{{ state.hr.on_leave }}</div></div>
+    <div class="card span-3"><h3>Late Entry</h3><div class="value">{{ state.hr.late }}</div></div>
+    <div class="card span-3"><h3>Salary Processed</h3><div class="value">₹{{ state.hr.salary_processed }}</div></div>
+  </div>
+{% endblock %}
+

@@ -7,10 +7,13 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from django.shortcuts import render
 from khataapp.views import submit_contact
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 # Import billing and commerce views for specific routes
 from billing import views as billing_views
 from commerce import views as commerce_views
+from pos.views import POSView
 
 def landing(request):
     return render(request, "core/landing.html")
@@ -25,8 +28,34 @@ def terms(request):
 urlpatterns = [
     # ---------------- Mobile APP ----------------
     path("api/", include("mobileapi.urls")),
+    path("api/", include("system_mode.urls")),
     path("api/whatsapp/order-inbox/", commerce_views.api_whatsapp_order_inbox, name="api_whatsapp_order_inbox"),
     path("api/orders/live-feed/", commerce_views.api_orders_live_feed, name="api_orders_live_feed"),
+
+    # ---------------- API Docs & Auth ----------------
+    path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs"),
+    path("api/redoc/", SpectacularRedocView.as_view(url_name="api-schema"), name="api-redoc"),
+    path("api/auth/token/", TokenObtainPairView.as_view(), name="jwt-token"),
+    path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="jwt-refresh"),
+
+    # ---------------- Universal SaaS APIs ----------------
+    path("api/v1/users/", include("users.urls")),
+    path("api/v1/pos/", include("pos.urls")),
+    path("api/v1/printers/", include("printer_config.urls")),
+    path("api/v1/scanners/", include("scanner_config.urls")),
+    path("api/v1/warehouses/", include("warehouse.urls")),
+    path("api/v1/products/", include("products.urls")),
+    path("api/v1/orders/", include("orders.urls")),
+    path("api/v1/commission/", include("commission.urls")),
+    path("api/v1/delivery/", include("delivery.urls")),
+    path("api/v1/payments/", include("payments.urls")),
+    path("api/v1/analytics/", include("analytics.urls")),
+    path("api/v1/ai/", include("ai_engine.urls")),
+    path("api/v1/realtime/", include("realtime.urls")),
+
+    # ---------------- POS UI ----------------
+    path("pos/ui/", POSView.as_view(), name="pos-ui"),
     # ---------------- Admin Addons (must come before admin.site.urls) ----------------
     path("superadmin/chatbot/", include("chatbot.urls")),
     # ---------------- Admin ----------------

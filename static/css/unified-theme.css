@@ -1,0 +1,67 @@
+:root {
+  --uc-bg: #f4f7fb;
+  --uc-surface: #ffffff;
+  --uc-border: #d9e2ec;
+  --uc-text: #12263a;
+  --uc-muted: #5f6c7b;
+  --uc-brand: #0b6bcb;
+  --uc-brand-2: #0f9d7a;
+  --uc-danger: #c03b3b;
+  --uc-warning: #b7791f;
+}
+
+body { background: var(--uc-bg); color: var(--uc-text); }
+.main-content { background: linear-gradient(180deg, #f8fbff, #eef3f9); }
+.topbar, .footer { background: var(--uc-surface); border: 1px solid var(--uc-border); border-radius: 12px; }
+.page-content > .container, .page-content > .container-fluid { max-width: 1400px; }
+
+.uc-card {
+  background: var(--uc-surface);
+  border: 1px solid var(--uc-border);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(18, 38, 58, 0.06);
+}
+
+.uc-title { font-weight: 800; letter-spacing: 0.2px; }
+.uc-subtitle { color: var(--uc-muted); font-size: 13px; }
+
+.uc-btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.uc-btn-primary { background: var(--uc-brand); color: #fff; }
+.uc-btn-success { background: var(--uc-brand-2); color: #fff; }
+.uc-btn-ghost { background: #fff; color: var(--uc-brand); border: 1px solid var(--uc-brand); }
+.uc-btn-danger { background: var(--uc-danger); color: #fff; }
+
+.uc-pill {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #edf2f7;
+  color: #2d3748;
+}
+.uc-pill.ok { background: #def7ec; color: #03543f; }
+.uc-pill.warn { background: #fef3c7; color: #92400e; }
+.uc-pill.bad { background: #fee2e2; color: #991b1b; }
+
+.uc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.uc-table th, .uc-table td { border-bottom: 1px solid #edf2f7; padding: 10px; text-align: left; }
+.uc-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--uc-muted); }
+
+.uc-grid { display: grid; gap: 12px; }
+.uc-grid-2 { grid-template-columns: 1fr 1fr; }
+.uc-grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.uc-grid-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+
+@media (max-width: 991px) {
+  .uc-grid-2, .uc-grid-3, .uc-grid-4 { grid-template-columns: 1fr; }
+}

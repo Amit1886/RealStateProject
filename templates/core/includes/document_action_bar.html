@@ -1,0 +1,80 @@
+<div class="doc-action-bar" data-doc-action-bar>
+  <button type="button" class="doc-btn" data-doc-act="print"><i class="bi bi-printer"></i> Print</button>
+  <button type="button" class="doc-btn" data-doc-act="pdf"><i class="bi bi-filetype-pdf"></i> PDF</button>
+  <button type="button" class="doc-btn" data-doc-act="share"><i class="bi bi-share"></i> Share</button>
+  <button type="button" class="doc-btn" data-doc-act="email"><i class="bi bi-envelope"></i> Email</button>
+  <button type="button" class="doc-btn" data-doc-act="sms"><i class="bi bi-chat-dots"></i> SMS</button>
+  <button type="button" class="doc-btn" data-doc-act="wa"><i class="bi bi-whatsapp"></i> WhatsApp</button>
+  <button type="button" class="doc-btn" data-doc-act="scan"><i class="bi bi-upc-scan"></i> Scan</button>
+</div>
+<script>
+  (function () {
+    function notify(message, type) {
+      window.dispatchEvent(
+        new CustomEvent('ui:toast', {
+          detail: { message: message, type: type || 'info' }
+        })
+      );
+    }
+
+    if (!window.__docActionHandlerBound) {
+      document.addEventListener('click', async function (event) {
+        const btn = event.target.closest('[data-doc-act]');
+        if (!btn) return;
+
+        const action = btn.getAttribute('data-doc-act');
+        const pageUrl = window.location.href;
+        const title = document.title || 'Document';
+
+        if (action === 'print' || action === 'pdf') {
+          window.print();
+          notify(action === 'pdf' ? 'Print dialog opened for PDF save.' : 'Print dialog opened.', 'success');
+          return;
+        }
+
+        if (action === 'email') {
+          window.location.href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(pageUrl);
+          return;
+        }
+
+        if (action === 'sms') {
+          window.location.href = 'sms:?&body=' + encodeURIComponent(title + ' - ' + pageUrl);
+          return;
+        }
+
+        if (action === 'wa') {
+          window.open('https://wa.me/?text=' + encodeURIComponent(title + ' - ' + pageUrl), '_blank');
+          return;
+        }
+
+        if (action === 'scan') {
+          window.dispatchEvent(new CustomEvent('global:scan:trigger'));
+          notify('Scanner trigger sent.', 'info');
+          return;
+        }
+
+        if (action === 'share') {
+          if (navigator.share) {
+            try {
+              await navigator.share({ title: title, url: pageUrl });
+            } catch (err) {
+              // ignored
+            }
+            return;
+          }
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            try {
+              await navigator.clipboard.writeText(pageUrl);
+              notify('Link copied to clipboard.', 'success');
+            } catch (err) {
+              notify('Unable to copy link.', 'error');
+            }
+          }
+        }
+      });
+
+      window.__docActionHandlerBound = true;
+    }
+  })();
+</script>

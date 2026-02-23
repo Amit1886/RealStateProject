@@ -1,4 +1,11 @@
-document.addEventListener("DOMContentLoaded", () => {
+(() => {
+  const isPcBusy =
+    (window.__ADD_ORDER_PC_BUSY__ === true) ||
+    (document.body.classList.contains("mode-pc") && document.querySelector(".busy-order-pc"));
+
+  if (isPcBusy) return;
+
+  document.addEventListener("DOMContentLoaded", () => {
 
     // Global search functionality
     const globalSearchInput = document.createElement('input');
@@ -216,4 +223,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* INIT FIRST ROW */
     setupProductRow(document.querySelector(".item-row"));
-});
+  });
+})();

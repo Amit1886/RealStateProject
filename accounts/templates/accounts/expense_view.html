@@ -1,0 +1,56 @@
+{% extends "accounts/base.html" %}
+
+{% block content %}
+<div class="container-fluid py-2 unified-screen busy-unified-add">
+  <div class="unified-card">
+    <div class="unified-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h3>Expense View</h3>
+        <div class="unified-subtitle">Standard expense detail page with summary + actions</div>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'accounts:expense_edit' expense.id %}" class="btn unified-btn-secondary">Edit</a>
+        <a href="{% url 'accounts:expense_delete' expense.id %}" class="btn btn-danger" onclick="return confirm('Delete expense?')">Delete</a>
+      </div>
+    </div>
+
+    <div class="unified-body">
+      <div class="report-summary-grid">
+        <div class="report-summary-card">
+          <div class="label">Expense No</div>
+          <div class="value">{{ expense.expense_number }}</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="label">Date</div>
+          <div class="value">{{ expense.expense_date }}</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="label">Amount</div>
+          <div class="value">{{ expense.amount_paid }}</div>
+        </div>
+      </div>
+
+      <div class="unified-grid cols-2">
+        <div class="unified-section">
+          <label class="unified-label">Category</label>
+          <div>{{ expense.category|default:'-' }}</div>
+        </div>
+        <div class="unified-section">
+          <label class="unified-label">Created At</label>
+          <div>{{ expense.created_at }}</div>
+        </div>
+      </div>
+
+      <div class="unified-section">
+        <label class="unified-label">Description</label>
+        <div>{{ expense.description|default:'-' }}</div>
+      </div>
+
+      <div class="unified-section d-flex justify-content-end gap-2">
+        <a href="{% url 'accounts:expense_list' %}" class="btn unified-btn-outline">Back to List</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "demo_center/base.html" %}
+{% block content %}
+  <div class="grid">
+    <div class="card span-12">
+      <h3>Autopilot Engine Log View (Demo)</h3>
+      <div class="sub">Example automation output logs.</div>
+    </div>
+    <div class="card span-12">
+      <div class="log">{% for line in state.autopilot_logs %}{{ line }}
+{% endfor %}</div>
+    </div>
+  </div>
+{% endblock %}
+

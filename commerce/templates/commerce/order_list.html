@@ -104,9 +104,9 @@
               <td><span class="font-semibold">{{ order.party.name }}</span></td>
 
               <td>
-                {% if order.order_type == "SALE" %}
+                {% if order.order_type|upper == "SALE" %}
                   <span class="badge" style="background-color: rgba(16, 185, 129, 0.1); color: var(--success-color);"> Sale</span>
-                {% elif order.order_type == "PURCHASE" %}
+                {% elif order.order_type|upper == "PURCHASE" %}
                   <span class="badge" style="background-color: rgba(245, 158, 11, 0.1); color: var(--warning-color);"> Purchase</span>
                 {% else %}
                   <span class="badge" style="background-color: rgba(107, 114, 128, 0.1); color: #6b7280;">{{ order.order_type }}</span>
@@ -163,7 +163,7 @@
                    class="btn btn-sm btn-warning">Hold</a>
               {% endif %}
 
-              {% if order.status == "accepted" and not order.invoice and order.order_type == "SALE" %}
+              {% if order.status == "accepted" and not order.invoice and order.order_type|upper == "SALE" %}
                 <a href="{% url 'commerce:sales_voucher_create' order.id %}"
                    class="btn btn-sm btn-warning">
                   Create Voucher

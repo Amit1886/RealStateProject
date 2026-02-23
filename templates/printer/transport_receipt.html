@@ -1,0 +1,14 @@
+{% extends "printer/_base_print.html" %}
+{% block print_body %}
+<table>
+  <thead><tr><th>Transporter</th><th>Vehicle No</th><th>From</th><th>To</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>{{ transporter_name|default:'-' }}</td>
+      <td>{{ vehicle_number|default:'-' }}</td>
+      <td>{{ from_location|default:'-' }}</td>
+      <td>{{ to_location|default:'-' }}</td>
+    </tr>
+  </tbody>
+</table>
+{% endblock %}
