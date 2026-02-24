@@ -5,9 +5,9 @@
 <link rel="stylesheet" href="{% static 'css/add_order.css' %}">
 <link rel="stylesheet" href="{% static 'css/add_order_busy.css' %}">
 <script src="{% static 'libs/html5-qrcode.min.js' %}"></script>
-<script src="{% static 'js/add_order_pc_busy.js' %}" defer></script>
-<script src="{% static 'js/add_order_enhanced.js' %}" defer></script>
-<script src="{% static 'js/add_order_search.js' %}" defer></script>
+<script src="{% static 'js/add_order_pc_busy.js' %}?v=20260223" defer></script>
+<script src="{% static 'js/add_order_enhanced.js' %}?v=20260223" defer></script>
+<script src="{% static 'js/add_order_search.js' %}?v=20260223" defer></script>
 
 <!-- KEYBOARD SHORTCUTS HELP MODAL -->
 <div id="keyboardHelp" class="keyboard-help-modal">
@@ -179,8 +179,8 @@
       </div>
 
       <!-- STEP 2: Product Selection -->
-      <div class="card-body step-content" id="step-2" style="display: none;">
-        <div class="step-header text-center mb-4">
+      <div class="card-body step-content" id="step-2" style="display: none; padding: 0.5rem 1rem;">
+        <div class="step-header text-center mb-2" style="margin-bottom: 0.5rem !important;">
 
           <h4 class="fw-bold text-success">📦 Step 2: Add Products</h4>
 
@@ -188,7 +188,7 @@
         </div>
 
         <!-- ITEMS TABLE -->
-        <div class="table-responsive">
+        <div class="table-responsive" style="margin: 0.5rem 0;">
           <table class="table table-bordered align-middle shadow-lg" id="orderTable">
             <thead class="table-primary text-center fw-bold">
               <tr>
@@ -255,18 +255,58 @@
           </table>
         </div>
 
-        <div class="text-center mb-4">
+        <div class="text-center" style="margin: 0.5rem 0;">
           <button type="button" id="addRow" class="btn btn-success btn-xl fw-bold px-5 py-3 shadow-lg">
-
             ➕ Add Product Row (F4)
-
           </button>
         </div>
 
+        <!-- Sundry/Miscellaneous Section in blank area - shown inline -->
+        <div class="sundry-section-inline position-relative" style="margin: 0.5rem 0;">
+          <div id="sundryPopup" class="card border-secondary sundry-popup" style="position:relative; margin-top:0.5rem;">
+            <div class="card-header bg-secondary text-white fw-bold">🧾 Bill Sundry / Miscellaneous Charges</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label fw-bold" for="sundryName">Sundry Description (Tab/F8)</label>
+                <input type="text" id="sundryName" class="form-control fw-bold" placeholder="e.g., Delivery, Packing, Labour..." tabindex="1" aria-label="Sundry description">
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold" for="sundryAmount">Amount</label>
+                <input type="number" id="sundryAmount" class="form-control fw-bold" step="0.01" placeholder="0.00" tabindex="2" aria-label="Sundry amount">
+              </div>
+              <div class="d-flex justify-content-end gap-2">
+                <button type="button" id="applySundry" class="btn btn-primary" tabindex="3" aria-label="Add Sundry (Enter)">Add Sundry (Enter)</button>
+                <button type="button" id="closeSundry" class="btn btn-outline-secondary" tabindex="4" aria-label="Clear Sundry fields (Esc)">Clear (Esc)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- List of Added Sundries -->
+          <div id="sundryListContainer" class="card card-sm border-success mt-2" style="display:none;">
+            <div class="card-header bg-success bg-opacity-10 fw-bold text-success">
+              💚 Added Charges
+            </div>
+            <div class="card-body p-2">
+              <table class="table table-sm mb-0">
+                <thead>
+                  <tr>
+                    <th class="fw-bold">Description</th>
+                    <th class="fw-bold text-end">Amount</th>
+                    <th class="fw-bold text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="sundryListBody">
+                  <!-- Sundry items added here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <!-- LIVE SUMMARY -->
-        <div class="row justify-content-center">
-          <div class="col-md-6">
-            <div class="card summary-card border-primary shadow-lg">
+        <div class="row justify-content-center" style="margin-top: 0.5rem !important; margin-bottom: 0;">
+          <div class="col-md-6" style="padding: 0;">
+            <div class="card summary-card border-primary shadow-lg" style="margin: 0;">
               <div class="card-header bg-primary text-white text-center fw-bold">
 
                 💰 Live Order Summary
@@ -453,3 +493,19 @@
 </div>
 
 {% endblock %}
+
+  <script>
+    // Quick diagnostics to confirm updated scripts are loaded in browser.
+    try {
+      console.log('DIAG: showKeyboardHelp =>', typeof window.showKeyboardHelp);
+      console.log('DIAG: add_order_enhanced script present =>', !!document.querySelector("script[src*='add_order_enhanced.js']"));
+      console.log('DIAG: add_order_pc_busy script present =>', !!document.querySelector("script[src*='add_order_pc_busy.js']"));
+      console.log('DIAG: __ADD_ORDER_PC_BUSY__ =>', window.__ADD_ORDER_PC_BUSY__);
+
+      document.addEventListener('keydown', function(e){
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'k') {
+          alert('DIAG:\nshowKeyboardHelp=' + (typeof window.showKeyboardHelp) + '\n__ADD_ORDER_PC_BUSY__=' + window.__ADD_ORDER_PC_BUSY__);
+        }
+      });
+    } catch(err){ console.error('DIAG script error', err); }
+  </script>

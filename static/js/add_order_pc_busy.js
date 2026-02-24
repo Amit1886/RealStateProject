@@ -697,9 +697,19 @@
     priceInput.value = Number.isFinite(price) ? price.toFixed(2) : "";
   }
 
-  function focusNextRowProduct(row) {
+  function focusNextRowProduct(row, skipAutoAdd = false) {
     let next = row.nextElementSibling;
     if (!next) {
+      // If skipAutoAdd is true, move focus to next step button instead of adding a row
+      if (skipAutoAdd) {
+        const nextStepBtn = document.getElementById("nextStep");
+        if (nextStepBtn) {
+          nextStepBtn.scrollIntoView?.({ block: "nearest" });
+          nextStepBtn.focus();
+        }
+        return;
+      }
+      
       const tbody = document.getElementById("orderBody");
       const count = tbody?.querySelectorAll?.("tr.item-row")?.length || 0;
       if (count) ensureRows(count + 1);
@@ -862,9 +872,9 @@
       const stored1 = localStorage.getItem(PREVIEW_KEY_1) || "";
       const stored2 = localStorage.getItem(PREVIEW_KEY_2) || "";
 
-      // If user hasn't uploaded, show bundled defaults (place images here if needed).
-      if (img1) img1.src = stored1 || "/static/img/order_side_1.png";
-      if (img2) img2.src = stored2 || "/static/img/order_side_2.png";
+      // If user hasn't uploaded, show default (images removed - use placeholder if needed)
+      if (img1) img1.src = stored1 || "";
+      if (img2) img2.src = stored2 || "";
 
       img1?.addEventListener?.("error", () => (img1.src = stored1 || ""));
       img2?.addEventListener?.("error", () => (img2.src = stored2 || ""));
@@ -2023,6 +2033,43 @@
     modal.style.display = "none";
   }
 
+  function renderSundryList() {
+    const tbody = document.getElementById("sundryListBody");
+    const container = document.getElementById("sundryListContainer");
+    if (!tbody || !container) return;
+
+    const lines = normalizeBillSundryLines(billSundryLines);
+    tbody.innerHTML = "";
+
+    if (lines.length === 0) {
+      container.style.display = "none";
+      return;
+    }
+
+    container.style.display = "block";
+
+    lines.forEach((line, index) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="fw-bold">${escapeHtml(line.name)}</td>
+        <td class="text-end fw-bold">₹ ${(Number.isFinite(line.amount) ? line.amount : 0).toFixed(2)}</td>
+        <td class="text-center">
+          <button type="button" class="btn btn-sm btn-danger remove-sundry-btn" data-index="${index}" aria-label="Delete ${escapeHtml(line.name)}" title="Delete (D)">✕</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+
+      const removeBtn = tr.querySelector(".remove-sundry-btn");
+      removeBtn.addEventListener("click", () => {
+        billSundryLines.splice(index, 1);
+        persistBillSundryToStorage();
+        syncBillSundryHiddenInput();
+        calculateTotals();
+        renderSundryList();
+      });
+    });
+  }
+
   function installKeyboardShortcuts() {
     document.addEventListener("keydown", (e) => {
       const modalOpen = document.getElementById("pcDiscountModal")?.style?.display === "flex";
@@ -2174,6 +2221,15 @@
       if (e.key === "F9") {
         e.preventDefault();
         handleAction("discount");
+      }
+
+      // Delete key on focused sundry button
+      if (e.key === "Delete" || (e.key === "d" && !e.ctrlKey && !e.altKey && !e.shiftKey && document.activeElement?.classList?.contains("remove-sundry-btn"))) {
+        const focusedBtn = document.activeElement;
+        if (focusedBtn?.classList?.contains("remove-sundry-btn")) {
+          e.preventDefault();
+          focusedBtn.click();
+        }
       }
       if (e.key === "Escape") {
         // Busy-like behavior: clear field
@@ -2468,7 +2524,17 @@
         if (e.key === "Enter" || e.key === "Tab") {
           e.preventDefault();
           e.stopPropagation();
-          focusNextRowProduct(row);
+          
+          // Check if this is the last row with data
+          const tbody = document.getElementById("orderBody");
+          const rows = Array.from(tbody?.querySelectorAll?.("tr.item-row") || []);
+          const rowIndex = rows.indexOf(row);
+          const lastRowWithData = rows.findIndex((r, idx) => idx > rowIndex && !r.querySelector(".product").value) - 1;
+          const isLastPopulated = lastRowWithData === -1 && rowIndex === rows.findIndex((r, idx) => idx >= rowIndex && r.querySelector(".product").value === "");
+          
+          // If this is effectively the last data row, don't auto-add, go to next step
+          const hasEmptyRowAfter = rows.some((r, idx) => idx > rowIndex && !r.querySelector(".product").value);
+          focusNextRowProduct(row, !hasEmptyRowAfter);
           return;
         }
       }
@@ -2508,6 +2574,16 @@
 
     window.__ADD_ORDER_PC_BUSY__ = true;
 
+    // Ensure helper functions are globally available
+    window.showKeyboardHelp = window.showKeyboardHelp || function() {
+        const modal = document.getElementById('keyboardHelp');
+        if (modal) modal.style.display = 'flex';
+    };
+    window.hideKeyboardHelp = window.hideKeyboardHelp || function() {
+        const modal = document.getElementById('keyboardHelp');
+        if (modal) modal.style.display = 'none';
+    };
+
     // Template sometimes has duplicated IDs due to legacy markup; normalize in PC mode.
     keepSingleElementById("orderType");
     keepSingleElementById("partySearch");
@@ -2519,6 +2595,75 @@
     createPrintModal();
     loadBillSundryFromStorage();
     syncBillSundryHiddenInput();
+    renderSundryList();
+
+    // Setup inline sundry form handlers
+    const applySundryBtn = document.getElementById("applySundry");
+    const closeSundryBtn = document.getElementById("closeSundry");
+    const sundryNameInput = document.getElementById("sundryName");
+    const sundryAmountInput = document.getElementById("sundryAmount");
+
+    if (applySundryBtn) {
+      applySundryBtn.addEventListener("click", () => {
+        const name = (sundryNameInput?.value || "").trim();
+        const amount = parseMoney(sundryAmountInput?.value);
+        if (name && amount > 0) {
+          billSundryLines.push({ name, amount });
+          persistBillSundryToStorage();
+          syncBillSundryHiddenInput();
+          sundryNameInput.value = "";
+          sundryAmountInput.value = "";
+          calculateTotals();
+          renderSundryList();
+          sundryNameInput.focus();
+          sundryNameInput.scrollIntoView?.({ block: "nearest" });
+        } else {
+          alert("Please enter a valid sundry description and amount.");
+        }
+      });
+    }
+
+    if (closeSundryBtn) {
+      closeSundryBtn.addEventListener("click", () => {
+        sundryNameInput.value = "";
+        sundryAmountInput.value = "";
+        sundryNameInput.focus();
+      });
+    }
+
+    // Keyboard handlers for sundry form
+    if (sundryNameInput) {
+      sundryNameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Tab" && !e.shiftKey) {
+          e.preventDefault();
+          sundryAmountInput?.focus();
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          applySundryBtn?.click();
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          closeSundryBtn?.click();
+        }
+      });
+    }
+
+    if (sundryAmountInput) {
+      sundryAmountInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          applySundryBtn?.click();
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          closeSundryBtn?.click();
+        } else if (e.key === "Shift" && e.key === "Tab") {
+          e.preventDefault();
+          sundryNameInput?.focus();
+        } else if (e.key === "Tab") {
+          e.preventDefault();
+          document.getElementById("nextStep")?.focus();
+        }
+      });
+    }
 
     // Modal live calculations
     document.addEventListener("input", (e) => {
