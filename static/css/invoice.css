@@ -1,0 +1,28 @@
+.invoice-card{
+  max-width: 820px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 10px 25px rgba(0,0,0,.06);
+}
+
+.section-title{
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.btn-gradient{
+  display: inline-block;
+  border: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  background: linear-gradient(90deg,#111827,#2563eb);
+}
+
+.btn-gradient:hover{
+  filter: brightness(1.05);
+}

@@ -1,0 +1,35 @@
+{% extends "core/base_ui.html" %}
+{% load static %}
+
+{% block extra_css %}
+  {% with resolved_system_mode_css|default:'desktop' as mode_css %}
+    {% if mode_css != 'mobile' %}
+      <link rel="stylesheet" href="{% static 'css/add_order.css' %}">
+      <link rel="stylesheet" href="{% static 'css/add_order_busy.css' %}">
+    {% endif %}
+  {% endwith %}
+  {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid py-4 unified-screen busy-unified-add pc-universal-shell">
+    <div class="card shadow-lg border-0">
+      <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center flex-wrap">
+        <div class="d-flex align-items-center gap-3">
+          <h2 class="mb-0 fw-bold text-shadow">
+            {% block pc_title %}{% block title %}{% endblock %}{% endblock %}
+          </h2>
+          {% block pc_badges %}{% endblock %}
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          {% block pc_actions %}{% endblock %}
+        </div>
+      </div>
+      <div class="card-body">
+        {% block pc_content %}{% endblock %}
+      </div>
+      {% block pc_footer %}{% endblock %}
+    </div>
+  </div>
+{% endblock %}
+
