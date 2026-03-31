@@ -1,0 +1,64 @@
+from __future__ import annotations
+
+import logging
+import os
+
+from celery import shared_task
+from django.utils import timezone
+
+from leads.models import Lead
+from voice.models import VoiceCall, VoiceCallTurn
+from voice.services import _execute_provider_call, apply_voice_qualification, schedule_inactive_lead_calls
+
+logger = logging.getLogger(__name__)
+
+
+@shared_task(bind=True, max_retries=2, default_retry_delay=15)
+def dispatch_voice_call(self, call_id: int):
+    try:
+        call = VoiceCall.objects.select_related("lead").get(id=call_id)
+    except VoiceCall.DoesNotExist:
+        return
+
+    if call.status not in {VoiceCall.Status.PENDING, VoiceCall.Status.DIALING}:
+        return
+
+    call.mark_started()
+    _execute_provider_call(call)
+
+
+@shared_task
+def summarize_voice_call(call_id: int, transcription: str = "", recording_url: str = ""):
+    """
+    Store AI-generated summary after a voice provider posts transcription.
+    """
+    try:
+        call = VoiceCall.objects.get(id=call_id)
+    except VoiceCall.DoesNotExist:
+        return
+
+    if recording_url:
+        call.recording_url = recording_url
+    if transcription and not call.summary:
+        call.summary = transcription[:2000]
+    call.status = call.status or VoiceCall.Status.COMPLETED
+    call.completed_at = call.completed_at or timezone.now()
+    call.save(update_fields=["summary", "recording_url", "status", "completed_at", "updated_at"])
+
+
+@shared_task
+def qualify_voice_call(call_id: int, transcript: str = "", responses=None, recording_url: str = ""):
+    try:
+        call = VoiceCall.objects.get(id=call_id)
+    except VoiceCall.DoesNotExist:
+        return False
+    if transcript:
+        for idx, line in enumerate([chunk.strip() for chunk in transcript.splitlines() if chunk.strip()], start=1):
+            VoiceCallTurn.objects.get_or_create(call=call, sequence=idx, defaults={"speaker": VoiceCallTurn.Speaker.LEAD, "message": line})
+    apply_voice_qualification(call, transcript=transcript, responses=responses or {}, recording_url=recording_url)
+    return True
+
+
+@shared_task
+def schedule_inactive_lead_calls_task(days: int = 2):
+    return schedule_inactive_lead_calls(days=days)

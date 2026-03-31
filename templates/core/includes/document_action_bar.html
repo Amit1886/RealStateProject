@@ -1,4 +1,12 @@
 <div class="doc-action-bar" data-doc-action-bar>
+  {% if receipt_reference_type and receipt_reference_id %}
+    <a class="doc-btn" href="{% url 'ledger:receipt' %}?reference_type={{ receipt_reference_type|urlencode }}&reference_id={{ receipt_reference_id }}{% if receipt_voucher_type %}&voucher_type={{ receipt_voucher_type|urlencode }}{% endif %}{% if receipt_kind %}&kind={{ receipt_kind|urlencode }}{% endif %}" target="_blank" rel="noopener">
+      <i class="bi bi-receipt"></i> Receipt
+    </a>
+    <a class="doc-btn" href="{% url 'ledger:receipt' %}?reference_type={{ receipt_reference_type|urlencode }}&reference_id={{ receipt_reference_id }}{% if receipt_voucher_type %}&voucher_type={{ receipt_voucher_type|urlencode }}{% endif %}{% if receipt_kind %}&kind={{ receipt_kind|urlencode }}{% endif %}&format=pdf" target="_blank" rel="noopener">
+      <i class="bi bi-filetype-pdf"></i> Receipt PDF
+    </a>
+  {% endif %}
   <button type="button" class="doc-btn" data-doc-act="print"><i class="bi bi-printer"></i> Print</button>
   <button type="button" class="doc-btn" data-doc-act="pdf"><i class="bi bi-filetype-pdf"></i> PDF</button>
   <button type="button" class="doc-btn" data-doc-act="share"><i class="bi bi-share"></i> Share</button>

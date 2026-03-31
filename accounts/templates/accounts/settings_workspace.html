@@ -1,0 +1,837 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block title %}Settings Workspace{% endblock %}
+
+{% block extra_css %}
+  {{ block.super }}
+  <style>
+    :root {
+      --sw-bg: #f4f7fb;
+      --sw-card: rgba(255,255,255,.96);
+      --sw-soft: #f8fbff;
+      --sw-border: rgba(148,163,184,.22);
+      --sw-text: #0f172a;
+      --sw-muted: #64748b;
+      --sw-accent: #0f766e;
+      --sw-accent-2: #1d4ed8;
+      --sw-accent-soft: rgba(15,118,110,.1);
+      --sw-danger: #dc2626;
+      --sw-shadow: 0 20px 48px rgba(15,23,42,.08);
+    }
+    body.dark {
+      --sw-bg: #08111f;
+      --sw-card: rgba(15,23,42,.95);
+      --sw-soft: rgba(15,23,42,.82);
+      --sw-border: rgba(148,163,184,.16);
+      --sw-text: #e2e8f0;
+      --sw-muted: #94a3b8;
+      --sw-accent: #34d399;
+      --sw-accent-2: #60a5fa;
+      --sw-accent-soft: rgba(52,211,153,.14);
+      --sw-shadow: 0 20px 48px rgba(2,6,23,.3);
+    }
+    html { scroll-behavior:smooth; }
+    .sw-page, .sw-main, .sw-side, .sw-list, .sw-stats, .sw-layout { display:grid; gap:18px; }
+    .sw-page { color: var(--sw-text); }
+    .sw-hero {
+      display:grid; grid-template-columns:minmax(0,1.45fr) minmax(300px,.95fr); gap:18px; padding:26px;
+      border-radius:30px; color:#fff; overflow:hidden; position:relative;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.18), transparent 34%),
+        linear-gradient(135deg, #082f49 0%, #115e59 48%, #1d4ed8 100%);
+      box-shadow: 0 28px 60px rgba(15,23,42,.18);
+    }
+    .sw-hero::after {
+      content:""; position:absolute; right:-60px; bottom:-80px; width:220px; height:220px;
+      border-radius:50%; background:rgba(255,255,255,.08);
+    }
+    .sw-kicker { margin:0 0 10px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.72); font-weight:800; }
+    .sw-title { margin:0; font-size:38px; line-height:1.02; letter-spacing:-.05em; font-weight:900; }
+    .sw-copy { margin:12px 0 0; max-width:760px; color:rgba(248,250,252,.84); font-size:14px; line-height:1.7; }
+    .sw-chip-row, .sw-action-row, .sw-inline-actions { display:flex; flex-wrap:wrap; gap:10px; }
+    .sw-chip-row { margin-top:16px; }
+    .sw-chip, .sw-pill {
+      display:inline-flex; align-items:center; gap:8px; min-height:38px; padding:8px 14px; border-radius:999px;
+      font-size:12px; font-weight:800;
+    }
+    .sw-chip { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.14); color:#fff; }
+    .sw-pill { background:var(--sw-accent-soft); color:var(--sw-accent); }
+    .sw-action {
+      display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:10px 16px;
+      border-radius:999px; text-decoration:none; font-size:13px; font-weight:800;
+      transition:transform .22s ease, box-shadow .22s ease, background-color .22s ease, border-color .22s ease, color .22s ease;
+    }
+    .sw-action:hover, .sw-btn:hover { transform:translateY(-2px); }
+    .sw-action.primary { background:#fff; color:#0f172a; box-shadow:0 10px 24px rgba(15,23,42,.18); }
+    .sw-action.secondary { background:rgba(255,255,255,.08); color:#fff; border:1px solid rgba(255,255,255,.14); }
+    .sw-profile-box {
+      position:relative; z-index:1; display:grid; gap:14px; padding:18px; border-radius:24px;
+      background:rgba(9,16,30,.24); border:1px solid rgba(255,255,255,.1); backdrop-filter:blur(10px);
+    }
+    .sw-profile-head { display:grid; grid-template-columns:72px minmax(0,1fr); gap:14px; align-items:center; }
+    .sw-avatar {
+      width:72px; height:72px; border-radius:22px; overflow:hidden; display:flex; align-items:center; justify-content:center;
+      background:linear-gradient(135deg, rgba(255,255,255,.24), rgba(191,219,254,.28));
+    }
+    .sw-avatar img { width:100%; height:100%; object-fit:cover; }
+    .sw-avatar i { font-size:28px; }
+    .sw-profile-head strong { display:block; font-size:22px; line-height:1.08; }
+    .sw-profile-head span { display:block; margin-top:6px; color:rgba(248,250,252,.74); font-size:13px; }
+    .sw-mini-grid, .sw-status-grid, .sw-capability-grid, .sw-form-grid, .sw-quick-grid, .sw-service-grid { display:grid; gap:12px; grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .sw-mini-card, .sw-status-item, .sw-capability-item, .sw-service-item {
+      padding:14px; border-radius:18px; background:var(--sw-soft); border:1px solid var(--sw-border);
+    }
+    .sw-mini-card { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.12); }
+    .sw-mini-card span, .sw-status-item span, .sw-capability-item span, .sw-service-item span {
+      display:block; font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--sw-muted); font-weight:800;
+    }
+    .sw-mini-card span { color:rgba(248,250,252,.66); }
+    .sw-mini-card strong, .sw-status-item strong, .sw-capability-item strong, .sw-service-item strong {
+      display:block; margin-top:8px; font-size:20px; line-height:1.1;
+    }
+    .sw-mini-card strong { color:#fff; font-size:24px; }
+    .sw-mini-card small, .sw-status-item small, .sw-capability-item small, .sw-service-item small {
+      display:block; margin-top:8px; color:var(--sw-muted); font-size:12px; line-height:1.55;
+    }
+    .sw-mini-card small { color:rgba(248,250,252,.72); }
+    .sw-nav { display:flex; flex-wrap:wrap; gap:10px; }
+    .sw-nav a {
+      display:inline-flex; align-items:center; padding:8px 14px; border-radius:999px; text-decoration:none;
+      color:var(--sw-text); background:var(--sw-card); border:1px solid var(--sw-border); font-size:12px; font-weight:800;
+      box-shadow:0 10px 22px rgba(15,23,42,.04);
+    }
+    .sw-nav a:hover { color:var(--sw-accent); border-color:rgba(15,118,110,.26); }
+    .sw-stats { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .sw-stat, .sw-card {
+      background:var(--sw-card); border:1px solid var(--sw-border); border-radius:24px; box-shadow:var(--sw-shadow);
+      transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+    .sw-stat:hover, .sw-card:hover, .sw-quick-card:hover, .sw-advanced-card:hover, .sw-mini-card:hover, .sw-status-item:hover, .sw-capability-item:hover, .sw-service-item:hover {
+      transform:translateY(-2px);
+      box-shadow:0 24px 54px rgba(15,23,42,.12);
+    }
+    .sw-stat { padding:18px; }
+    .sw-stat span { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--sw-muted); font-weight:800; }
+    .sw-stat strong { display:block; margin-top:8px; font-size:32px; line-height:1; }
+    .sw-stat small { display:block; margin-top:10px; color:var(--sw-muted); font-size:12px; line-height:1.55; }
+    .sw-layout { grid-template-columns:minmax(0,1.45fr) minmax(320px,.95fr); align-items:start; }
+    .sw-card { padding:20px; }
+    .sw-head { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:16px; }
+    .sw-head h2, .sw-head h3 { margin:0; font-size:24px; line-height:1.08; letter-spacing:-.03em; }
+    .sw-head p { margin:8px 0 0; color:var(--sw-muted); font-size:13px; line-height:1.6; }
+    .sw-field { display:grid; gap:7px; min-width:0; }
+    .sw-field.full { grid-column:1 / -1; }
+    .sw-field label { font-size:12px; font-weight:800; }
+    .sw-field input, .sw-field select, .sw-field textarea, .sw-search,
+    .sw-setting-control input, .sw-setting-control select, .sw-setting-control textarea, .sw-share-input {
+      width:100%; min-height:48px; padding:12px 14px; box-sizing:border-box; border-radius:16px;
+      border:1px solid rgba(148,163,184,.28); background:var(--sw-soft); color:var(--sw-text); font-size:14px;
+      transition:border-color .22s ease, box-shadow .22s ease, transform .22s ease, background-color .22s ease;
+    }
+    .sw-field textarea, .sw-setting-control textarea { min-height:108px; resize:vertical; }
+    .sw-field input:focus, .sw-field select:focus, .sw-field textarea:focus,
+    .sw-search:focus, .sw-setting-control input:focus, .sw-setting-control select:focus, .sw-setting-control textarea:focus {
+      outline:none; border-color:rgba(15,118,110,.55); box-shadow:0 0 0 4px rgba(15,118,110,.1);
+    }
+    .sw-hint { font-size:12px; color:var(--sw-muted); line-height:1.55; }
+    .sw-error { font-size:12px; color:var(--sw-danger); line-height:1.5; }
+    .sw-form-errors {
+      margin-bottom:14px; padding:12px 14px; border-radius:16px;
+      background:rgba(220,38,38,.08); border:1px solid rgba(220,38,38,.16); color:#b91c1c; font-size:13px;
+    }
+    .sw-footer {
+      display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:16px; padding-top:16px; border-top:1px solid var(--sw-border);
+    }
+    .sw-btn {
+      display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:10px 16px; border-radius:999px;
+      border:1px solid transparent; text-decoration:none; font-size:13px; font-weight:800; cursor:pointer;
+      transition:transform .22s ease, box-shadow .22s ease, background-color .22s ease, border-color .22s ease, color .22s ease;
+    }
+    .sw-btn.primary { background:linear-gradient(135deg, var(--sw-accent) 0%, var(--sw-accent-2) 100%); color:#fff; box-shadow:0 14px 26px rgba(15,118,110,.2); }
+    .sw-btn.secondary, .sw-link { background:var(--sw-soft); color:var(--sw-accent); border-color:rgba(15,118,110,.16); }
+    .sw-quick-card {
+      padding:16px; border-radius:20px; border:1px solid var(--sw-border);
+      background:linear-gradient(180deg, rgba(255,255,255,.88), rgba(248,250,252,.96));
+      transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease, background-color .22s ease;
+    }
+    body.dark .sw-quick-card { background:linear-gradient(180deg, rgba(15,23,42,.94), rgba(15,23,42,.78)); }
+    .sw-quick-card strong { display:block; font-size:18px; line-height:1.1; }
+    .sw-quick-card p { margin:8px 0 0; color:var(--sw-muted); font-size:13px; line-height:1.6; }
+    .sw-quick-row, .sw-search-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .sw-toggle { position:relative; width:48px; height:28px; flex-shrink:0; }
+    .sw-toggle input { opacity:0; width:0; height:0; }
+    .sw-toggle span {
+      position:absolute; inset:0; border-radius:999px; background:#cbd5e1; transition:.2s ease; cursor:pointer;
+    }
+    .sw-toggle span::before {
+      content:""; position:absolute; left:4px; top:4px; width:20px; height:20px; border-radius:50%; background:#fff; transition:.2s ease;
+      box-shadow:0 4px 10px rgba(15,23,42,.18);
+    }
+    .sw-toggle input:checked + span { background:linear-gradient(135deg, var(--sw-accent) 0%, var(--sw-accent-2) 100%); }
+    .sw-toggle input:checked + span::before { transform:translateX(20px); }
+    .sw-search-row { margin-bottom:16px; }
+    .sw-search-wrap { position:relative; flex:1; }
+    .sw-search-wrap i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--sw-muted); }
+    .sw-search { padding-left:42px; }
+    .sw-advanced-list { display:grid; gap:14px; }
+    .sw-advanced-card { padding:18px; border-radius:22px; border:1px solid var(--sw-border); background:var(--sw-soft); }
+    .sw-advanced-title { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:14px; }
+    .sw-advanced-title h3 { margin:0; font-size:22px; letter-spacing:-.03em; }
+    .sw-advanced-title p { margin:6px 0 0; color:var(--sw-muted); font-size:13px; line-height:1.6; }
+    .sw-setting-grid { display:grid; gap:12px; }
+    .sw-setting-row {
+      display:grid; grid-template-columns:minmax(0,1.15fr) minmax(230px,.85fr); gap:14px; align-items:start;
+      padding:14px; border-radius:18px; background:var(--sw-card); border:1px solid var(--sw-border);
+      transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+    .sw-setting-meta strong { display:block; }
+    .sw-setting-meta span { display:block; margin-top:6px; font-size:12px; color:var(--sw-muted); line-height:1.6; }
+    .sw-setting-control { display:grid; gap:8px; }
+    .sw-undo { justify-self:flex-end; min-height:34px; padding:7px 12px; border-radius:999px; border:1px solid rgba(15,118,110,.16); background:var(--sw-card); color:var(--sw-accent); font-size:11px; font-weight:800; cursor:pointer; }
+    .sw-link, .sw-inline-actions a {
+      display:inline-flex; align-items:center; justify-content:center; min-height:38px; padding:8px 12px; border-radius:999px;
+      text-decoration:none; font-size:12px; font-weight:800;
+      transition:transform .22s ease, box-shadow .22s ease, background-color .22s ease, border-color .22s ease, color .22s ease;
+    }
+    .sw-link:hover, .sw-inline-actions a:hover { transform:translateY(-2px); }
+    .sw-item {
+      padding:12px 14px; border-radius:16px; border:1px solid var(--sw-border); background:var(--sw-soft);
+    }
+    .sw-item strong { display:block; }
+    .sw-item span { display:block; margin-top:4px; color:var(--sw-muted); font-size:12px; line-height:1.55; }
+    .sw-item a { color:var(--sw-accent); text-decoration:none; font-weight:800; }
+    .sw-empty { padding:22px; border-radius:18px; border:1px dashed rgba(148,163,184,.36); background:var(--sw-soft); color:var(--sw-muted); text-align:center; font-size:13px; }
+    @media (max-width: 1280px) {
+      .sw-hero, .sw-layout { grid-template-columns:1fr; }
+      .sw-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width: 860px) {
+      .sw-title { font-size:30px; }
+      .sw-stats, .sw-form-grid, .sw-quick-grid, .sw-mini-grid, .sw-status-grid, .sw-capability-grid, .sw-service-grid { grid-template-columns:1fr; }
+      .sw-setting-row, .sw-profile-head { grid-template-columns:1fr; }
+      .sw-footer, .sw-head, .sw-quick-row, .sw-search-row { flex-direction:column; align-items:stretch; }
+    }
+  </style>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  {{ settings_payload|json_script:"settingsPayload" }}
+  <script>
+    (function () {
+      const apiAllUrl = "{% url 'core_settings:api_settings_all' %}";
+      const apiUpdateUrl = "{% url 'core_settings:api_settings_update' %}";
+      const csrfToken = "{{ csrf_token }}";
+      const settingsScript = document.getElementById("settingsPayload");
+      const searchInput = document.getElementById("advancedSettingsSearch");
+      const advancedGrid = document.getElementById("advancedSettingsGrid");
+      const hintsWrap = document.getElementById("settingsAiHints");
+      let settingsPayload = settingsScript ? JSON.parse(settingsScript.textContent) : { categories: [] };
+
+      function toast(message, type) {
+        window.dispatchEvent(new CustomEvent("ui:toast", { detail: { message, type: type || "info", ms: 2400 } }));
+      }
+
+      function normalizeOption(option) {
+        if (option && typeof option === "object" && !Array.isArray(option)) {
+          return { value: String(option.value ?? ""), label: String(option.label ?? option.value ?? "") };
+        }
+        return { value: String(option ?? ""), label: String(option ?? "") };
+      }
+
+      function findSetting(key) {
+        for (const category of settingsPayload.categories || []) {
+          for (const setting of category.settings || []) {
+            if (setting.key === key) return setting;
+          }
+        }
+        return null;
+      }
+
+      function applyThemeMode(value) {
+        if (value === "dark") {
+          document.body.classList.add("dark");
+          document.body.classList.remove("light");
+        } else if (value === "light") {
+          document.body.classList.add("light");
+          document.body.classList.remove("dark");
+        }
+      }
+
+      function hydrateQuickControls() {
+        document.querySelectorAll("[data-setting-key]").forEach((control) => {
+          const setting = findSetting(control.dataset.settingKey);
+          if (!setting) return;
+          if (control.type === "checkbox") {
+            control.checked = Boolean(setting.value);
+          } else {
+            control.value = setting.value ?? "";
+          }
+        });
+      }
+
+      function safeJson(rawValue) {
+        if (!String(rawValue || "").trim()) return {};
+        return JSON.parse(rawValue);
+      }
+
+      function buildControl(setting) {
+        const wrap = document.createElement("div");
+        wrap.className = "sw-setting-control";
+
+        if (setting.data_type === "boolean") {
+          const label = document.createElement("label");
+          label.className = "sw-toggle";
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.checked = Boolean(setting.value);
+          input.disabled = !setting.editable;
+          input.addEventListener("change", () => saveSetting(setting.key, input.checked));
+          const slider = document.createElement("span");
+          label.appendChild(input);
+          label.appendChild(slider);
+          wrap.appendChild(label);
+        } else if (setting.data_type === "select") {
+          const select = document.createElement("select");
+          (setting.options || []).map(normalizeOption).forEach((option) => {
+            const el = document.createElement("option");
+            el.value = option.value;
+            el.textContent = option.label;
+            if (String(setting.value ?? "") === option.value) el.selected = true;
+            select.appendChild(el);
+          });
+          select.disabled = !setting.editable;
+          select.addEventListener("change", () => saveSetting(setting.key, select.value));
+          wrap.appendChild(select);
+        } else if (setting.data_type === "text" || setting.data_type === "json") {
+          const textarea = document.createElement("textarea");
+          textarea.disabled = !setting.editable;
+          textarea.value = setting.data_type === "json" ? JSON.stringify(setting.value ?? {}, null, 2) : (setting.value ?? "");
+          textarea.addEventListener("blur", () => {
+            try {
+              const value = setting.data_type === "json" ? safeJson(textarea.value) : textarea.value;
+              saveSetting(setting.key, value);
+            } catch (error) {
+              toast(`Invalid JSON for ${setting.label}`, "error");
+            }
+          });
+          wrap.appendChild(textarea);
+        } else {
+          const input = document.createElement("input");
+          input.type = setting.data_type === "number" ? "number" : setting.data_type === "date" ? "date" : "text";
+          input.disabled = !setting.editable;
+          input.value = setting.value ?? "";
+          input.addEventListener("blur", () => saveSetting(setting.key, input.value));
+          wrap.appendChild(input);
+        }
+
+        if (setting.editable) {
+          const undoBtn = document.createElement("button");
+          undoBtn.type = "button";
+          undoBtn.className = "sw-undo";
+          undoBtn.textContent = "Undo Last Change";
+          undoBtn.addEventListener("click", () => undoSetting(setting.key));
+          wrap.appendChild(undoBtn);
+        }
+        return wrap;
+      }
+
+      function categoryMatches(category, term) {
+        if (!term) return true;
+        const q = term.toLowerCase();
+        if ((category.label || "").toLowerCase().includes(q)) return true;
+        if ((category.description || "").toLowerCase().includes(q)) return true;
+        return (category.settings || []).some((setting) =>
+          (setting.label || "").toLowerCase().includes(q) ||
+          (setting.key || "").toLowerCase().includes(q) ||
+          (setting.help_text || "").toLowerCase().includes(q)
+        );
+      }
+
+      function renderAdvancedSettings(term) {
+        if (!advancedGrid) return;
+        advancedGrid.innerHTML = "";
+        const categories = (settingsPayload.categories || []).filter((category) => categoryMatches(category, term || ""));
+        if (!categories.length) {
+          advancedGrid.innerHTML = '<div class="sw-empty">Search ke hisaab se koi settings match nahi hui.</div>';
+          return;
+        }
+
+        categories.forEach((category) => {
+          const card = document.createElement("section");
+          card.className = "sw-advanced-card";
+          card.innerHTML = `
+            <div class="sw-advanced-title">
+              <div>
+                <h3>${category.label}</h3>
+                <p>${category.description || "Category specific controls."}</p>
+              </div>
+              <span class="sw-pill">${(category.settings || []).length} controls</span>
+            </div>
+          `;
+          const grid = document.createElement("div");
+          grid.className = "sw-setting-grid";
+
+          (category.settings || []).forEach((setting) => {
+            const row = document.createElement("div");
+            row.className = "sw-setting-row";
+            const meta = document.createElement("div");
+            meta.className = "sw-setting-meta";
+            meta.innerHTML = `<strong>${setting.label}</strong><span>${setting.help_text || setting.key}</span>`;
+            row.appendChild(meta);
+            row.appendChild(buildControl(setting));
+            grid.appendChild(row);
+          });
+
+          card.appendChild(grid);
+          advancedGrid.appendChild(card);
+        });
+      }
+
+      async function refreshAll() {
+        const response = await fetch(apiAllUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+        const data = await response.json();
+        settingsPayload = data.settings || { categories: [] };
+        hydrateQuickControls();
+        renderAdvancedSettings(searchInput ? searchInput.value : "");
+
+        if (hintsWrap && Array.isArray(data.ai_hints)) {
+          hintsWrap.innerHTML = "";
+          data.ai_hints.forEach((hint) => {
+            const item = document.createElement("div");
+            item.className = "sw-item";
+            item.innerHTML = `<span>${hint}</span>`;
+            hintsWrap.appendChild(item);
+          });
+        }
+      }
+
+      async function saveSetting(key, value) {
+        try {
+          const response = await fetch(apiUpdateUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+            body: JSON.stringify({ updates: [{ key, value }] })
+          });
+          const data = await response.json();
+          if (!response.ok || data.status === "error") {
+            throw new Error(data.message || "Unable to save setting");
+          }
+          if (key === "user_theme") applyThemeMode(value);
+          toast("Setting saved", "success");
+          await refreshAll();
+        } catch (error) {
+          toast(error.message || "Unable to save setting", "error");
+        }
+      }
+
+      async function undoSetting(key) {
+        try {
+          const response = await fetch(apiUpdateUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+            body: JSON.stringify({ action: "undo", key })
+          });
+          const data = await response.json();
+          if (!response.ok || data.status === "error") {
+            throw new Error(data.message || "Unable to undo setting");
+          }
+          if (key === "user_theme") applyThemeMode(data.value);
+          toast("Last change reverted", "success");
+          await refreshAll();
+        } catch (error) {
+          toast(error.message || "Unable to undo setting", "error");
+        }
+      }
+
+      document.querySelectorAll("[data-setting-key]").forEach((control) => {
+        const handler = () => {
+          const value = control.type === "checkbox" ? control.checked : control.value;
+          saveSetting(control.dataset.settingKey, value);
+        };
+        control.addEventListener(control.type === "checkbox" || control.tagName === "SELECT" ? "change" : "blur", handler);
+      });
+
+      if (searchInput) {
+        searchInput.addEventListener("input", () => renderAdvancedSettings(searchInput.value));
+      }
+
+      hydrateQuickControls();
+      renderAdvancedSettings("");
+    })();
+  </script>
+{% endblock %}
+
+{% block content %}
+<div class="sw-page">
+  <section class="sw-hero">
+    <div style="position:relative;z-index:1;">
+      <p class="sw-kicker"><i class="bi bi-sliders2"></i></p>
+      <h1 class="sw-title" aria-label="{{ workspace_title }}"><i class="bi bi-sliders2"></i></h1>
+      <div class="sw-chip-row">
+        <span class="sw-chip"><i class="bi bi-person-badge"></i>{{ workspace_role|title }}</span>
+        <span class="sw-chip"><i class="bi bi-grid-1x2"></i>{{ settings_category_count }} categories</span>
+        <span class="sw-chip"><i class="bi bi-sliders2"></i>{{ settings_total_count }} live controls</span>
+        <span class="sw-chip"><i class="bi bi-diagram-3"></i>{{ channel_backend }}</span>
+      </div>
+      <div class="sw-action-row" style="margin-top:18px;">
+        <a href="{% url 'accounts:dashboard' %}?tab=settings#module-workspace" class="sw-action primary" aria-label="Back to dashboard"><i class="bi bi-arrow-left"></i></a>
+        <a href="{% url 'accounts:wallet_workspace' %}" class="sw-action secondary" aria-label="Open wallet"><i class="bi bi-wallet2"></i></a>
+        <a href="{% url 'kyc:dashboard' %}" class="sw-action secondary" aria-label="Open KYC"><i class="bi bi-shield-check"></i></a>
+        <a href="{% url 'billing:plan_management' %}" class="sw-action secondary" aria-label="Plan management"><i class="bi bi-layers"></i></a>
+      </div>
+    </div>
+
+    <div class="sw-profile-box">
+      <div class="sw-profile-head">
+        <div class="sw-avatar">
+          {% if profile.profile_picture %}
+            <img src="{{ profile.profile_picture.url }}" alt="Profile picture">
+          {% else %}
+            <i class="bi bi-person-circle"></i>
+          {% endif %}
+        </div>
+        <div>
+          <strong>{{ profile.full_name|default:request.user.first_name|default:request.user.username|default:request.user.email }}</strong>
+          <span>{{ profile.business_name|default:"Workspace profile not branded yet" }}</span>
+          <span>{{ request.user.email }}</span>
+        </div>
+      </div>
+      <div class="sw-mini-grid">
+        <div class="sw-mini-card">
+          <span>Current Plan</span>
+          <strong>{% if effective_plan %}{{ effective_plan.name }}{% else %}Free{% endif %}</strong>
+          <small>{{ locked_features_count }}</small>
+        </div>
+        <div class="sw-mini-card">
+          <span>KYC Status</span>
+          <strong>{{ kyc_profile.get_status_display }}</strong>
+          <small>{{ kyc_profile.status }}</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sw-stats">
+    <article class="sw-stat">
+      <span>Profile Completion</span>
+      <strong>{{ profile_completion }}%</strong>
+      <small>{{ filled_profile_fields }}/{{ total_profile_fields }} key fields filled. Better completion se onboarding aur verification smooth hota hai.</small>
+    </article>
+    <article class="sw-stat">
+      <span>Wallet Available</span>
+      <strong>Rs {{ wallet_summary.available_balance }}</strong>
+      <small>{{ linked_account_count }} linked payout account{{ linked_account_count|pluralize }} synced.</small>
+    </article>
+    <article class="sw-stat">
+      <span>Usage Meter</span>
+      <strong>{{ usage_summary.usage }}/{{ usage_summary.limit }}</strong>
+      <small>Current subscription usage placeholder meter.</small>
+    </article>
+    <article class="sw-stat">
+      <span>Automation Mode</span>
+      <strong>{{ celery_mode }}</strong>
+      <small>Maps: {{ map_provider }}. Realtime channel: {{ channel_backend }}.</small>
+    </article>
+  </section>
+
+  <div class="sw-layout">
+    <div class="sw-main">
+      <section class="sw-card" id="profile-form">
+        <div class="sw-head">
+          <div>
+            <span class="sw-pill"><i class="bi bi-person-gear"></i></span>
+          </div>
+          <div class="sw-hint">{% if effective_plan %}Plan: {{ effective_plan.name }}{% else %}Plan: Free{% endif %}</div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="sw-form-errors">{{ form.non_field_errors|striptags }}</div>
+          {% endif %}
+          <div class="sw-form-grid">
+            <div class="sw-field">
+              <label for="{{ form.full_name.id_for_label }}" aria-label="Full Name"><i class="bi bi-person"></i></label>
+              {{ form.full_name }}
+              {% if form.full_name.errors %}<div class="sw-error">{{ form.full_name.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field">
+              <label for="{{ form.email.id_for_label }}" aria-label="Email"><i class="bi bi-envelope"></i></label>
+              {{ form.email }}
+              {% if form.email.errors %}<div class="sw-error">{{ form.email.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field">
+              <label for="{{ form.mobile.id_for_label }}" aria-label="Mobile"><i class="bi bi-phone"></i></label>
+              {{ form.mobile }}
+              {% if form.mobile.errors %}<div class="sw-error">{{ form.mobile.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field">
+              <label for="{{ form.business_name.id_for_label }}" aria-label="Business Name"><i class="bi bi-building"></i></label>
+              {{ form.business_name }}
+              {% if form.business_name.errors %}<div class="sw-error">{{ form.business_name.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field">
+              <label for="{{ form.business_type.id_for_label }}" aria-label="Business Type"><i class="bi bi-diagram-3"></i></label>
+              {{ form.business_type }}
+              {% if form.business_type.errors %}<div class="sw-error">{{ form.business_type.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field">
+              <label for="{{ form.gst_number.id_for_label }}" aria-label="GST Number"><i class="bi bi-receipt"></i></label>
+              {{ form.gst_number }}
+              {% if form.gst_number.errors %}<div class="sw-error">{{ form.gst_number.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field full">
+              <label for="{{ form.address.id_for_label }}" aria-label="Address"><i class="bi bi-geo-alt"></i></label>
+              {{ form.address }}
+              {% if form.address.errors %}<div class="sw-error">{{ form.address.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field">
+              <label for="{{ form.upi_id.id_for_label }}" aria-label="UPI ID"><i class="bi bi-upc-scan"></i></label>
+              {{ form.upi_id }}
+              {% if form.upi_id.errors %}<div class="sw-error">{{ form.upi_id.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field">
+              <label for="{{ form.bank_name.id_for_label }}" aria-label="Bank Name"><i class="bi bi-bank"></i></label>
+              {{ form.bank_name }}
+              {% if form.bank_name.errors %}<div class="sw-error">{{ form.bank_name.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field">
+              <label for="{{ form.account_number.id_for_label }}" aria-label="Account Number"><i class="bi bi-credit-card-2-front"></i></label>
+              {{ form.account_number }}
+              {% if form.account_number.errors %}<div class="sw-error">{{ form.account_number.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field">
+              <label for="{{ form.ifsc_code.id_for_label }}" aria-label="IFSC Code"><i class="bi bi-up-down"></i></label>
+              {{ form.ifsc_code }}
+              {% if form.ifsc_code.errors %}<div class="sw-error">{{ form.ifsc_code.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field">
+              <label for="{{ form.profile_picture.id_for_label }}" aria-label="Profile Picture"><i class="bi bi-image"></i></label>
+              {{ form.profile_picture }}
+              {% if form.profile_picture.errors %}<div class="sw-error">{{ form.profile_picture.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field">
+              <label for="{{ form.qr_code.id_for_label }}" aria-label="QR Code"><i class="bi bi-qr-code"></i></label>
+              {{ form.qr_code }}
+              {% if form.qr_code.errors %}<div class="sw-error">{{ form.qr_code.errors|striptags }}</div>{% endif %}
+            </div>
+            <div class="sw-field full">
+              <label for="{{ form.plan.id_for_label }}" aria-label="Preferred Plan"><i class="bi bi-layers"></i></label>
+              {{ form.plan }}
+              {% if form.plan.errors %}<div class="sw-error">{{ form.plan.errors|striptags }}</div>{% endif %}
+            </div>
+          </div>
+          <div class="sw-footer">
+            <div class="sw-inline-actions">
+              <a href="{% url 'accounts:dashboard' %}" class="sw-btn secondary">Back</a>
+              <button type="submit" class="sw-btn primary">Save Workspace Profile</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <section class="sw-card" id="quick-controls">
+        <div class="sw-head">
+          <div>
+            <span class="sw-pill"><i class="bi bi-toggle-on"></i></span>
+          </div>
+          <div class="sw-pill">{{ quick_controls|length }} ready toggles</div>
+        </div>
+        <div class="sw-quick-grid">
+          {% for control in quick_controls %}
+            <article class="sw-quick-card">
+              <strong>{{ control.label }}</strong>
+              <p>{{ control.description }}</p>
+              <div class="sw-quick-row" style="margin-top:14px;">
+                <span class="sw-hint">Key: {{ control.key }}</span>
+                {% if control.data_type == "boolean" %}
+                  <label class="sw-toggle" aria-label="{{ control.label }}">
+                    <input type="checkbox" data-setting-key="{{ control.key }}" {% if control.value %}checked{% endif %}>
+                    <span></span>
+                  </label>
+                {% elif control.data_type == "select" %}
+                  <select data-setting-key="{{ control.key }}" style="min-width:160px;">
+                    {% for option in control.options %}
+                      {% if option.value %}
+                        <option value="{{ option.value }}" {% if option.value == control.value %}selected{% endif %}>{{ option.label|default:option.value }}</option>
+                      {% else %}
+                        <option value="{{ option }}" {% if option == control.value %}selected{% endif %}>{{ option }}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                {% endif %}
+              </div>
+            </article>
+          {% empty %}
+            <div class="sw-empty"></div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="sw-card" id="advanced-lab">
+          <div class="sw-head">
+          <div>
+            <span class="sw-pill"><i class="bi bi-search"></i></span>
+          </div>
+        </div>
+        <div class="sw-search-row">
+          <div class="sw-search-wrap">
+            <i class="bi bi-search"></i>
+            <input id="advancedSettingsSearch" class="sw-search" type="text" placeholder="Search setting name, key, ya category...">
+          </div>
+          <div class="sw-chip-row" style="margin-top:0;">
+            <span class="sw-pill" aria-label="Categories"><i class="bi bi-grid-1x2"></i> {{ settings_category_count }}</span>
+            <span class="sw-pill" aria-label="Settings"><i class="bi bi-sliders2"></i> {{ settings_total_count }}</span>
+          </div>
+        </div>
+        <div id="advancedSettingsGrid" class="sw-advanced-list"></div>
+        <noscript><div class="sw-empty">Advanced settings controls ke liye JavaScript required hai.</div></noscript>
+      </section>
+    </div>
+
+    <aside class="sw-side" id="workspace-services">
+      <section class="sw-card">
+        <div class="sw-head">
+          <div>
+            <span class="sw-pill"><i class="bi bi-shield-check"></i></span>
+          </div>
+        </div>
+        <div class="sw-status-grid">
+          {% for item in advanced_status_cards %}
+            <div class="sw-status-item">
+              <span>{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="sw-card">
+        <div class="sw-head">
+          <div>
+            <span class="sw-pill"><i class="bi bi-layers"></i></span>
+          </div>
+        </div>
+        <div class="sw-capability-grid">
+          {% for item in plan_capabilities %}
+            <div class="sw-capability-item">
+              <span>{{ item.label }}</span>
+              <strong>{% if item.enabled %}Enabled{% else %}Locked{% endif %}</strong>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+      <section class="sw-card">
+        <div class="sw-head">
+          <div>
+            <span class="sw-pill"><i class="bi bi-plug"></i></span>
+          </div>
+        </div>
+        <div class="sw-service-grid">
+          <div class="sw-service-item">
+            <span>Wallet</span>
+            <strong>Rs {{ wallet_summary.wallet.balance }}</strong>
+            <div class="sw-inline-actions" style="margin-top:10px;">
+              <a href="{% url 'accounts:wallet_workspace' %}" class="sw-link" aria-label="Open wallet"><i class="bi bi-wallet2"></i></a>
+            </div>
+          </div>
+          <div class="sw-service-item">
+            <span>KYC</span>
+            <strong>{{ kyc_profile.get_status_display }}</strong>
+            <div class="sw-inline-actions" style="margin-top:10px;">
+              <a href="{% url 'kyc:dashboard' %}" class="sw-link" aria-label="Open KYC"><i class="bi bi-shield-check"></i></a>
+            </div>
+          </div>
+          <div class="sw-service-item">
+            <span>Billing</span>
+            <strong>{{ invoice_count }} invoice{{ invoice_count|pluralize }}</strong>
+            <div class="sw-inline-actions" style="margin-top:10px;">
+              <a href="{% url 'billing:invoice_list' %}" class="sw-link" aria-label="Invoices"><i class="bi bi-receipt"></i></a>
+              <a href="{% url 'billing:plan_management' %}" class="sw-link" aria-label="Plan management"><i class="bi bi-layers"></i></a>
+            </div>
+          </div>
+          <div class="sw-service-item">
+            <span>Reward Coins</span>
+            <strong>{{ reward_coin.balance }}</strong>
+            <div class="sw-inline-actions" style="margin-top:10px;">
+              <a href="{% url 'accounts:wallet_workspace' %}?tab=rewards" class="sw-link" aria-label="Reward center"><i class="bi bi-coin"></i></a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sw-card">
+        <div class="sw-head">
+          <div>
+            <span class="sw-pill"><i class="bi bi-share"></i></span>
+          </div>
+        </div>
+        <div class="sw-list">
+          <input class="sw-share-input" type="text" value="{{ referral_share.referral_link }}" readonly>
+          <div class="sw-inline-actions">
+            <a href="{{ referral_share.share_links.whatsapp }}" target="_blank" rel="noopener" class="sw-link" aria-label="Share on WhatsApp"><i class="bi bi-whatsapp"></i></a>
+            <a href="{{ referral_share.share_links.email }}" class="sw-link" aria-label="Share by email"><i class="bi bi-envelope"></i></a>
+            <a href="{{ referral_share.share_links.sms }}" class="sw-link" aria-label="Share by SMS"><i class="bi bi-chat-dots"></i></a>
+            <a href="{% url 'accounts:wallet_workspace' %}?tab=referrals" class="sw-link" aria-label="Referral hub"><i class="bi bi-link-45deg"></i></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="sw-card">
+        <div class="sw-head">
+          <div>
+            <span class="sw-pill"><i class="bi bi-stars"></i></span>
+          </div>
+        </div>
+        <div class="sw-list" id="settingsAiHints">
+          {% for hint in ai_hints %}
+            <div class="sw-item"><span>{{ hint }}</span></div>
+          {% empty %}
+            <div class="sw-empty"></div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="sw-card">
+        <div class="sw-head">
+          <div>
+            <span class="sw-pill"><i class="bi bi-receipt"></i></span>
+          </div>
+        </div>
+        <div class="sw-list">
+          {% for row in invoice_rows %}
+            <div class="sw-item">
+              <strong><a href="{% url 'billing:invoice_detail' row.invoice_number %}">{{ row.invoice_number }}</a></strong>
+              <span>Amount: Rs {{ row.total_amount }}</span>
+              <span>Status: {{ row.get_status_display }} | {{ row.issued_at|date:"d M Y H:i" }}</span>
+            </div>
+          {% empty %}
+            <div class="sw-empty"></div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="sw-card">
+        <div class="sw-head">
+          <div>
+            <span class="sw-pill"><i class="bi bi-people"></i></span>
+          </div>
+        </div>
+        <div class="sw-list">
+          {% for row in referral_rows %}
+            <div class="sw-item">
+              <strong>{{ row.referred_user.email|default:row.referrer.email|default:"Referral event" }}</strong>
+              <span>Status: {{ row.get_status_display }}</span>
+              <span>{{ row.created_at|date:"d M Y H:i" }}</span>
+            </div>
+          {% empty %}
+            <div class="sw-empty"></div>
+          {% endfor %}
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+{% endblock %}

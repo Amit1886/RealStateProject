@@ -18,15 +18,30 @@
 
   <table>
     <thead>
-      <tr><th>Date</th><th>Type</th><th>Description</th><th>Amount ()</th></tr>
+      <tr>
+        <th style="width:14%;">Date</th>
+        <th style="width:10%;">Type</th>
+        <th style="width:14%;">Invoice</th>
+        <th>Description</th>
+        <th style="width:14%;text-align:right;">Credit</th>
+        <th style="width:14%;text-align:right;">Debit</th>
+        <th style="width:14%;text-align:right;">Balance</th>
+      </tr>
     </thead>
     <tbody>
       {% for e in entries %}
       <tr>
         <td>{{ e.date|date:"d M Y" }}</td>
-        <td>{{ e.type }}</td>
-        <td>{{ e.desc }}</td>
-        <td style="text-align:right;">{{ e.amount }}</td>
+        <td>{% if e.txn_type == "credit" %}Credit{% else %}Debit{% endif %}</td>
+        <td>{% if e.invoice_no %}{{ e.invoice_no }}{% else %}-{% endif %}</td>
+        <td>{{ e.description|default:"-" }}</td>
+        <td style="text-align:right;">{% if e.credit %}{{ e.credit|floatformat:2 }}{% else %}-{% endif %}</td>
+        <td style="text-align:right;">{% if e.debit %}{{ e.debit|floatformat:2 }}{% else %}-{% endif %}</td>
+        <td style="text-align:right;">{% if e.balance %}{{ e.balance|floatformat:2 }}{% else %}-{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" style="text-align:center;color:#666;">No ledger entries found.</td>
       </tr>
       {% endfor %}
     </tbody>

@@ -7,13 +7,16 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="icon" href="{% static 'img/favicon.ico' %}">
 
-    <!-- Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Tailwind -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Vendor CSS -->
+    {% if desktop_mode %}
+        <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}">
+        <link rel="stylesheet" href="{% static 'vendor/tailwind/tailwind-2.2.19.min.css' %}">
+    {% else %}
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    {% endif %}
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -37,6 +40,29 @@
 
         <!-- CONTENT -->
         <div class="p-6 sm:p-8">
+            {% if messages %}
+                <div class="space-y-2 mb-4">
+                    {% for message in messages %}
+                        {% if "error" in message.tags %}
+                            <div class="text-sm rounded-lg border border-red-200 bg-red-50 text-red-800 px-3 py-2">
+                                {{ message }}
+                            </div>
+                        {% elif "success" in message.tags %}
+                            <div class="text-sm rounded-lg border border-green-200 bg-green-50 text-green-800 px-3 py-2">
+                                {{ message }}
+                            </div>
+                        {% elif "warning" in message.tags %}
+                            <div class="text-sm rounded-lg border border-yellow-200 bg-yellow-50 text-yellow-800 px-3 py-2">
+                                {{ message }}
+                            </div>
+                        {% else %}
+                            <div class="text-sm rounded-lg border border-blue-200 bg-blue-50 text-blue-800 px-3 py-2">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
             {% block content %}{% endblock %}
         </div>
 

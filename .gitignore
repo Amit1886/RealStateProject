@@ -17,11 +17,19 @@ media/
 staticfiles/
 local_settings.py
 
+# Local docs generated during dev
+CACHE_FIX.txt
+ENTREE_GUIDE.md
+ERP_ACCOUNTING_ENGINE.md
+KEYBOARD_SHORTCUTS_FIXED.md
+FINAL_CHANGES.patch
+
 # IDEs / Editors
 .vscode/
 .idea/
 *.swp
 *.swo
+.history/
 
 # System files
 .DS_Store

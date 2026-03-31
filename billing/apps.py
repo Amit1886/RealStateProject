@@ -7,4 +7,7 @@ class BillingConfig(AppConfig):
 
     def ready(self):
         # signals ko yahan import karna zaroori hai taki wo register ho jayein
-        import billing.signals
+        try:
+            import billing.signals  # noqa: F401
+        except Exception as exc:
+            print(f"[billing] signals skipped: {exc}")

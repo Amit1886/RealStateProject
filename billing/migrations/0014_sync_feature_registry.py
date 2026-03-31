@@ -29,6 +29,26 @@ FEATURE_REGISTRY = [
     {"key": "payments.gateway", "label": "Payment Gateway", "group": "Advanced"},
     {"key": "field.agents", "label": "Field Agents", "group": "Advanced"},
     {"key": "chatbot.flows", "label": "Chatbot Flows", "group": "Communication"},
+    {"key": "crm.dashboard", "label": "CRM Dashboard", "group": "Real Estate"},
+    {"key": "crm.leads", "label": "Leads", "group": "Real Estate"},
+    {"key": "crm.properties", "label": "Properties", "group": "Real Estate"},
+    {"key": "crm.deals", "label": "Deals", "group": "Real Estate"},
+    {"key": "crm.agents", "label": "Agents", "group": "Real Estate"},
+    {"key": "crm.reports", "label": "Reports", "group": "Real Estate"},
+    {"key": "crm.wallet", "label": "Wallet", "group": "Real Estate"},
+    {"key": "crm.settings", "label": "Settings", "group": "Real Estate"},
+    {"key": "crm.visits", "label": "Site Visits", "group": "Real Estate"},
+    {"key": "crm.group_visits", "label": "Group Visits", "group": "Real Estate"},
+    {"key": "crm.kyc", "label": "Agent KYC", "group": "Real Estate"},
+    {"key": "crm.agent_transfers", "label": "Agent Transfers", "group": "Real Estate"},
+    {"key": "crm.project_launch", "label": "Project Launch", "group": "Real Estate"},
+    {"key": "crm.project_phases", "label": "Project Phases", "group": "Real Estate"},
+    {"key": "crm.segmentation", "label": "Customer Segmentation", "group": "Real Estate"},
+    {"key": "crm.pipeline_deadlines", "label": "Pipeline Deadlines", "group": "Real Estate"},
+    {"key": "crm.sales_performance", "label": "Sales Performance", "group": "Real Estate"},
+    {"key": "crm.payment_adjustments", "label": "Payment Adjustments", "group": "Real Estate"},
+    {"key": "crm.admin_override", "label": "Admin Overrides", "group": "Real Estate"},
+    {"key": "crm.inventory_holds", "label": "Inventory Holds", "group": "Real Estate"},
 ]
 
 
@@ -62,4 +82,3 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(sync_feature_registry, migrations.RunPython.noop),
     ]
-

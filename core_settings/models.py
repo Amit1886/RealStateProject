@@ -1,6 +1,10 @@
+from decimal import Decimal
+
 from django.db import models
 from django.conf import settings
 from django.db.models import Q
+import hashlib
+
 
 class UISettings(models.Model):
     # 🎨 COLORS
@@ -59,6 +63,11 @@ class CompanySettings(models.Model):
     logo = models.ImageField(upload_to="logos/", blank=True, null=True)
     mobile = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
+    address_line = models.CharField(max_length=255, blank=True, default="")
+    gstin = models.CharField(max_length=20, blank=True, default="")
+    state_code = models.CharField(max_length=10, blank=True, default="09")
+    invoice_prefix = models.CharField(max_length=12, blank=True, default="INV")
+    default_gst_rate = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("18.00"))
 
     class Meta:
         verbose_name = "Company Setting"
@@ -66,6 +75,10 @@ class CompanySettings(models.Model):
 
     def __str__(self):
         return self.company_name
+
+    @property
+    def full_address(self):
+        return self.address_line or ""
 
 
 class AppSettings(models.Model):
@@ -124,6 +137,10 @@ class FeatureSettings(models.Model):
         ("payment_gateway", "Payment Gateway"),
         ("notification", "Notifications"),
         ("daily_summary", "Daily Summary"),
+        ("voice_ai", "Voice AI Calling"),
+        ("qr_system", "QR Onboarding"),
+        ("whatsapp_mini", "WhatsApp Mini App"),
+        ("shop_onboarding", "Shop Onboarding"),
     ]
 
     feature = models.CharField(max_length=50, choices=FEATURE_CHOICES, unique=True)
@@ -219,9 +236,78 @@ class SettingValue(models.Model):
             ),
         ]
 
+
+class DesktopRelease(models.Model):
+    """
+    Cloud-managed Windows desktop release.
+
+    Admin uploads the EXE and sets `version`. Desktop clients can download the
+    latest published build when online.
+
+    Note: This project also runs locally (desktop mode). On desktop machines,
+    this model can exist but is typically unused unless you also host releases locally.
+    """
+
+    version = models.CharField(max_length=50, default="0.0.0", db_index=True)
+    windows_exe = models.FileField(upload_to="desktop_releases/", blank=True, null=True)
+    sha256 = models.CharField(max_length=64, blank=True, default="")
+    android_apk = models.FileField(upload_to="android_releases/", blank=True, null=True)
+    android_sha256 = models.CharField(max_length=64, blank=True, default="")
+    notes = models.TextField(blank=True, default="")
+    is_published = models.BooleanField(default=False, db_index=True)
+    published_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Desktop Release"
+        verbose_name_plural = "Desktop Releases"
+
+    def save(self, *args, **kwargs):
+        # Hard singleton.
+        self.pk = 1
+
+        # IMPORTANT: do not open/close uploaded temporary files before Django saves them,
+        # otherwise Windows temp uploads can disappear and cause FileNotFoundError during save.
+        super().save(*args, **kwargs)
+
+        # Compute sha256 after the file is persisted to storage.
+        if self.windows_exe:
+            try:
+                h = hashlib.sha256()
+                with self.windows_exe.open("rb") as f:
+                    for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                        h.update(chunk)
+                digest = h.hexdigest()
+            except Exception:
+                digest = ""
+
+            if digest and digest != (self.sha256 or ""):
+                type(self).objects.filter(pk=self.pk).update(sha256=digest)
+                self.sha256 = digest
+
+        if self.android_apk:
+            try:
+                h = hashlib.sha256()
+                with self.android_apk.open("rb") as f:
+                    for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                        h.update(chunk)
+                digest = h.hexdigest()
+            except Exception:
+                digest = ""
+
+            if digest and digest != (self.android_sha256 or ""):
+                type(self).objects.filter(pk=self.pk).update(android_sha256=digest)
+                self.android_sha256 = digest
+
+    @classmethod
+    def get_solo(cls):
+        obj = cls.objects.filter(pk=1).first()
+        if obj:
+            return obj
+        return cls.objects.create(pk=1, version="0.0.0", is_published=False)
+
     def __str__(self):
-        owner = self.owner.username if self.owner else "global"
-        return f"{self.definition.key} ({owner})"
+        return f"Desktop Release {self.version}"
 
 
 class SettingHistory(models.Model):

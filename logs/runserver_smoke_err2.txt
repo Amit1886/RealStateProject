@@ -1,0 +1,6 @@
+2026-03-01 18:17:57,781 [INFO] daphne.server: HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+2026-03-01 18:17:57,781 [INFO] daphne.server: Configuring endpoint tcp:port=8024:interface=127.0.0.1
+2026-03-01 18:17:57,782 [INFO] daphne.server: Listening on TCP address 127.0.0.1:8024
+2026-03-01 18:17:58,145 [INFO] django.channels.server: HTTP GET /health/ 200 [0.02, 127.0.0.1:61725]
+2026-03-01 18:17:58,328 [INFO] django.channels.server: HTTP GET / 200 [0.16, 127.0.0.1:61725]
+2026-03-01 18:17:58,461 [INFO] django.channels.server: HTTP GET /download/desktop/ 200 [0.12, 127.0.0.1:61725]

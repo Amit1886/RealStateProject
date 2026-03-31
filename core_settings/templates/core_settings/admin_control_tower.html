@@ -1,0 +1,264 @@
+{% extends "billing/base.html" %}
+{% block billing_content %}
+<div class="feature-tower">
+  <div class="tower-hero">
+    <div>
+      <p class="eyebrow">Smart Admin</p>
+      <h1>Feature Control Tower</h1>
+      <p class="subtitle">Manage global feature flags, plan permissions, and user-specific overrides from one place.</p>
+    </div>
+    <div class="tower-actions">
+      <a class="ghost-btn" href="{% url 'billing:feature_matrix' %}">Open legacy matrix</a>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <span>Plans</span>
+      <strong>{{ plans|length }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Users</span>
+      <strong>{{ users|length }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Global Features</span>
+      <strong>{{ all_features|length }}</strong>
+    </div>
+  </div>
+
+  <div class="control-grid">
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Global</p>
+          <h2>Feature Registry</h2>
+        </div>
+        <input id="registrySearch" class="search" type="search" placeholder="Search features, groups, labels">
+      </div>
+      <form method="post" class="stack-form" id="registryForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="registry">
+        <div class="panel-toolbar">
+          <button type="button" class="mini-btn" id="registrySelectAll">Select All</button>
+          <button type="button" class="mini-btn" id="registryClearAll">Clear All</button>
+          <button type="submit" class="primary-btn">Save Registry</button>
+        </div>
+        {% for group in feature_groups %}
+          <div class="group-card registry-group">
+            <div class="group-head">
+              <h3>{{ group.name }}</h3>
+              <span>{{ group.items|length }} items</span>
+            </div>
+            <div class="toggle-list">
+              {% for feature in group.items %}
+                <label class="toggle-row search-target">
+                  <div>
+                    <strong>{{ feature.label }}</strong>
+                    <span>{{ feature.key }}</span>
+                  </div>
+                  <input type="checkbox" name="registry_feature" value="{{ feature.id }}" {% if feature.active %}checked{% endif %}>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+        {% empty %}
+          <div class="empty-state">No features found. Sync the registry first.</div>
+        {% endfor %}
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Plan Wise</p>
+          <h2>Plan Permissions</h2>
+        </div>
+        <form method="post" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="plan">
+          <select name="plan_id" class="select">
+            {% for plan in plans %}
+              <option value="{{ plan.id }}" {% if selected_plan and plan.id == selected_plan.id %}selected{% endif %}>{{ plan.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="primary-btn">Save Plan</button>
+        </form>
+      </div>
+
+      {% if selected_plan %}
+        <form method="post" class="stack-form">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="plan">
+          <input type="hidden" name="plan_id" value="{{ selected_plan.id }}">
+          <div class="panel-toolbar">
+            <span class="note">Selected plan: {{ selected_plan.name }}</span>
+          </div>
+          {% for section in plan_sections %}
+            <div class="group-card">
+              <div class="group-head">
+                <h3>{{ section.title }}</h3>
+                <span>Plan toggles</span>
+              </div>
+              <div class="toggle-list compact">
+                {% for field in section.fields %}
+                  <label class="toggle-row">
+                    <div>
+                      <strong>{{ field.label }}</strong>
+                      <span>{{ field.name }}</span>
+                    </div>
+                    <input type="checkbox" name="{{ field.name }}" {% if field.value %}checked{% endif %}>
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+          <div class="inline-fields">
+            <label>
+              <span>Max parties</span>
+              <input type="number" name="max_parties" min="0" value="{{ selected_plan_permissions.max_parties|default:0 }}" class="input">
+            </label>
+          </div>
+          <div class="panel-toolbar">
+            <button type="submit" class="primary-btn">Save Plan Permissions</button>
+          </div>
+        </form>
+      {% else %}
+        <div class="empty-state">Create a plan first to edit plan permissions.</div>
+      {% endif %}
+    </section>
+  </div>
+
+  <section class="panel full-width">
+    <div class="panel-head">
+      <div>
+        <p class="eyebrow">User Wise</p>
+        <h2>User Feature Overrides</h2>
+      </div>
+      <form method="post" class="inline-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="user">
+        <select name="user_id" class="select">
+          {% for user in users %}
+            <option value="{{ user.id }}" {% if selected_user and user.id == selected_user.id %}selected{% endif %}>{{ user.email|default:user.username }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="primary-btn">Save Overrides</button>
+      </form>
+    </div>
+
+    {% if selected_user %}
+      <form method="post" class="stack-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="user">
+        <input type="hidden" name="user_id" value="{{ selected_user.id }}">
+        <div class="panel-toolbar">
+          <span class="note">Selected user: {{ selected_user.email|default:selected_user.username }}</span>
+        </div>
+        {% for group in feature_groups %}
+          <div class="group-card">
+            <div class="group-head">
+              <h3>{{ group.name }}</h3>
+              <span>Override mode: Inherit / On / Off</span>
+            </div>
+            <div class="toggle-list">
+              {% for feature in group.items %}
+                <div class="override-row search-target">
+                  <div class="override-copy">
+                    <strong>{{ feature.label }}</strong>
+                    <span>{{ feature.key }}</span>
+                  </div>
+                  <select name="override_{{ feature.id }}" class="select select-sm">
+                    <option value="inherit" {% if feature.mode == "inherit" %}selected{% endif %}>Inherit</option>
+                    <option value="enabled" {% if feature.mode == "enabled" %}selected{% endif %}>Force On</option>
+                    <option value="disabled" {% if feature.mode == "disabled" %}selected{% endif %}>Force Off</option>
+                  </select>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+        <div class="panel-toolbar">
+          <button type="submit" class="primary-btn">Save User Overrides</button>
+        </div>
+      </form>
+    {% else %}
+      <div class="empty-state">No active users found.</div>
+    {% endif %}
+  </section>
+</div>
+
+<style>
+  .feature-tower { display:grid; gap:20px; }
+  .tower-hero { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:24px; border-radius:24px; color:#fff; background:linear-gradient(135deg,#0f172a,#0f766e 55%,#2563eb); box-shadow:0 20px 60px rgba(15,23,42,.28); }
+  .tower-hero h1 { margin:4px 0 6px; font-size:32px; }
+  .subtitle { margin:0; max-width:760px; color:rgba(255,255,255,.84); }
+  .eyebrow { margin:0; text-transform:uppercase; letter-spacing:.12em; font-size:11px; font-weight:700; color:rgba(255,255,255,.72); }
+  .tower-actions { display:flex; gap:10px; }
+  .ghost-btn, .primary-btn, .mini-btn { border:none; border-radius:999px; padding:10px 16px; font-weight:700; text-decoration:none; }
+  .ghost-btn { background:rgba(255,255,255,.12); color:#fff; }
+  .primary-btn { background:#0f766e; color:#fff; }
+  .mini-btn { background:#e2e8f0; color:#0f172a; padding:8px 12px; }
+  .summary-grid, .control-grid { display:grid; gap:18px; }
+  .summary-grid { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
+  .summary-card, .panel, .group-card { background:#fff; border:1px solid #e2e8f0; border-radius:20px; box-shadow:0 10px 30px rgba(15,23,42,.05); }
+  .summary-card { padding:18px 20px; }
+  .summary-card span, .group-head span, .toggle-row span, .override-copy span, .note { color:#64748b; font-size:12px; }
+  .summary-card strong { display:block; margin-top:4px; font-size:28px; color:#0f172a; }
+  .control-grid { grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); }
+  .panel { padding:18px; }
+  .full-width { padding:20px; }
+  .panel-head { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+  .panel-head h2 { margin:4px 0 0; font-size:24px; color:#0f172a; }
+  .search, .select, .input { border:1px solid #cbd5e1; border-radius:14px; padding:10px 14px; font-size:14px; background:#fff; }
+  .inline-form { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .stack-form { display:grid; gap:14px; }
+  .panel-toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:4px; }
+  .group-card { padding:16px; }
+  .group-head { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:12px; }
+  .group-head h3 { margin:0; font-size:16px; color:#0f172a; }
+  .toggle-list { display:grid; gap:10px; }
+  .toggle-list.compact { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+  .toggle-row, .override-row { display:flex; justify-content:space-between; align-items:center; gap:16px; border:1px solid #e2e8f0; border-radius:16px; padding:12px 14px; background:#f8fafc; }
+  .toggle-row strong, .override-row strong { display:block; color:#0f172a; }
+  .override-row { display:grid; grid-template-columns:1fr auto; align-items:center; }
+  .select-sm { min-width:170px; }
+  .inline-fields { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+  .inline-fields label { display:grid; gap:8px; }
+  .empty-state { padding:24px; border:1px dashed #cbd5e1; border-radius:18px; color:#64748b; text-align:center; background:#f8fafc; }
+  .search-target { transition:opacity .2s ease, transform .2s ease; }
+  @media (max-width: 768px) {
+    .tower-hero { flex-direction:column; }
+    .control-grid { grid-template-columns:1fr; }
+    .override-row { grid-template-columns:1fr; }
+  }
+</style>
+
+<script>
+  const registrySearch = document.getElementById("registrySearch");
+  const registrySelectAll = document.getElementById("registrySelectAll");
+  const registryClearAll = document.getElementById("registryClearAll");
+
+  if (registrySearch) {
+    registrySearch.addEventListener("input", () => {
+      const term = registrySearch.value.toLowerCase();
+      document.querySelectorAll(".search-target").forEach((row) => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(term) ? "" : "none";
+      });
+    });
+  }
+
+  if (registrySelectAll) {
+    registrySelectAll.addEventListener("click", () => {
+      document.querySelectorAll('input[name="registry_feature"]').forEach((box) => box.checked = true);
+    });
+  }
+
+  if (registryClearAll) {
+    registryClearAll.addEventListener("click", () => {
+      document.querySelectorAll('input[name="registry_feature"]').forEach((box) => box.checked = false);
+    });
+  }
+</script>
+{% endblock %}

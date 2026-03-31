@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     Plan, BillingInvoice, Subscription, PaymentGateway,
     Commerce, Payment, PlanPermissions, FeatureRegistry, PlanFeature, SubscriptionHistory,
-    UserFeatureOverride
+    UserFeatureOverride, Invoice, InvoiceItem, GSTDetail
 )
 
 
@@ -80,6 +80,25 @@ class PlanAdmin(admin.ModelAdmin):
 class BillingInvoiceAdmin(admin.ModelAdmin):
     list_display = ("invoice_number", "user", "plan", "amount", "status", "created_at")
     search_fields = ("invoice_number", "user__username")
+
+
+class InvoiceItemInline(admin.TabularInline):
+    model = InvoiceItem
+    extra = 0
+
+
+@admin.register(Invoice)
+class InvoiceAdmin(admin.ModelAdmin):
+    inlines = [InvoiceItemInline]
+    list_display = ("invoice_number", "user", "source_type", "status", "total_amount", "issued_at")
+    list_filter = ("source_type", "status")
+    search_fields = ("invoice_number", "user__email", "company_gstin")
+
+
+@admin.register(GSTDetail)
+class GSTDetailAdmin(admin.ModelAdmin):
+    list_display = ("invoice", "company_gstin", "customer_gstin", "place_of_supply", "is_interstate")
+    search_fields = ("invoice__invoice_number", "company_gstin", "customer_gstin")
 
 
 # ====

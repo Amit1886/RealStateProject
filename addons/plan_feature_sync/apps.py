@@ -8,5 +8,7 @@ class PlanFeatureSyncConfig(AppConfig):
 
     def ready(self):
         # Register signals (kept in addon to avoid touching billing/core apps).
-        from . import signals  # noqa: F401
-
+        try:
+            from . import signals  # noqa: F401
+        except Exception as exc:
+            print(f"[plan_feature_sync] signals skipped: {exc}")

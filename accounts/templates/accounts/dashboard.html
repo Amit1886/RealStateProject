@@ -1,1350 +1,3574 @@
 {% extends "accounts/base.html" %}
 {% load static %}
-{% load plan_tags %}
-{% load feature_tags %}
+
+{% block title %}Real Estate Dashboard{% endblock %}
+
+{% block extra_css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    #dashboard,
+    #leads,
+    #properties,
+    #deals,
+    #agents,
+    #reports,
+    #settings,
+    #system-signals {
+      scroll-margin-top: 90px;
+    }
+
+    .eco-wrap {
+      display: grid;
+      gap: 16px;
+    }
+
+    .eco-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+      gap: 16px;
+      align-items: stretch;
+      padding: 22px;
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 34%),
+        linear-gradient(135deg, #0f2f3b 0%, #14313d 52%, #18212f 100%);
+      color: #f8fafc;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+    }
+
+    .eco-kicker {
+      margin: 0 0 8px;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #f8b84f;
+      font-weight: 700;
+    }
+
+    .eco-title {
+      margin: 0;
+      font-size: 34px;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+      max-width: 12ch;
+    }
+
+    .eco-hero-copy {
+      max-width: 56ch;
+      margin: 12px 0 0;
+      color: rgba(248, 250, 252, 0.82);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .eco-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .eco-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.11);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .eco-chip i {
+      color: #f8b84f;
+    }
+
+    .eco-hero-meta {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .eco-glass-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.09);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
+    }
+
+    .eco-glass-card h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .eco-glass-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .eco-glass-card-note {
+      font-size: 11px;
+      color: rgba(248, 250, 252, 0.68);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+
+    .eco-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .eco-mini-grid .cell {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .eco-mini-grid span,
+    .eco-mini-grid strong {
+      display: block;
+    }
+
+    .eco-mini-grid span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(248, 250, 252, 0.74);
+    }
+
+    .eco-mini-grid strong {
+      margin-top: 6px;
+      font-size: 18px;
+      color: #ffffff;
+    }
+
+    .eco-action-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .eco-action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 12px;
+      border-radius: 14px;
+      background: #ffffff;
+      color: #0f172a;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform .22s ease, box-shadow .22s ease, background-color .22s ease, color .22s ease, border-color .22s ease;
+    }
+
+    .eco-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .eco-admin-panels {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .eco-admin-panels > .eco-card {
+      padding: 18px;
+      border-radius: 22px;
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .eco-sticky-panel {
+      position: static;
+      align-self: start;
+    }
+
+    .eco-quick-dock-panel {
+      padding: 14px;
+      max-height: none;
+      overflow: visible;
+    }
+
+    .eco-quick-dock-panel .eco-detail-copy {
+      font-size: 13px;
+    }
+
+    .eco-quick-dock-panel .eco-kv-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .eco-quick-dock-panel .eco-lead-filter-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .eco-quick-dock-panel .eco-lead-filter-grid .span-2 {
+      grid-column: span 2;
+    }
+
+    .eco-quick-dock-panel .eco-module-grid {
+      gap: 10px;
+    }
+
+    .eco-intake-dock {
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+    }
+
+    .eco-intake-dock .eco-module-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .eco-intake-dock .eco-module-tile {
+      min-height: 90px;
+      padding: 12px;
+      box-shadow: none;
+    }
+
+    .eco-intake-dock .eco-module-tile strong {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .eco-intake-dock .eco-module-tile span {
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-top: 5px;
+    }
+
+    .eco-intake-dock .eco-admin-panel {
+      margin-top: 12px !important;
+    }
+
+    .eco-intake-dock .eco-lead-toolbar {
+      padding-top: 4px;
+    }
+
+    @media (max-width: 1280px) {
+      .eco-intake-dock .eco-module-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .eco-sticky-panel {
+        position: static;
+        max-height: none;
+        overflow: visible;
+      }
+    }
+
+    .eco-admin-panels > .eco-card .eco-module-grid,
+    .eco-admin-panels > .eco-card .eco-list,
+    .eco-admin-panels > .eco-card .eco-kv-grid {
+      margin-top: 12px;
+    }
+
+    .eco-admin-panels > .eco-card .eco-card-head {
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eef2f7;
+    }
+
+    .eco-stat-card {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      box-shadow: 0 12px 26px rgba(15, 23, 42, 0.07);
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .eco-stat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .eco-stat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      font-size: 18px;
+    }
+
+    .eco-stat-card.crm .eco-stat-icon { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .eco-stat-card.market .eco-stat-icon { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+    .eco-stat-card.info .eco-stat-icon { background: linear-gradient(135deg, #0284c7, #38bdf8); }
+    .eco-stat-card.wallet .eco-stat-icon { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+    .eco-stat-card.loan .eco-stat-icon { background: linear-gradient(135deg, #d97706, #f59e0b); }
+    .eco-stat-card.scheme .eco-stat-icon { background: linear-gradient(135deg, #15803d, #22c55e); }
+    .eco-stat-card.content .eco-stat-icon { background: linear-gradient(135deg, #e11d48, #fb7185); }
+
+    .eco-stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    .eco-stat-value {
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .eco-shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .eco-rail {
+      position: sticky;
+      top: 12px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .eco-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 12px 26px rgba(15, 23, 42, 0.07);
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .eco-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .eco-card-head h3 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .eco-card-head .muted {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    .eco-quick-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .eco-quick-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 12px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #edf2f7;
+      text-decoration: none;
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 13px;
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, background-color .22s ease;
+    }
+
+    .eco-quick-item i {
+      font-size: 16px;
+      color: #0f766e;
+    }
+
+    .eco-signal-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .eco-signal-row {
+      display: grid;
+      gap: 6px;
+    }
+
+    .eco-signal-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .eco-progress-track {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #e2e8f0;
+    }
+
+    .eco-progress-fill {
+      height: 100%;
+      border-radius: inherit;
+    }
+
+    .eco-progress-fill.market { background: linear-gradient(90deg, #0f766e, #14b8a6); }
+    .eco-progress-fill.crm { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+    .eco-progress-fill.loan { background: linear-gradient(90deg, #d97706, #fbbf24); }
+    .eco-progress-fill.scheme { background: linear-gradient(90deg, #15803d, #4ade80); }
+
+    .eco-kv-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .eco-kv {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #edf2f7;
+    }
+
+    .eco-kv span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    .eco-kv strong {
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    .eco-main {
+      display: grid;
+      gap: 16px;
+    }
+
+    .eco-workspace-card {
+      display: grid;
+      gap: 16px;
+    }
+
+    .eco-detail-copy {
+      margin: 0;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .eco-module-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .eco-module-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid #dbeafe;
+      background: #eff6ff;
+      color: #1d4ed8;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .eco-module-link.active {
+      background: linear-gradient(135deg, #0f766e, #1d4ed8);
+      border-color: transparent;
+      color: #ffffff;
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+    }
+
+    .eco-inline-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .eco-inline-actions .eco-action-btn,
+    .eco-inline-actions .eco-quick-item {
+      min-width: 180px;
+    }
+
+    .eco-lead-toolbar {
+      display: grid;
+      gap: 12px;
+    }
+
+    .eco-lead-filter-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .eco-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .eco-field.span-2 {
+      grid-column: span 2;
+    }
+
+    .eco-field label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    .eco-field input,
+    .eco-field select {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 14px;
+      border: 1px solid #dbe3ed;
+      background: #f8fafc;
+      color: #0f172a;
+      font-size: 13px;
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, background-color .22s ease;
+    }
+
+    .eco-field input:focus,
+    .eco-field select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .eco-lead-toolbar-foot {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      background: #f8fafc;
+    }
+
+    .eco-lead-count {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 8px;
+      color: #475569;
+      font-size: 13px;
+    }
+
+    .eco-lead-count strong {
+      font-size: 22px;
+      line-height: 1;
+      color: #0f172a;
+    }
+
+    .eco-table-wrap {
+      overflow-x: auto;
+    }
+
+    .eco-leads-list th:nth-child(2),
+    .eco-leads-list td:nth-child(2) {
+      display: none;
+    }
+
+    .eco-url-note {
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px dashed #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .eco-settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .eco-settings-box {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      background: #f8fafc;
+      display: grid;
+      gap: 10px;
+    }
+
+    .eco-settings-box h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .eco-settings-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding-left: 18px;
+      color: #475569;
+      font-size: 13px;
+    }
+
+    .eco-module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .eco-module-tile {
+      position: relative;
+      overflow: hidden;
+      display: block;
+      padding: 14px;
+      border-radius: 18px;
+      color: #ffffff;
+      min-height: 118px;
+      text-decoration: none;
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.16);
+      transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
+    }
+
+    .eco-module-tile.intake-step {
+      width: 100%;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+      appearance: none;
+    }
+
+    .eco-module-tile.intake-step.is-active {
+      outline: 3px solid rgba(255, 255, 255, 0.48);
+      box-shadow: 0 22px 38px rgba(15, 23, 42, 0.28);
+      transform: translateY(-2px);
+    }
+
+    .eco-module-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 22px 36px rgba(15, 23, 42, 0.22);
+      color: #ffffff;
+    }
+
+    .eco-module-tile .icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.14);
+      font-size: 18px;
+    }
+
+    .eco-module-tile strong {
+      display: block;
+      margin-top: 16px;
+      font-size: 16px;
+    }
+
+    .eco-module-tile span {
+      display: block;
+      margin-top: 6px;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 800;
+    }
+
+    .eco-module-tile.market { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+    .eco-module-tile.crm { background: linear-gradient(135deg, #1d4ed8, #2563eb); }
+    .eco-module-tile.loan { background: linear-gradient(135deg, #b45309, #f59e0b); }
+    .eco-module-tile.verify { background: linear-gradient(135deg, #0f766e, #22c55e); }
+    .eco-module-tile.scheme { background: linear-gradient(135deg, #166534, #22c55e); }
+    .eco-module-tile.content { background: linear-gradient(135deg, #be123c, #fb7185); }
+    .eco-module-tile.intel { background: linear-gradient(135deg, #5b21b6, #8b5cf6); }
+
+    .eco-flow-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .eco-flow-step {
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+      padding: 14px 12px;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .eco-stat-card:hover,
+    .eco-card:hover,
+    .eco-admin-panels > .eco-card:hover,
+    .eco-quick-item:hover,
+    .eco-flow-step:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.1);
+    }
+
+    .eco-flow-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 20px;
+    }
+
+    .eco-flow-step span {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #334155;
+    }
+
+    .eco-panels {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .eco-property-title,
+    .eco-loan-title,
+    .eco-scheme-title,
+    .eco-article-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .eco-property-price {
+      margin-top: 8px;
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 800;
+      color: #0f766e;
+    }
+
+    .eco-property-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .eco-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .eco-tag.badge {
+      background: #ecfccb;
+      color: #3f6212;
+    }
+
+    .eco-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .eco-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #edf2f7;
+    }
+
+    .eco-list-item .copy strong,
+    .eco-list-item .copy span {
+      display: block;
+    }
+
+    .eco-list-item .copy strong {
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    .eco-list-item .copy span {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .eco-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #166534;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .eco-pill.warn {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .eco-pill.neutral {
+      background: #e0f2fe;
+      color: #0c4a6e;
+    }
+
+    .eco-table-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 12px 26px rgba(15, 23, 42, 0.07);
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .eco-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .eco-table th,
+    .eco-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #eef2f7;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .eco-table tbody tr {
+      transition: background-color .22s ease, transform .22s ease, box-shadow .22s ease;
+    }
+
+    .eco-table tbody tr:hover {
+      background: rgba(240, 249, 255, 0.7);
+    }
+
+    .eco-table th {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #64748b;
+    }
+
+    .eco-row-link {
+      color: #0f172a;
+      font-weight: 800;
+      text-decoration: none;
+      transition: color .22s ease, opacity .22s ease;
+    }
+
+    .eco-row-link:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    .eco-row-sub {
+      margin-top: 4px;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .eco-row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .eco-mini-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid #dbeafe;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform .22s ease, box-shadow .22s ease, background-color .22s ease, color .22s ease, border-color .22s ease;
+    }
+
+    .eco-mini-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 16px rgba(29, 78, 216, 0.12);
+    }
+
+    .eco-score-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .eco-score-badge.hot {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .eco-score-badge.warm {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .eco-score-badge.cold {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    @media (max-width: 1100px) {
+      .eco-hero,
+      .eco-shell,
+      .eco-panels {
+        grid-template-columns: 1fr;
+      }
+
+      .eco-lead-filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .eco-rail {
+        position: static;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .eco-title {
+        font-size: 28px;
+      }
+
+      .eco-action-row,
+      .eco-mini-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .eco-lead-filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .eco-field.span-2 {
+        grid-column: span 1;
+      }
+
+      .eco-lead-toolbar-foot {
+        align-items: stretch;
+      }
+
+      .eco-module-grid,
+      .eco-flow-strip,
+      .eco-stats-grid,
+      .eco-admin-panels {
+        grid-template-columns: 1fr;
+      }
+
+      .eco-module-link {
+        flex: 1 1 120px;
+      }
+    }
+  </style>
+{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-bold"></h1>
-<div class="dashboard-wrap">
-
-  <!-- HEADER -->
-<div class="page-head-wrapper">
-  <div class="page-head">
-
-    <!-- LEFT TEXT -->
-    <div class="page-head-left">
-      <h1>{{ greeting }}</h1>
-      <div class="muted-text">
-        <strong>{{ profile.full_name|default:profile.user.username }}</strong>
-      </div>
-    </div>
-
-    <!-- RIGHT ' BUTTONS -->
-    <div class="page-head-right">
-      <div class="dashboard-actions">
-        {% feature_allowed 'billing.invoices' as trans_allowed %}
-        <a href="{% if trans_allowed %}{% url 'khataapp:add_transaction' %}{% else %}{% url 'billing:upgrade_plan' %}{% endif %}"
-           class="action-btn primary {% if not trans_allowed %}locked-feature{% endif %}"
-           {% if not trans_allowed %}data-upgrade-url="{% url 'billing:upgrade_plan' %}"{% endif %}>
-          <i class="fa fa-plus-circle"></i> Add Transaction
-        </a>
-
-        {% feature_allowed 'commerce.suppliers' as party_allowed %}
-        <a href="{% if party_allowed %}{% url 'khataapp:add_party' %}{% else %}{% url 'billing:upgrade_plan' %}{% endif %}"
-           class="action-btn danger {% if not party_allowed %}locked-feature{% endif %}"
-           {% if not party_allowed %}data-upgrade-url="{% url 'billing:upgrade_plan' %}"{% endif %}>
-          <i class="fa fa-user-plus"></i> Add Party
-        </a>
-
-        {% feature_allowed 'settings.advanced' as settings_allowed %}
-        <a href="{% if settings_allowed %}{% url 'core_settings:settings_center' %}{% else %}{% url 'billing:upgrade_plan' %}{% endif %}"
-           class="action-btn settings-btn {% if not settings_allowed %}locked-feature{% endif %}"
-           {% if not settings_allowed %}data-upgrade-url="{% url 'billing:upgrade_plan' %}"{% endif %}>
-          <i class="fa fa-cog"></i> Settings
-        </a>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-
-<!-- Dashboard Slider Buttons -->
-<div class="smart-card smart-card-wide">
-  <div class="smart-card-header">
-    <div>
-      <h3>Quick Centers</h3>
-      <p>Jump to settings, profile, upgrades, and usage.</p>
-    </div>
-  </div>
-  <div class="quick-slider">
-    {% feature_allowed 'settings.advanced' as settings_allowed %}
-    <a href="{% if settings_allowed %}{% url 'core_settings:settings_center' %}{% else %}{% url 'billing:upgrade_plan' %}{% endif %}"
-       class="quick-slide {% if not settings_allowed %}locked-feature{% endif %}"
-       {% if not settings_allowed %}data-upgrade-url="{% url 'billing:upgrade_plan' %}"{% endif %}>
-       Settings Center
-    </a>
-    <a href="{% url 'accounts:edit_profile' %}" class="quick-slide">
-       Profile Center
-    </a>
-    <a href="{% url 'billing:upgrade_plan' %}" class="quick-slide">
-      Upgrade Plan
-    </a>
-    <a href="{% url 'billing:billing_history' %}" class="quick-slide">
-      Billing History
-    </a>
-    {% if request.user.is_staff or request.user.is_superuser %}
-    <a href="{% url 'khataapp:field_agent_list' %}"
-       class="quick-slide {% if not feature_access|get_item:"field.agents" %}locked-feature{% endif %}"
-       data-upgrade-url="{% url 'billing:upgrade_plan' %}">
-       Field Agents
-    </a>
-    {% endif %}
-    <a href="{% url 'billing:plan_management' %}"
-       class="quick-slide {% if not feature_access|get_item:"reports.advanced" %}locked-feature{% endif %}"
-       data-upgrade-url="{% url 'billing:upgrade_plan' %}">
-       Usage Report
-    </a>
-  </div>
-</div>
-
-<!-- Plan & Usage Cards -->
-<div class="summary-grid">
-  <div class="summary-card status-card">
-    <div class="title">Current Plan</div>
-    <div class="value">{{ subscription.plan.name|default:"Free" }}</div>
-  </div>
-  <div class="summary-card status-card">
-    <div class="title">Locked Features</div>
-    <div class="value">{{ locked_features_count|default:"0" }}</div>
-  </div>
-  <div class="summary-card status-card">
-    <div class="title">Subscription Expiry</div>
-    <div class="value">
-      {% if subscription and subscription.end_date %}
-        {{ subscription.end_date|date:"Y-m-d" }}
-      {% else %}
-        
-      {% endif %}
-    </div>
-  </div>
-  <div class="summary-card status-card">
-    <div class="title">Usage vs Limit</div>
-    <div class="value">{{ usage_summary.usage }}/{{ usage_summary.limit }}</div>
-  </div>
-</div>
-
-  <!-- PROFILE CARD -->
-<div class="profile-card" style="margin-top:18px;">
-
-  <!-- LEFT INFO -->
-  <div class="profile-info">
-    <h2 class="profile-name">
-      {{ profile.full_name|default:request.user.username }}
-    </h2>
-
-    <p class="profile-meta">
-      <strong>Business:</strong> {{ profile.business_name|default:"N/A" }}
-      &nbsp;  &nbsp;
-      <strong>Mobile:</strong> {{ profile.mobile|default:"N/A" }}
-    </p>
-
-    <p class="profile-plan">
-      <strong>Plan:</strong>
-      {% if profile.plan %}
-        <span class="plan-badge">
-          {{ profile.plan.name }}  {{ profile.plan.price }}
-        </span>
-      {% else %}
-        <span>No plan</span>
-      {% endif %}
-    </p>
-  </div>
-
-  <!-- RIGHT AVATAR -->
-  <div class="profile-avatar-wrap">
-    <img
-      src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}"
-      class="profile-avatar"
-      alt="Profile"
-    >
-    <a href="{% url 'accounts:edit_profile' %}" class="edit-btn">
-      Edit
-    </a>
-  </div>
-
-</div>
-
-<!-- Coupon Slider -->
-{% if active_coupons %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-tags"></i> Active Coupons</h3>
-            </div>
-            <div class="card-body">
-                <div id="coupon-slider" class="coupon-slider">
-                    <div class="coupon-track">
-                        {% for coupon in active_coupons %}
-                        <div class="coupon-item">
-                            <div class="coupon-card">
-                                <div class="coupon-header">
-                                    <h5>{{ coupon.title }}</h5>
-                                    <span class="coupon-code">{{ coupon.code }}</span>
-                                </div>
-                                <div class="coupon-body">
-                                    <p>{{ coupon.description|truncatechars:50 }}</p>
-                                    {% if coupon.coupon_type == 'discount' %}
-                                    <div class="coupon-discount">
-                                        {% if coupon.discount_type == 'percentage' %}
-                                            <span class="discount-badge">{{ coupon.discount_value }}% OFF</span>
-                                        {% else %}
-                                            <span class="discount-badge">₹{{ coupon.discount_value }} OFF</span>
-                                        {% endif %}
-                                    </div>
-                                    {% endif %}
-                                    <div class="coupon-details">
-                                        <small>Min Order: ₹{{ coupon.min_order_amount }}</small>
-                                        {% if coupon.valid_until %}
-                                        <small>Valid till: {{ coupon.valid_until|date:"M d" }}</small>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="coupon-footer">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="applyCoupon('{{ coupon.code }}')">
-                                        Apply
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="slider-controls mt-3">
-                    <button class="btn btn-sm btn-outline-secondary" id="prev-btn" aria-label="Previous coupon">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" id="next-btn" aria-label="Next coupon">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
+<div class="dashboard-wrap" id="dashboard">
+  <div class="eco-wrap">
+    {% if not compact_dashboard_mode and workspace_role != "admin" %}
+    <section class="eco-hero">
+      <div>
+        <p class="eco-kicker">{{ workspace_role_label }}</p>
+        <h1 class="eco-title">{{ profile.full_name|default:request.user.username }}</h1>
+        <div class="eco-chip-row">
+          <span class="eco-chip"><i class="bi bi-building"></i>{{ request.user.company.name|default:"Demo Realty" }}</span>
+          <span class="eco-chip"><i class="bi bi-person-badge"></i>{{ request.user.role|default:"workspace"|title }}</span>
+          <span class="eco-chip"><i class="bi bi-wallet2"></i>Rs {{ real_estate_counts.wallet_balance }}</span>
+          <span class="eco-chip"><i class="bi bi-stars"></i>{{ real_estate_counts.subscription_name|default:"Plan Ready" }}</span>
         </div>
-    </div>
-</div>
-{% endif %}
+      </div>
 
-
-<!-- Coupon Slider -->
-{% if active_coupons %}
-<div class="smart-card smart-card-wide">
-  <div class="smart-card-header">
-    <div>
-      <h3>Active Coupons</h3>
-      <p>Smart offers ready to boost sales.</p>
-    </div>
-  </div>
-  <div class="smart-coupon-slider">
-    <div id="coupon-slider" class="coupon-slider">
-      <div class="coupon-track">
-        {% for coupon in active_coupons %}
-        <div class="coupon-item">
-          <div class="coupon-card">
-            <div class="coupon-header">
-              <h5>{{ coupon.title }}</h5>
-              <span class="coupon-code">{{ coupon.code }}</span>
+      <div class="eco-hero-meta">
+        <div class="eco-glass-card">
+          <div class="eco-glass-card-head">
+            <h3>Workspace Pulse</h3>
+            <span class="eco-glass-card-note">Live snapshot</span>
+          </div>
+          <div class="eco-mini-grid">
+            <div class="cell">
+              <span>Total Leads</span>
+              <strong>{{ crm_dashboard.total_leads }}</strong>
             </div>
-            <div class="coupon-body">
-              <p>{{ coupon.description|truncatechars:50 }}</p>
-              {% if coupon.coupon_type == 'discount' %}
-              <div class="coupon-discount">
-                {% if coupon.discount_type == 'percentage' %}
-                    <span class="discount-badge">{{ coupon.discount_value }}% OFF</span>
-                {% else %}
-                    <span class="discount-badge">{{ coupon.discount_value }} OFF</span>
-                {% endif %}
-              </div>
-              {% endif %}
-              <div class="coupon-details">
-                <small>Min Order: {{ coupon.min_order_amount }}</small>
-                {% if coupon.valid_until %}
-                <small>Valid till: {{ coupon.valid_until|date:"M d" }}</small>
-                {% endif %}
-              </div>
+            <div class="cell">
+              <span>Auto Assigned</span>
+              <strong>{{ crm_dashboard.auto_assigned_count }}</strong>
             </div>
-            <div class="coupon-footer">
-              <button class="summary-modern-btn summary-modern-btn-ghost" onclick="applyCoupon('{{ coupon.code }}')">
-                Apply
-              </button>
+            <div class="cell">
+              <span>Converted</span>
+              <strong>{{ crm_dashboard.converted_leads }}</strong>
+            </div>
+            <div class="cell">
+              <span>Pending Payouts</span>
+              <strong>{{ crm_dashboard.pending_payout_count }}</strong>
             </div>
           </div>
         </div>
-        {% endfor %}
-      </div>
-    </div>
-    <div class="slider-controls mt-3">
-      <button class="summary-modern-btn summary-modern-btn-ghost" id="prev-btn" aria-label="Previous coupon">
-        
-      </button>
-      <button class="summary-modern-btn summary-modern-btn-ghost" id="next-btn" aria-label="Next coupon">
-        
-      </button>
-    </div>
-  </div>
-</div>
-{% endif %}
 
-  <!-- Summary row -->
-  <div class="summary-grid">
-    <div class="summary-card">
-      <div class="title">Total Credit</div>
-      <div class="value" style="color: #15803d">{{ total_credit|default:"0" }}</div>
-    </div>
-    <div class="summary-card">
-      <div class="title">Total Debit</div>
-      <div class="value" style="color:#dc2626">{{ total_debit|default:"0" }}</div>
-    </div>
-    <div class="summary-card">
-      <div class="title">Net Balance</div>
-      <div class="value" style="color:#075985">{{ net_balance|default:"0" }}</div>
-    </div>
-    {% if loyalty_account %}
-      <div class="summary-card loyalty-card">
-        <div class="title">
-          <i class="fas fa-star"></i> Loyalty Points
-        </div>
-        <div class="value" style="color:#f59e0b">{{ loyalty_account.available_points }}</div>
-        <div class="loyalty-tier">
-          {% if loyalty_account.current_tier %}
-            <span class="tier-badge {{ loyalty_account.current_tier.name }}">{{ loyalty_account.current_tier.display_name }}</span>
-          {% else %}
-            <span class="tier-badge bronze">Bronze</span>
-          {% endif %}
-        </div>
-        <a href="{% url 'accounts:loyalty_dashboard' %}" class="loyalty-link">View Details</a>
-      </div>
-    {% endif %}
-  </div>
-
-  <div class="summary-grid">
-    <div class="summary-card status-card">
-      <div class="title">Company Config Status</div>
-      <div class="value">{{ settings_status_cards.company_config_status|default:"Missing" }}</div>
-    </div>
-    <div class="summary-card status-card">
-      <div class="title">Tax Setup Status</div>
-      <div class="value">{{ settings_status_cards.tax_setup_status|default:"Missing" }}</div>
-    </div>
-    <div class="summary-card status-card">
-      <div class="title">Printer Ready Status</div>
-      <div class="value">{{ settings_status_cards.printer_ready_status|default:"Not Ready" }}</div>
-    </div>
-    <div class="summary-card status-card">
-      <div class="title">WhatsApp Connected</div>
-      <div class="value">{{ settings_status_cards.whatsapp_connected_status|default:"Not Connected" }}</div>
-    </div>
-    {% if loyalty_account %}
-      <div class="summary-card loyalty-card">
-        <div class="title">
-          <i class="fas fa-star"></i> Loyalty Points
-        </div>
-        <div class="value" style="color:#f59e0b">{{ loyalty_account.available_points }}</div>
-        <div class="loyalty-tier">
-          {% if loyalty_account.current_tier %}
-            <span class="tier-badge {{ loyalty_account.current_tier.name }}">{{ loyalty_account.current_tier.display_name }}</span>
-          {% else %}
-            <span class="tier-badge bronze">Bronze</span>
-          {% endif %}
-        </div>
-        <a href="{% url 'accounts:loyalty_dashboard' %}" class="loyalty-link">View Details</a>
-      </div>
-    {% endif %}
-  </div>
-
-  {% include "commerce/dashboard_ai_cards.html" %}
-  {% include "commerce/dashboard_order_cards.html" %}
-  {% include "accounts/loyalty_cards.html" %}
-
-
-  <!-- Recent Parties and Transactions -->
-  <div class="smart-section-grid">
-    <div class="smart-card">
-      <div class="smart-card-header">
-        <div>
-          <h3>Recent Parties</h3>
-          <p>Latest customers and suppliers added.</p>
-        </div>
-        <a href="{% url 'khataapp:party_list' %}" class="summary-modern-btn summary-modern-btn-ghost">View All Parties '</a>
-      </div>
-
-      <div class="smart-table-wrap">
-        <table class="smart-table">
-          <thead>
-            <tr><th>Name</th><th>Type</th><th>Grade</th><th>Created</th></tr>
-          </thead>
-          <tbody>
-            {% for party in recent_parties %}
-            <tr>
-              <td>{{ party.name }}</td>
-              <td>{{ party.party_type|title }}</td>
-              <td>{{ party.credit_grade|default:"-" }}</td>
-              <td>{{ party.created_at|date:"Y-m-d" }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4" class="smart-empty">No recent parties found.</td></tr>
+        <div class="eco-glass-card">
+          <div class="eco-glass-card-head">
+            <h3>Quick Dock</h3>
+            <span class="eco-glass-card-note">Fast jumps</span>
+          </div>
+          <div class="eco-action-row">
+            {% for action in dashboard_quick_actions %}
+              <a href="{{ action.href }}" class="eco-action-btn">
+                <i class="bi {{ action.icon }}"></i>{{ action.label }}
+              </a>
             {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="smart-card">
-      <div class="smart-card-header">
-        <div>
-          <h3>Recent Transactions</h3>
-          <p>Latest cashflow activity tracked today.</p>
+          </div>
         </div>
-        <a href="{% url 'khataapp:transaction_list' %}" class="summary-modern-btn summary-modern-btn-ghost">View All Transactions '</a>
       </div>
+    </section>
 
-      <div class="smart-table-wrap">
-        <table class="smart-table">
-          <thead>
-            <tr><th>Party</th><th>Type</th><th>Amount</th><th>Date</th><th>Notes</th></tr>
-          </thead>
-          <tbody>
-            {% for txn in recent_transactions %}
-            <tr>
-              <td>{{ txn.party.name }}</td>
-              <td>
-                {% if txn.txn_type == 'credit' %}
-                  <span class="smart-badge smart-badge-positive">Credit</span>
-                {% else %}
-                  <span class="smart-badge smart-badge-negative">Debit</span>
-                {% endif %}
-              </td>
-              <td>{{ txn.amount }}</td>
-              <td>{{ txn.date|date:"Y-m-d" }}</td>
-              <td>{{ txn.notes|default:"-" }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" class="smart-empty">No recent transactions found.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    <section class="eco-stats-grid">
+      {% for stat in dashboard_primary_stats %}
+        <div class="eco-stat-card {{ stat.tone }}">
+          <div class="eco-stat-top">
+            <span class="eco-stat-icon"><i class="bi {{ stat.icon }}"></i></span>
+            <span class="eco-stat-label">{{ stat.label }}</span>
+          </div>
+          <div class="eco-stat-value">{{ stat.value }}</div>
+        </div>
+      {% endfor %}
+    </section>
+    {% elif workspace_role == "admin" and not compact_dashboard_mode %}
+    <section class="eco-card">
+      <div class="eco-card-head">
+        <div>
+          <div class="muted">Admin Workspace</div>
+          <h3>Control Tower Only</h3>
+        </div>
+        <span class="eco-pill neutral">{{ admin_control_summary.users }} Users</span>
       </div>
-    </div>
-  </div>
-
-
-<!-- == Party Ledger Summary == -->
-<div class="smart-card smart-card-wide">
-  <div class="smart-card-header">
-    <div>
-      <h3>Party Ledger Summary</h3>
-      <p>Outstanding balances and ledger actions by party.</p>
-    </div>
-    <a href="{% url 'accounts:ledger_list' %}" class="summary-modern-btn summary-modern-btn-ghost">View All Ledger '</a>
-  </div>
-
-  <div class="smart-table-wrap">
-    <table class="smart-table">
-      <thead>
-        <tr>
-          <th>S.No</th>
-          <th>Party</th>
-          <th>Business</th>
-          <th>Mobile</th>
-          <th>Credit ()</th>
-          <th>Debit ()</th>
-          <th>Balance ()</th>
-          <th class="text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for card in party_cards %}
-        <tr>
-          <td>{{ forloop.counter }}</td>
-          <td>{{ card.party.name }}</td>
-          <td>{{ card.party.business_name|default:"-" }}</td>
-          <td>{{ card.party.mobile_number|default:"-" }}</td>
-          <td><span class="smart-badge smart-badge-positive">{{ card.total_credit|default:"0" }}</span></td>
-          <td><span class="smart-badge smart-badge-negative">{{ card.total_debit|default:"0" }}</span></td>
-          <td style="font-weight:700;">{{ card.balance }}</td>
-          <td class="text-center">
-            <a href="{% url 'accounts:party_ledger' card.party.id %}" class="summary-modern-btn">View</a>
-            <a href="{% url 'accounts:party_ledger_pdf' card.party.id %}" class="summary-modern-btn summary-modern-btn-ghost">PDF</a>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="8" class="smart-empty">No Party Data Found</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
-<!-- == END == -->
-
-
-<div class="summary-modern-wrap">
-  <div class="summary-modern-header">
-    <div>
-      <h3>Today Summary</h3>
-      <p>Quick view of todays cashflow performance.</p>
-    </div>
-    <button type="button" class="summary-modern-btn summary-modern-btn-ghost" onclick="toggleSummaryDetails()">
-      More Details -
-    </button>
-  </div>
-
-  {% if summary %}
-  <div class="summary-modern-grid">
-    <div class="summary-modern-card positive">
-      <div class="label">Total Credit</div>
-      <div class="value"> {{ summary.total_credit }}</div>
-      <div class="meta">Received</div>
-    </div>
-    <div class="summary-modern-card negative">
-      <div class="label">Total Debit</div>
-      <div class="value"> {{ summary.total_debit }}</div>
-      <div class="meta">Given</div>
-    </div>
-    <div class="summary-modern-card accent">
-      <div class="label">Balance</div>
-      <div class="value"> {{ summary.balance }}</div>
-      <div class="meta">
-        {% if summary.balance >= 0 %}
-          Positive
-        {% else %}
-          Due
-        {% endif %}
+      <div class="eco-kv-grid" style="margin-top: 12px; grid-template-columns: repeat(4, minmax(0, 1fr));">
+        <div class="eco-kv"><span>Users</span><strong>{{ admin_control_summary.users }}</strong></div>
+        <div class="eco-kv"><span>Agents</span><strong>{{ admin_control_summary.agents }}</strong></div>
+        <div class="eco-kv"><span>Leads</span><strong>{{ admin_control_summary.leads }}</strong></div>
+        <div class="eco-kv"><span>Batches</span><strong>{{ admin_control_summary.import_batches }}</strong></div>
       </div>
-
-    </div>
-  </div>
-  {% else %}
-    <div class="text-center text-muted p-3">No summary found for today.</div>
-  {% endif %}
-
-  <div id="summaryDetails" style="display:none;" class="summary-modern-details">
-    <div><strong>Total Transactions:</strong> {{ summary.total_transactions }}</div>
-    <div><strong>Date:</strong> {{ summary.date }}</div>
-  </div>
-</div>
-
-<div class="snapshot-modern-wrap">
-  <div class="summary-modern-header">
-    <div>
-      <h3>Today Business Snapshot</h3>
-      <p>Revenue, purchases, and cash movement at a glance.</p>
-    </div>
-    <form method="get" class="snapshot-period">
-      <select name="period" class="summary-modern-select" onchange="this.form.submit()" aria-label="Select period">
-
-      <form method="get" class="mb-3">
-  <div class="row g-2 align-items-center">
-    <div class="col-auto">
-      <select name="period" class="form-select" onchange="this.form.submit()" aria-label="Select period">
-
-        <option value="today" {% if period == 'today' %}selected{% endif %}>Today</option>
-        <option value="yesterday" {% if period == 'yesterday' %}selected{% endif %}>Yesterday</option>
-        <option value="month" {% if period == 'month' %}selected{% endif %}>This Month</option>
-      </select>
-    </form>
-  </div>
-
-  <div class="snapshot-modern-grid">
-    <div class="summary-modern-card positive">
-      <div class="label">Total Sales</div>
-      <div class="value"> {{ snapshot.sales_amount }}</div>
-      <div class="meta">Orders: {{ snapshot.sales_orders }}</div>
-    </div>
-    <div class="summary-modern-card accent">
-      <div class="label">Total Purchase</div>
-      <div class="value"> {{ snapshot.purchase_amount }}</div>
-      <div class="meta">Orders: {{ snapshot.purchase_orders }}</div>
-    </div>
-    <div class="summary-modern-card {% if snapshot.profit_loss >= 0 %}positive{% else %}negative{% endif %}">
-      <div class="label">{% if snapshot.profit_loss >= 0 %}Profit{% else %}Loss{% endif %}</div>
-      <div class="value"> {{ snapshot.profit_loss }}</div>
-      <div class="meta">Today</div>
-    </div>
-    <div class="summary-modern-card info">
-      <div class="label">Payment Received</div>
-      <div class="value"> {{ snapshot.payment_received }}</div>
-      <div class="meta">Cash In</div>
-    </div>
-    <div class="summary-modern-card warning">
-      <div class="label">Payment Given</div>
-      <div class="value"> {{ snapshot.payment_given }}</div>
-      <div class="meta">Cash Out</div>
-    </div>
-    <div class="summary-modern-card positive">
-      <div class="label">Receivable</div>
-      <div class="value"> {{ snapshot.receivable_amount }}</div>
-      <div class="meta">Pending Inflow</div>
-    </div>
-    <div class="summary-modern-card negative">
-      <div class="label">Payable</div>
-      <div class="value"> {{ snapshot.payable_amount }}</div>
-      <div class="meta">Pending Outflow</div>
-    </div>
-  </div>
-
-  <div class="snapshot-footer">
-    <a href="{% url 'accounts:business_snapshot' %}" class="summary-modern-btn">
-      View Full Report
-    </a>
-  </div>
-</div>
-
-
-  <!-- Commerce quick actions (Smart card) -->
-<div class="smart-card smart-card-wide">
-  <div class="smart-card-header">
-    <div>
-      <h3>' Commerce</h3>
-      <p>Quick business actions</p>
-
-  <!-- Commerce quick actions -->
-<div class="col-md-4 col-sm-6 mb-3">
-
-  <div class="action-card">
-    <div class="action-card-header">
-      <div>
-        <h5>🛒 Commerce</h5>
-        <p>Quick business actions</p>
-      </div>
-
-      <button class="toggle-btn"
-              onclick="toggleActionMenu('commerceActions')"
-              aria-label="Toggle menu">
-        ⋮
-      </button>
-    </div>
-
-    <div class="action-menu" id="commerceActions">
-      <a href="{% url 'commerce:add_product' %}">
-        ➕ Add Product
-      </a>
-
-      <a href="{% url 'commerce:add_order' %}">
-        ➕ Add Order
-      </a>
-
-      <!-- ✅ FIXED -->
-      <a href="{% url 'commerce:add_payment' %}">
-        ➕ Add Payment
-      </a>
-
-      <!-- ✅ FIXED -->
-      <a href="{% url 'commerce:add_invoice' %}">
-        ➕ Add Invoice
-      </a>
-
-     <!-- ✅ FIXED -->
-      <a href="{% url 'commerce:order_list' %}">
-        ➕ Create Sales Voucher
-      </a>
-
-      <!-- Expense always belongs to Accounts -->
-      <a href="{% url 'accounts:expense_create' %}" class="danger">
-        ➖ Add Expense
-      </a>
-
-    </div>
-    <a href="{% url 'commerce:order_list' %}" class="summary-modern-btn summary-modern-btn-ghost">Open Orders '</a>
-  </div>
-
-  <div class="smart-action-grid">
-    <a href="{% url 'commerce:add_product' %}" class="smart-action-btn">- Add Product</a>
-    <a href="{% url 'commerce:add_order' %}" class="smart-action-btn">- Add Order</a>
-    <a href="{% url 'commerce:add_payment' %}" class="smart-action-btn">- Add Payment</a>
-    <a href="{% url 'commerce:add_invoice' %}" class="smart-action-btn">- Add Invoice</a>
-    <a href="{% url 'commerce:order_list' %}" class="smart-action-btn">- Create Sales Voucher</a>
-    <a href="{% url 'accounts:expense_create' %}" class="smart-action-btn danger">- Add Expense</a>
-  </div>
-</div>
-
-
-
-<style>
-.smart-coupon-slider {
-    margin-top: 10px;
-}
-
-.coupon-slider {
-    overflow: hidden;
-    width: 100%;
-}
-
-.coupon-track {
-    display: flex;
-    transition: transform 0.3s ease;
-}
-
-.coupon-item {
-    flex: 0 0 300px;
-    margin-right: 16px;
-}
-
-.coupon-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
-    color: #111827;
-    height: 200px;
-    display: flex;
-    flex-direction: column;
-}
-
-body.dark .coupon-card {
-    border-color: #1f2937;
-    background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
-    color: #e5e7eb;
-}
-
-.coupon-header {
-    padding: 14px;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.3);
-}
-
-.coupon-header h5 {
-    margin: 0;
-    font-size: 16px;
-}
-
-.coupon-code {
-    background: rgba(15, 118, 110, 0.1);
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-family: monospace;
-    color: #0f766e;
-}
-
-body.dark .coupon-code {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
-}
-
-.coupon-body {
-    flex: 1;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    font-size: 13px;
-}
-
-.coupon-discount {
-    text-align: center;
-    margin: 10px 0;
-}
-
-.discount-badge {
-    background: #0f766e;
-    color: white;
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 14px;
-    font-weight: bold;
-    display: inline-block;
-}
-
-.coupon-details {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: #6b7280;
-}
-
-.coupon-footer {
-    padding: 10px 12px;
-    border-top: 1px solid rgba(148, 163, 184, 0.3);
-    text-align: center;
-}
-
-.slider-controls {
-    text-align: center;
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    margin-top: 10px;
-}
-
-.summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-top: 16px;
-}
-
-.summary-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 14px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-body.dark .summary-card {
-    background: #0b1220;
-    border-color: #1f2937;
-}
-
-.summary-card .title {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #6b7280;
-    margin-bottom: 6px;
-}
-
-.summary-card .value {
-    font-size: 22px;
-    font-weight: 700;
-}
-
-.summary-card:hover,
-.smart-card:hover,
-.summary-modern-wrap:hover,
-.snapshot-modern-wrap:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08), 0 0 0 2px rgba(15, 118, 110, 0.14);
-}
-
-body.dark .summary-card:hover,
-body.dark .smart-card:hover,
-body.dark .summary-modern-wrap:hover,
-body.dark .snapshot-modern-wrap:hover {
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(34, 197, 94, 0.21);
-}
-
-.summary-modern-wrap,
-.snapshot-modern-wrap {
-    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 18px;
-    margin-top: 16px;
-}
-
-body.dark .summary-modern-wrap,
-body.dark .snapshot-modern-wrap {
-    background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
-    border-color: #1f2937;
-}
-
-.summary-modern-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 14px;
-}
-
-.summary-modern-header h3 {
-    margin: 0;
-    font-size: 18px;
-}
-
-.summary-modern-header p {
-    margin: 4px 0 0 0;
-    color: #6b7280;
-    font-size: 12px;
-}
-
-.summary-modern-grid,
-.snapshot-modern-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 12px;
-}
-
-.summary-modern-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 12px;
-}
-
-body.dark .summary-modern-card {
-    background: #0b1220;
-    border-color: #1f2937;
-    color: #e5e7eb;
-}
-
-.summary-modern-card .label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #6b7280;
-}
-
-.summary-modern-card .value {
-    font-size: 20px;
-    font-weight: 700;
-    margin-top: 6px;
-}
-
-.summary-modern-card .meta {
-    font-size: 12px;
-    color: #6b7280;
-    margin-top: 4px;
-}
-
-.summary-modern-card.positive .value {
-    color: #15803d;
-}
-
-.summary-modern-card.negative .value {
-    color: #dc2626;
-}
-
-.summary-modern-card.accent .value {
-    color: #0f766e;
-}
-
-.summary-modern-card.info .value {
-    color: #0284c7;
-}
-
-.summary-modern-card.warning .value {
-    color: #d97706;
-}
-
-.summary-modern-details {
-    margin-top: 12px;
-    padding: 12px;
-    border-radius: 10px;
-    background: #f1f5f9;
-    font-size: 12px;
-}
-
-body.dark .summary-modern-details {
-    background: #0f172a;
-}
-
-.snapshot-period {
-    margin-left: auto;
-}
-
-.snapshot-footer {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 12px;
-}
-
-.summary-modern-btn {
-    background: #0f766e;
-    color: #ffffff;
-    padding: 8px 14px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 12px;
-}
-
-.summary-modern-btn-ghost {
-    background: transparent;
-    color: #0f766e;
-    border: 1px solid #0f766e;
-}
-
-.summary-modern-btn:hover {
-    color: #ffffff;
-    opacity: 0.9;
-}
-
-.summary-modern-btn-ghost:hover {
-    color: #0f766e;
-    opacity: 0.8;
-}
-
-.summary-modern-select {
-    border: 1px solid #0f766e;
-    border-radius: 999px;
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #0f766e;
-    background: #ffffff;
-}
-
-body.dark .summary-modern-select {
-    background: #0b1220;
-    color: #22c55e;
-    border-color: #22c55e;
-}
-
-.smart-section-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 16px;
-    margin-top: 18px;
-}
-
-.smart-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 16px;
-}
-
-.smart-card-wide {
-    margin-top: 18px;
-}
-
-body.dark .smart-card {
-    background: #0b1220;
-    border-color: #1f2937;
-}
-
-.smart-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.smart-card-header h3 {
-    margin: 0;
-    font-size: 18px;
-}
-
-.smart-card-header p {
-    margin: 4px 0 0 0;
-    color: #6b7280;
-    font-size: 12px;
-}
-
-.smart-table-wrap {
-    overflow: auto;
-    border-radius: 12px;
-}
-
-.smart-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-}
-
-.smart-table th,
-.smart-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #f1f5f9;
-    text-align: left;
-}
-
-.smart-table th {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #6b7280;
-}
-
-.smart-empty {
-    text-align: center;
-    color: #6b7280;
-    padding: 14px;
-}
-
-.smart-badge {
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.smart-badge-positive {
-    background: #dcfce7;
-    color: #15803d;
-}
-
-.smart-badge-negative {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-.smart-action-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 10px;
-    margin-top: 8px;
-}
-
-.smart-action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    background: #0f766e;
-    color: #ffffff;
-    padding: 10px 14px;
-    border-radius: 12px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 13px;
-    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.18);
-}
-
-.smart-action-btn:hover {
-    color: #ffffff;
-    opacity: 0.92;
-}
-
-.smart-action-btn.danger {
-    background: #dc2626;
-}
-
-body.dark .smart-action-btn {
-    background: #22c55e;
-    color: #0b1220;
-}
-
-body.dark .smart-action-btn.danger {
-    background: #f87171;
-    color: #0b1220;
-}
-
-.quick-slider {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 10px;
-}
-
-.quick-slide {
-    background: #0f172a;
-    color: #ffffff;
-    padding: 12px;
-    border-radius: 12px;
-    text-decoration: none;
-    font-weight: 600;
-    text-align: center;
-    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
-}
-
-.quick-slide:hover {
-    color: #ffffff;
-    opacity: 0.9;
-}
-
-.locked-feature {
-    position: relative;
-    opacity: 0.7;
-    filter: grayscale(0.4);
-}
-
-.locked-feature::after {
-    content: "'";
-    position: absolute;
-    top: 8px;
-    right: 10px;
-    font-size: 14px;
-}
-
-.settings-btn {
-    background: #0f766e;
-    color: #ffffff;
-}
-
-.settings-btn:hover {
-    color: #ffffff;
-    opacity: 0.9;
-}
-
-.status-card .value {
-    font-size: 16px;
-}
-</style>
-
-{% endblock %}
-
-
-
-<style>
-.coupon-slider {
-    overflow: hidden;
-    width: 100%;
-}
-
-.coupon-track {
-    display: flex;
-    transition: transform 0.3s ease;
-}
-
-.coupon-item {
-    flex: 0 0 300px;
-    margin-right: 20px;
-}
-
-.coupon-card {
-    border: 2px solid #007bff;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    height: 200px;
-    display: flex;
-    flex-direction: column;
-}
-
-.coupon-header {
-    padding: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-}
-
-.coupon-header h5 {
-    margin: 0;
-    font-size: 18px;
-}
-
-.coupon-code {
-    background: rgba(255,255,255,0.2);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-family: monospace;
-}
-
-.coupon-body {
-    flex: 1;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.coupon-discount {
-    text-align: center;
-    margin: 10px 0;
-}
-
-.discount-badge {
-    background: #ff6b6b;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 16px;
-    font-weight: bold;
-    display: inline-block;
-}
-
-.coupon-details {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-}
-
-.coupon-footer {
-    padding: 10px 15px;
-    border-top: 1px solid rgba(255,255,255,0.2);
-    text-align: center;
-}
-
-.slider-controls {
-    text-align: center;
-}
-</style>
-
-
-{% block extra_js %}
-<script>
-// Redeem Points Modal
-function openRedeemModal() {
-    const modalHtml = `
-        <div class="modal fade" id="redeemModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title"><i class="fas fa-exchange-alt"></i> Redeem Points</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>You have <strong>{{ loyalty_account.available_points }}</strong> available points.</p>
-
-                        <p>Each {{ loyalty_account.program.min_redeem_points }} points = {{ loyalty_account.program.points_to_rupee_ratio }}</p>
-
-                        <p>Each {{ loyalty_account.program.min_redeem_points }} points = ₹{{ loyalty_account.program.points_to_rupee_ratio }}</p>
-
-                        <form id="redeemForm">
-                            <div class="mb-3">
-                                <label for="points" class="form-label">Points to Redeem</label>
-                                <input type="number" class="form-control" id="points" min="{{ loyalty_account.program.min_redeem_points }}" max="{{ loyalty_account.available_points }}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="description" class="form-label">Description (Optional)</label>
-                                <input type="text" class="form-control" id="description" placeholder="e.g., Redeemed for discount">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" onclick="redeemPoints()">Redeem</button>
-                    </div>
-                </div>
+    </section>
+    {% endif %}
+
+    {% if active_dashboard_tab == "dashboard" and workspace_role == "admin" %}
+    <section class="eco-admin-panels">
+      <div class="eco-card">
+        <div class="eco-card-head">
+          <div>
+            <div class="muted">Admin Control Tower</div>
+            <h3>Users, Agents, Customers</h3>
+          </div>
+          <span class="eco-pill neutral">{{ admin_control_summary.users }} Users</span>
+        </div>
+        <div class="eco-module-grid">
+          {% for tile in admin_control_tiles %}
+            <a href="{{ tile.href }}" class="eco-module-tile {{ tile.accent }}">
+              <span class="icon"><i class="bi bi-shield-lock"></i></span>
+              <strong>{{ tile.label }}</strong>
+              <span>{{ tile.value }}</span>
+            </a>
+          {% endfor %}
+        </div>
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="assign_lead">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="admin_assign_lead_id">Lead</label>
+              <select id="admin_assign_lead_id" name="lead_id" required>
+                <option value="">Select lead</option>
+                {% for lead in admin_recent_leads %}
+                  <option value="{{ lead.id }}">{{ lead.name|default:lead.mobile|default:"Lead #" }} #{{ lead.id }}</option>
+                {% endfor %}
+              </select>
             </div>
+            <div class="eco-field span-2">
+              <label for="admin_assign_agent_id">Agent</label>
+              <select id="admin_assign_agent_id" name="agent_id" required>
+                <option value="">Select agent</option>
+                {% for agent in admin_recent_agents %}
+                  <option value="{{ agent.id }}">{{ agent.name|default:agent.phone|default:"Agent #" }} #{{ agent.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field span-2">
+              <label for="admin_assign_reason">Reason</label>
+              <input id="admin_assign_reason" type="text" name="reason" value="Dashboard assign" placeholder="Manual assignment note">
+            </div>
+          </div>
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>1</strong>
+              <span>quick assign lead</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-person-check"></i>Assign Lead</button>
+            </div>
+          </div>
+        </form>
+
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="bulk_assign_leads">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="admin_bulk_lead_ids">Leads</label>
+              <select id="admin_bulk_lead_ids" name="lead_ids" multiple size="6" required>
+                {% for lead in admin_unassigned_leads %}
+                  <option value="{{ lead.id }}">{{ lead.name|default:lead.mobile|default:"Lead #" }} #{{ lead.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field span-2">
+              <label>&nbsp;</label>
+              <div class="eco-inline-actions">
+                <button type="button" class="eco-action-btn" data-select-all="admin_bulk_lead_ids"><i class="bi bi-check2-all"></i>Select All</button>
+                <button type="button" class="eco-action-btn" data-clear-all="admin_bulk_lead_ids"><i class="bi bi-x-circle"></i>Clear All</button>
+              </div>
+            </div>
+            <div class="eco-field span-2">
+              <label for="admin_bulk_agent_id">Assign To</label>
+              <select id="admin_bulk_agent_id" name="agent_id" required>
+                <option value="">Select agent</option>
+                {% for agent in admin_recent_agents %}
+                  <option value="{{ agent.id }}">{{ agent.name|default:agent.phone|default:"Agent #" }} #{{ agent.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field span-2">
+              <label for="admin_bulk_reason">Reason</label>
+              <input id="admin_bulk_reason" type="text" name="reason" value="Bulk assign from dashboard" placeholder="Bulk assignment note">
+            </div>
+            <div class="eco-field span-2">
+              <label for="admin_bulk_lead_ids_text">Comma Backup</label>
+              <input id="admin_bulk_lead_ids_text" type="text" name="lead_ids_text" placeholder="Optional comma-separated lead IDs">
+            </div>
+          </div>
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>{{ admin_unassigned_leads|length }}</strong>
+              <span>recent unassigned leads</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-collection"></i>Bulk Assign</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="eco-card eco-sticky-panel eco-quick-dock-panel">
+        <div class="eco-card-head">
+          <div>
+            <div class="muted">Quick Dock</div>
+            <h3>Source Assignment</h3>
+          </div>
+          <span class="eco-pill neutral">{{ admin_control_summary.import_batches }} Batches</span>
         </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    const modal = new bootstrap.Modal(document.getElementById('redeemModal'));
-    modal.show();
-}
+        <div class="eco-kv-grid">
+          <div class="eco-kv"><span>Overdue Leads</span><strong>{{ admin_control_summary.overdue_leads }}</strong></div>
+          <div class="eco-kv"><span>Unassigned</span><strong>{{ admin_control_summary.unassigned_leads }}</strong></div>
+          <div class="eco-kv"><span>Lead Sources</span><strong>{{ admin_control_summary.lead_sources }}</strong></div>
+          <div class="eco-kv"><span>Active Agents</span><strong>{{ admin_control_summary.active_agents }}</strong></div>
+        </div>
+        <div class="eco-module-grid" style="margin-top: 14px;">
+          {% for tile in admin_intake_tiles %}
+            <a href="{{ tile.href }}" class="eco-module-tile {{ tile.accent }}">
+              <span class="icon"><i class="bi bi-broadcast"></i></span>
+              <strong>{{ tile.label }}</strong>
+              <span>{{ tile.value }}</span>
+            </a>
+          {% endfor %}
+        </div>
+        <div class="eco-card-head" style="margin: 16px 0 10px;">
+          <div>
+            <div class="muted">Lead Source Filters</div>
+            <h3>Channel Wise</h3>
+          </div>
+          <span class="eco-pill neutral">{{ admin_lead_source_tiles|length }} Channels</span>
+        </div>
+        <div class="eco-module-grid">
+          {% for tile in admin_lead_source_tiles %}
+            <a href="{{ tile.href }}" class="eco-module-tile {{ tile.accent }}">
+              <span class="icon"><i class="bi bi-funnel"></i></span>
+              <strong>{{ tile.label }}</strong>
+              <span>{{ tile.value }}</span>
+            </a>
+          {% endfor %}
+        </div>
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_lead_source">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="admin_source_name">Source Name</label>
+              <input id="admin_source_name" type="text" name="name" placeholder="Facebook Ads, API Feed, Web Scrape">
+            </div>
+            <div class="eco-field">
+              <label for="admin_source_kind">Kind</label>
+              <select id="admin_source_kind" name="kind">
+                {% for value, label in admin_source_kind_choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="admin_source_slug">Slug</label>
+              <input id="admin_source_slug" type="text" name="slug" placeholder="facebook-ads">
+            </div>
+            <div class="eco-field">
+              <label for="admin_source_value">Source Value</label>
+              <input id="admin_source_value" type="text" name="source_value" placeholder="facebook_ads, api, web_scrape">
+            </div>
+            <div class="eco-field span-2">
+              <label for="admin_endpoint_url">Endpoint URL</label>
+              <input id="admin_endpoint_url" type="url" name="endpoint_url" placeholder="https://example.com/webhook">
+            </div>
+            <div class="eco-field">
+              <label for="admin_verify_token">Verify Token</label>
+              <input id="admin_verify_token" type="text" name="verify_token" placeholder="Optional token">
+            </div>
+            <div class="eco-field">
+              <label for="admin_webhook_secret">Webhook Secret</label>
+              <input id="admin_webhook_secret" type="text" name="webhook_secret" placeholder="Optional secret">
+            </div>
+            <div class="eco-field span-2">
+              <label for="admin_auto_assign">Auto Assign</label>
+              <select id="admin_auto_assign" name="auto_assign">
+                <option value="1" selected>Yes, assign automatically</option>
+                <option value="0">No, keep manual</option>
+              </select>
+            </div>
+            <div class="eco-field span-2">
+              <label>Quick Presets</label>
+              <div class="eco-inline-actions">
+                <button type="button" class="eco-action-btn" data-source-preset="social" data-source-name="Social Ads" data-source-kind="facebook_ads" data-source-value="facebook_ads" data-source-slug="social-ads"><i class="bi bi-megaphone"></i>Social</button>
+                <button type="button" class="eco-action-btn" data-source-preset="api" data-source-name="API Feed" data-source-kind="api" data-source-value="api" data-source-slug="api-feed" data-source-url="https://example.com/webhook"><i class="bi bi-plug"></i>API</button>
+                <button type="button" class="eco-action-btn" data-source-preset="bulk" data-source-name="Bulk CSV" data-source-kind="csv" data-source-value="csv" data-source-slug="bulk-csv"><i class="bi bi-filetype-csv"></i>Bulk CSV</button>
+                <button type="button" class="eco-action-btn" data-source-preset="scrape" data-source-name="Web Scrape" data-source-kind="web_scrape" data-source-value="web_scrape" data-source-slug="web-scrape"><i class="bi bi-globe2"></i>Scrape</button>
+              </div>
+            </div>
+          </div>
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>New</strong>
+              <span>lead source profile</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-broadcast-pin"></i>Create Source</button>
+            </div>
+          </div>
+        </form>
 
-function redeemPoints() {
-    const points = document.getElementById('points').value;
-    const description = document.getElementById('description').value;
+        <div class="eco-admin-panel" style="margin-top: 16px;">
+          <div class="eco-section-head">
+            <div>
+              <span class="eco-overline">Source Assignment</span>
+              <h3>Assign by Channel</h3>
+            </div>
+            <span class="eco-pill neutral">Source specific</span>
+          </div>
+          <div class="eco-kv-grid">
+            <div class="eco-kv"><span>Source Types</span><strong>{{ admin_source_choices|length }}</strong></div>
+            <div class="eco-kv"><span>Demo Leads</span><strong>{{ admin_demo_lead_rows|length }}</strong></div>
+            <div class="eco-kv"><span>Unassigned</span><strong>{{ admin_control_summary.unassigned_leads }}</strong></div>
+            <div class="eco-kv"><span>Active Agents</span><strong>{{ admin_control_summary.active_agents }}</strong></div>
+          </div>
+          <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 12px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="assign_by_source">
+            <div class="eco-lead-filter-grid">
+              <div class="eco-field span-2">
+                <label for="admin_assign_source">Source</label>
+                <select id="admin_assign_source" name="source" required>
+                  <option value="">Select source</option>
+                  {% for value, label in admin_source_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="eco-field span-2">
+                <label for="admin_assign_source_agent">Agent</label>
+                <select id="admin_assign_source_agent" name="agent_id" required>
+                  <option value="">Select agent</option>
+                  {% for agent in admin_recent_agents %}
+                    <option value="{{ agent.id }}">{{ agent.name|default:agent.phone|default:"Agent #" }} #{{ agent.id }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="eco-field">
+                <label for="admin_assign_source_limit">Limit</label>
+                <input id="admin_assign_source_limit" type="number" name="limit" min="1" max="100" value="10">
+              </div>
+              <div class="eco-field span-2">
+                <label for="admin_assign_source_reason">Reason</label>
+                <input id="admin_assign_source_reason" type="text" name="reason" value="Source based assignment from dashboard" placeholder="Assignment note">
+              </div>
+            </div>
+            <div class="eco-lead-toolbar-foot">
+              <div class="eco-lead-count">
+                <strong>One Source</strong>
+                <span>clear channel wise assignment</span>
+              </div>
+              <div class="eco-inline-actions">
+                <button type="submit" class="eco-action-btn"><i class="bi bi-diagram-3"></i>Assign by Source</button>
+              </div>
+            </div>
+          </form>
+          <div class="eco-card-head" style="margin: 16px 0 10px;">
+            <div>
+              <div class="muted">Demo File Leads</div>
+              <h3>CSV Template Preview</h3>
+            </div>
+            <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-inline-actions">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="export_demo_lead_template">
+              <label class="visually-hidden" for="admin_demo_source">Demo Source</label>
+              <select id="admin_demo_source" name="source">
+                <option value="">All sources</option>
+                {% for value, label in admin_source_choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="eco-action-btn"><i class="bi bi-download"></i>Download Demo CSV</button>
+            </form>
+          </div>
+          <div class="eco-list">
+            {% for demo in admin_demo_lead_rows %}
+              <div class="eco-list-item">
+                <div class="copy">
+                  <strong>{{ demo.name }}</strong>
+                  <span>{{ demo.phone }} | {{ demo.email }} | {{ demo.city }} | {{ demo.source_label }}</span>
+                  <span>{{ demo.note }}</span>
+                </div>
+                <span class="eco-pill neutral">{{ demo.source_label }}</span>
+              </div>
+            {% empty %}
+              <div class="eco-list-item">
+                <div class="copy">
+                  <strong>No demo leads configured</strong>
+                  <span>Demo CSV rows yahan preview honge.</span>
+                </div>
+                <span class="eco-pill neutral">Empty</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
 
-    fetch('{% url "accounts:redeem_points" %}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify({
-            points: points,
-            description: description
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Points redeemed successfully!');
-            location.reload();
-        } else {
-            alert('Error: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while redeeming points.');
-    });
-}
+        <div class="eco-admin-panel eco-intake-dock" style="margin-top: 16px;">
+          <div class="eco-section-head">
+            <div>
+              <span class="eco-overline">Intake Dock</span>
+              <h3>Import and Scrape</h3>
+            </div>
+            <span class="eco-pill neutral">Fast review</span>
+          </div>
+          <div class="eco-module-grid" style="margin-top: 10px;">
+            <button type="button" class="eco-module-tile crm intake-step" data-intake-step="upload" data-scroll-target="lead_import_file">
+              <span class="icon"><i class="bi bi-upload"></i></span>
+              <strong>1. Upload</strong>
+              <span>CSV or XLSX file</span>
+            </button>
+            <button type="button" class="eco-module-tile intel intake-step" data-intake-step="map" data-scroll-target="lead_import_mapping">
+              <span class="icon"><i class="bi bi-sliders"></i></span>
+              <strong>2. Map</strong>
+              <span>Column mapping JSON</span>
+            </button>
+            <button type="button" class="eco-module-tile market intake-step" data-intake-step="preview" data-scroll-target="lead_import_preview_result">
+              <span class="icon"><i class="bi bi-eye"></i></span>
+              <strong>3. Preview</strong>
+              <span>Validate rows first</span>
+            </button>
+            <button type="button" class="eco-module-tile loan intake-step" data-intake-step="import" data-scroll-target="lead_import_run_btn">
+              <span class="icon"><i class="bi bi-check2-circle"></i></span>
+              <strong>4. Import</strong>
+              <span>Save and auto-assign</span>
+            </button>
+            <button type="button" class="eco-module-tile verify intake-step" data-intake-step="scrape" data-scroll-target="lead_scrape_form">
+              <span class="icon"><i class="bi bi-globe2"></i></span>
+              <strong>5. Scrape</strong>
+              <span>URL or raw HTML</span>
+            </button>
+          </div>
+          <div class="eco-lead-toolbar" style="margin-top: 12px;">
+            <div class="eco-lead-filter-grid">
+              <div class="eco-field span-2">
+                <label for="lead_import_file">CSV or XLSX</label>
+                <input id="lead_import_file" type="file" accept=".csv,.xlsx">
+              </div>
+              <div class="eco-field span-2">
+                <label for="lead_import_mapping">Column Mapping JSON</label>
+                <textarea id="lead_import_mapping" rows="4" placeholder='{"name":"fullname","phone":"mobile","email":"email_address","source":"channel"}'></textarea>
+              </div>
+              <div class="eco-field">
+                <label for="lead_import_source">Source Key</label>
+                <input id="lead_import_source" type="text" value="manual" placeholder="manual, api, facebook_ads">
+              </div>
+              <div class="eco-field">
+                <label for="lead_import_auto_assign">Auto Assign</label>
+                <select id="lead_import_auto_assign">
+                  <option value="1" selected>Yes</option>
+                  <option value="0">No</option>
+                </select>
+              </div>
+              <div class="eco-field">
+                <label>&nbsp;</label>
+                <div class="eco-inline-actions">
+                  <button type="button" class="eco-action-btn" id="lead_import_preview_btn"><i class="bi bi-eye"></i>Preview Import</button>
+                  <button type="button" class="eco-action-btn" id="lead_import_run_btn"><i class="bi bi-upload"></i>Import Now</button>
+                </div>
+              </div>
+            </div>
+            <div class="eco-lead-toolbar-foot">
+              <div class="eco-lead-count">
+                <strong>Preview</strong>
+                <span>rows before saving</span>
+              </div>
+              <div class="eco-inline-actions">
+                <span class="eco-pill neutral" id="lead_import_preview_state">Waiting</span>
+              </div>
+            </div>
+          </div>
+          <div id="lead_import_preview_result" class="eco-list" style="margin-top: 12px;"></div>
+          <form id="lead_scrape_form" class="eco-lead-toolbar" style="margin-top: 16px;">
+            <div class="eco-lead-filter-grid">
+              <div class="eco-field span-2">
+                <label for="lead_scrape_url">Page URL</label>
+                <input id="lead_scrape_url" type="url" placeholder="https://example.com/directory">
+              </div>
+              <div class="eco-field span-2">
+                <label for="lead_scrape_html">Raw HTML Fallback</label>
+                <textarea id="lead_scrape_html" rows="4" placeholder="<html>...paste page HTML if needed...</html>"></textarea>
+              </div>
+              <div class="eco-field">
+                <label for="lead_scrape_max_items">Max Leads</label>
+                <input id="lead_scrape_max_items" type="number" min="1" max="100" value="25">
+              </div>
+              <div class="eco-field">
+                <label for="lead_scrape_auto_assign">Auto Assign</label>
+                <select id="lead_scrape_auto_assign">
+                  <option value="1" selected>Yes</option>
+                  <option value="0">No</option>
+                </select>
+              </div>
+              <div class="eco-field">
+                <label>&nbsp;</label>
+                <div class="eco-inline-actions">
+                  <button type="submit" class="eco-action-btn"><i class="bi bi-globe2"></i>Scrape Leads</button>
+                </div>
+              </div>
+            </div>
+            <div class="eco-lead-toolbar-foot">
+              <div class="eco-lead-count">
+                <strong>Scrape</strong>
+                <span>best effort extraction</span>
+              </div>
+              <div class="eco-inline-actions">
+                <span class="eco-pill neutral" id="lead_scrape_state">Waiting</span>
+              </div>
+            </div>
+          </form>
+          <div id="lead_scrape_result" class="eco-list" style="margin-top: 12px;"></div>
+        </div>
+      </div>
 
-function applyCoupon(code) {
-    // Simple coupon application - in real implementation, this would integrate with order form
-    alert(`Coupon ${code} applied! (Integration with order form needed)`);
-}
+      <div class="eco-card">
+        <div class="eco-card-head">
+          <div>
+            <div class="muted">Smart CRM Ops</div>
+            <h3>Geo, OCR, Lock, Invoice</h3>
+          </div>
+          <span class="eco-pill neutral">Admin only</span>
+        </div>
+        <div class="eco-module-grid">
+          {% for tile in admin_crm_tiles %}
+            <a href="{{ tile.href }}" class="eco-module-tile {{ tile.accent }}">
+              <span class="icon"><i class="bi bi-stars"></i></span>
+              <strong>{{ tile.label }}</strong>
+              <span>{{ tile.value }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
 
-// Coupon Slider Functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const track = document.querySelector('.coupon-track');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
+      <div class="eco-card">
+        <div class="eco-card-head">
+          <div>
+            <div class="muted">Smart Technology Stack</div>
+            <h3>Automation, API, WhatsApp</h3>
+          </div>
+          <span class="eco-pill neutral">All Channels</span>
+        </div>
+        <div class="eco-module-grid">
+          {% for tile in admin_tech_tiles %}
+            <a href="{{ tile.href }}" class="eco-module-tile {{ tile.accent }}">
+              <span class="icon"><i class="bi bi-gear-wide-connected"></i></span>
+              <strong>{{ tile.label }}</strong>
+              <span>{{ tile.value }}</span>
+            </a>
+          {% endfor %}
+        </div>
+        <div class="eco-card-head" style="margin: 16px 0 10px;">
+          <div>
+            <div class="muted">Import Monitor</div>
+            <h3>Recent Batches</h3>
+          </div>
+          <div class="eco-inline-actions">
+            <span class="eco-pill neutral">P {{ admin_import_status_counts.pending|default:0 }} | C {{ admin_import_status_counts.completed|default:0 }}</span>
+            <form method="post" action="{{ admin_dashboard_action_url }}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="export_failed_imports">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-download"></i>Export Failed Rows</button>
+            </form>
+          </div>
+        </div>
+        <div class="eco-kv-grid" style="margin-bottom: 12px;">
+          <div class="eco-kv"><span>Failed Rows</span><strong>{{ admin_failed_rows_total }}</strong></div>
+          <div class="eco-kv"><span>Duplicate Leads</span><strong>{{ admin_duplicate_leads_count }}</strong></div>
+          <div class="eco-kv"><span>Failed Batches</span><strong>{{ admin_failed_import_batches|length }}</strong></div>
+          <div class="eco-kv"><span>Recent Duplicates</span><strong>{{ admin_duplicate_leads|length }}</strong></div>
+        </div>
+        <div class="eco-list">
+          {% for batch in admin_recent_import_batches %}
+            <div class="eco-list-item">
+              <div class="copy">
+                <strong>{% if batch.source_name %}{{ batch.source_name }}{% elif batch.source %}{{ batch.source.name }}{% else %}Import Batch{% endif %}</strong>
+                <span>{{ batch.get_import_type_display }} | {{ batch.total_rows }} rows | {{ batch.created_leads }} created | {{ batch.failed_rows }} failed</span>
+              </div>
+              <span class="eco-pill {% if batch.status == 'completed' %}neutral{% elif batch.status == 'failed' %}warn{% else %}info{% endif %}">{{ batch.get_status_display }}</span>
+            </div>
+          {% empty %}
+            <div class="eco-list-item">
+              <div class="copy">
+                <strong>No import batches yet</strong>
+                <span>CSV, API, webhook aur scrape runs yahan dikhenge.</span>
+              </div>
+              <span class="eco-pill warn">Empty</span>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="eco-card-head" style="margin: 16px 0 10px;">
+          <div>
+            <div class="muted">Failed Rows Drilldown</div>
+            <h3>Error Preview</h3>
+          </div>
+          <span class="eco-pill warn">{{ admin_failed_import_batches|length }} Batches</span>
+        </div>
+        <div class="eco-list">
+          {% for batch in admin_failed_import_batches %}
+            <div class="eco-list-item">
+              <div class="copy">
+                <strong>{{ batch.label }}</strong>
+                <span>{{ batch.import_type }} | {{ batch.failed_rows }} failed | {{ batch.error_count }} errors</span>
+                {% if batch.errors_preview %}
+                  <span>{{ batch.errors_preview|join:" | " }}</span>
+                {% endif %}
+              </div>
+              <span class="eco-pill warn">{{ batch.status }}</span>
+            </div>
+          {% empty %}
+            <div class="eco-list-item">
+              <div class="copy">
+                <strong>No failed rows</strong>
+                <span>Failed row previews yahan appear honge when imports hit validation issues.</span>
+              </div>
+              <span class="eco-pill neutral">Clean</span>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="eco-card-head" style="margin: 16px 0 10px;">
+          <div>
+            <div class="muted">Duplicate Lead Insights</div>
+            <h3>Recent Matches</h3>
+          </div>
+          <div class="eco-inline-actions">
+            <span class="eco-pill neutral">{{ admin_duplicate_leads_count }} Total</span>
+            <form method="post" action="{{ admin_dashboard_action_url }}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="export_duplicate_leads">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-download"></i>Export Duplicates</button>
+            </form>
+          </div>
+        </div>
+        <div class="eco-list">
+          {% for lead in admin_duplicate_leads %}
+            <div class="eco-list-item">
+              <div class="copy">
+                <strong><a href="{% url 'accounts:lead_workspace' lead.id %}" class="eco-row-link">{{ lead.name|default:lead.mobile|default:"Duplicate Lead" }}</a></strong>
+                <span>{{ lead.mobile|default:"-" }} | {{ lead.email|default:"-" }} | {{ lead.get_source_display }}</span>
+                {% if lead.duplicate_reason %}
+                  <span>{{ lead.duplicate_reason }}</span>
+                {% endif %}
+              </div>
+              <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-inline-actions">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="resolve_duplicate_lead">
+                <input type="hidden" name="lead_id" value="{{ lead.id }}">
+                <button type="submit" class="eco-action-btn" onclick="return confirm('Mark this duplicate lead as resolved?');"><i class="bi bi-check2-circle"></i>Review Duplicate</button>
+              </form>
+            </div>
+          {% empty %}
+            <div class="eco-list-item">
+              <div class="copy">
+                <strong>No duplicate leads</strong>
+                <span>Duplicate matching insights yahan dikhengi jab same phone/email capture hota hai.</span>
+              </div>
+              <span class="eco-pill neutral">Clear</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
 
-    if (track && prevBtn && nextBtn) {
-        let currentIndex = 0;
-        const items = document.querySelectorAll('.coupon-item');
-        const itemWidth = 320; // Approximate width of each coupon item
+      <div class="eco-card">
+        <div class="eco-card-head">
+          <div>
+            <div class="muted">People Ops</div>
+            <h3>Create, Edit, Delete</h3>
+          </div>
+          <span class="eco-pill neutral">{{ admin_recent_customers|length }} Customers</span>
+        </div>
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_agent">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="admin_agent_name">Agent Name</label>
+              <input id="admin_agent_name" type="text" name="name" placeholder="Agent full name" required>
+            </div>
+            <div class="eco-field">
+              <label for="admin_agent_email">Email</label>
+              <input id="admin_agent_email" type="email" name="email" placeholder="agent@example.com" required>
+            </div>
+            <div class="eco-field">
+              <label for="admin_agent_mobile">Mobile</label>
+              <input id="admin_agent_mobile" type="text" name="mobile" placeholder="9000000000">
+            </div>
+            <div class="eco-field">
+              <label for="admin_agent_username">Username</label>
+              <input id="admin_agent_username" type="text" name="username" placeholder="optional">
+            </div>
+            <div class="eco-field">
+              <label for="admin_agent_city">City</label>
+              <input id="admin_agent_city" type="text" name="city" placeholder="City">
+            </div>
+            <div class="eco-field">
+              <label for="admin_agent_district">District</label>
+              <input id="admin_agent_district" type="text" name="district" placeholder="District">
+            </div>
+            <div class="eco-field">
+              <label for="admin_agent_state">State</label>
+              <input id="admin_agent_state" type="text" name="state" placeholder="State">
+            </div>
+            <div class="eco-field">
+              <label for="admin_agent_pin">Pin Code</label>
+              <input id="admin_agent_pin" type="text" name="pin_code" placeholder="Pin code">
+            </div>
+          </div>
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>New</strong>
+              <span>agent profile</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-person-plus"></i>Create Agent</button>
+            </div>
+          </div>
+        </form>
 
-        function updateSlider() {
-            track.style.transform = `translateX(-${currentIndex * itemWidth}px)`;
-        }
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_customer">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="admin_customer_name">Customer Name</label>
+              <input id="admin_customer_name" type="text" name="name" placeholder="Customer full name" required>
+            </div>
+            <div class="eco-field">
+              <label for="admin_customer_email">Email</label>
+              <input id="admin_customer_email" type="email" name="email" placeholder="customer@example.com" required>
+            </div>
+            <div class="eco-field">
+              <label for="admin_customer_mobile">Mobile</label>
+              <input id="admin_customer_mobile" type="text" name="mobile" placeholder="9000000000">
+            </div>
+            <div class="eco-field">
+              <label for="admin_customer_username">Username</label>
+              <input id="admin_customer_username" type="text" name="username" placeholder="optional">
+            </div>
+            <div class="eco-field">
+              <label for="admin_customer_buyer_type">Buyer Type</label>
+              <select id="admin_customer_buyer_type" name="buyer_type">
+                <option value="buyer">Buyer</option>
+                <option value="seller">Seller</option>
+                <option value="both">Buyer + Seller</option>
+                <option value="tenant">Tenant</option>
+                <option value="landlord">Landlord</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="admin_customer_city">City</label>
+              <input id="admin_customer_city" type="text" name="city" placeholder="City">
+            </div>
+            <div class="eco-field">
+              <label for="admin_customer_district">District</label>
+              <input id="admin_customer_district" type="text" name="district" placeholder="District">
+            </div>
+            <div class="eco-field">
+              <label for="admin_customer_state">State</label>
+              <input id="admin_customer_state" type="text" name="state" placeholder="State">
+            </div>
+          </div>
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>New</strong>
+              <span>customer profile</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-person-heart"></i>Create Customer</button>
+            </div>
+          </div>
+        </form>
 
-        prevBtn.addEventListener('click', function() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateSlider();
-            }
-        });
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;" data-confirm-on-delete="1">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="bulk_manage_agents">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="admin_bulk_agent_ids">Bulk Agents</label>
+              <select id="admin_bulk_agent_ids" name="agent_ids" multiple size="6" required>
+                {% for agent in admin_recent_agents %}
+                  <option value="{{ agent.id }}">{{ agent.name|default:agent.phone|default:"Agent #" }} #{{ agent.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="admin_bulk_agent_action">Action</label>
+              <select id="admin_bulk_agent_action" name="bulk_action">
+                <option value="activate">Activate</option>
+                <option value="deactivate">Deactivate</option>
+                <option value="delete">Delete</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label>&nbsp;</label>
+              <div class="eco-inline-actions">
+                <button type="submit" class="eco-action-btn"><i class="bi bi-people"></i>Run Bulk Agent Action</button>
+              </div>
+            </div>
+          </div>
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>{{ admin_recent_agents|length }}</strong>
+              <span>recent agents available</span>
+            </div>
+          </div>
+        </form>
 
-        nextBtn.addEventListener('click', function() {
-            if (currentIndex < items.length - 3) { // Show 3 items at a time
-                currentIndex++;
-                updateSlider();
-            }
-        });
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;" data-confirm-on-delete="1">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="bulk_manage_customers">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="admin_bulk_customer_ids">Bulk Customers</label>
+              <select id="admin_bulk_customer_ids" name="customer_ids" multiple size="6" required>
+                {% for customer in admin_recent_customers %}
+                  <option value="{{ customer.id }}">{{ customer.user.get_full_name|default:customer.user.email|default:"Customer" }} #{{ customer.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="admin_bulk_customer_action">Action</label>
+              <select id="admin_bulk_customer_action" name="bulk_action">
+                <option value="activate">Activate</option>
+                <option value="deactivate">Deactivate</option>
+                <option value="delete">Delete</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label>&nbsp;</label>
+              <div class="eco-inline-actions">
+                <button type="submit" class="eco-action-btn"><i class="bi bi-people-fill"></i>Run Bulk Customer Action</button>
+              </div>
+            </div>
+          </div>
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>{{ admin_recent_customers|length }}</strong>
+              <span>recent customers available</span>
+            </div>
+          </div>
+        </form>
+
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_agent">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="admin_edit_agent_id">Edit Agent</label>
+              <select id="admin_edit_agent_id" name="agent_id" data-prefill-target="agent" required>
+                <option value="">Select agent</option>
+                {% for agent in admin_recent_agents %}
+                  <option
+                    value="{{ agent.id }}"
+                    data-name="{{ agent.name|default:agent.user.get_full_name|default:agent.user.email|default:'' }}"
+                    data-mobile="{{ agent.phone|default:'' }}"
+                    data-city="{{ agent.city|default:'' }}"
+                    data-district="{{ agent.district|default:'' }}"
+                    data-state="{{ agent.state|default:'' }}"
+                    data-pin_code="{{ agent.pin_code|default:'' }}"
+                    data-specialization="{{ agent.specialization|default:'' }}"
+                    data-approval_status="{{ agent.approval_status|default:'' }}"
+                    data-is_active="{% if agent.is_active %}active{% else %}inactive{% endif %}"
+                  >{{ agent.name|default:agent.phone|default:"Agent #" }} #{{ agent.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field span-2">
+              <label for="admin_edit_agent_name">Name</label>
+              <input id="admin_edit_agent_name" type="text" name="name" placeholder="Agent full name">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_agent_mobile">Mobile</label>
+              <input id="admin_edit_agent_mobile" type="text" name="mobile" placeholder="9000000000">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_agent_city">City</label>
+              <input id="admin_edit_agent_city" type="text" name="city" placeholder="City">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_agent_district">District</label>
+              <input id="admin_edit_agent_district" type="text" name="district" placeholder="District">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_agent_state">State</label>
+              <input id="admin_edit_agent_state" type="text" name="state" placeholder="State">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_agent_pin">Pin Code</label>
+              <input id="admin_edit_agent_pin" type="text" name="pin_code" placeholder="Pin code">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_agent_specialization">Specialization</label>
+              <select id="admin_edit_agent_specialization" name="specialization">
+                <option value="">Keep current</option>
+                <option value="residential">Residential</option>
+                <option value="commercial">Commercial</option>
+                <option value="plots">Plots</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_agent_approval">Approval</label>
+              <select id="admin_edit_agent_approval" name="approval_status">
+                <option value="">Keep current</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_agent_is_active">Active</label>
+              <select id="admin_edit_agent_is_active" name="is_active">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>Edit</strong>
+              <span>agent profile</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-pencil-square"></i>Update Agent</button>
+            </div>
+          </div>
+        </form>
+
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_customer">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="admin_edit_customer_id">Edit Customer</label>
+              <select id="admin_edit_customer_id" name="customer_id" data-prefill-target="customer" required>
+                <option value="">Select customer</option>
+                {% for customer in admin_recent_customers %}
+                  <option
+                    value="{{ customer.id }}"
+                    data-name="{{ customer.user.get_full_name|default:customer.user.email|default:'' }}"
+                    data-mobile="{{ customer.user.mobile|default:'' }}"
+                    data-buyer_type="{{ customer.buyer_type|default:'' }}"
+                    data-preferred_location="{{ customer.preferred_location|default:'' }}"
+                    data-city="{{ customer.city|default:'' }}"
+                    data-district="{{ customer.district|default:'' }}"
+                    data-state="{{ customer.state|default:'' }}"
+                    data-pin_code="{{ customer.pin_code|default:'' }}"
+                    data-is_active="{% if customer.user.is_active %}active{% else %}inactive{% endif %}"
+                  >{{ customer.user.get_full_name|default:customer.user.email|default:"Customer" }} #{{ customer.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field span-2">
+              <label for="admin_edit_customer_name">Name</label>
+              <input id="admin_edit_customer_name" type="text" name="name" placeholder="Customer full name">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_customer_mobile">Mobile</label>
+              <input id="admin_edit_customer_mobile" type="text" name="mobile" placeholder="9000000000">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_customer_buyer_type">Buyer Type</label>
+              <select id="admin_edit_customer_buyer_type" name="buyer_type">
+                <option value="">Keep current</option>
+                <option value="buyer">Buyer</option>
+                <option value="seller">Seller</option>
+                <option value="both">Buyer + Seller</option>
+                <option value="tenant">Tenant</option>
+                <option value="landlord">Landlord</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_customer_preferred_location">Preferred Location</label>
+              <input id="admin_edit_customer_preferred_location" type="text" name="preferred_location" placeholder="Preferred location">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_customer_city">City</label>
+              <input id="admin_edit_customer_city" type="text" name="city" placeholder="City">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_customer_district">District</label>
+              <input id="admin_edit_customer_district" type="text" name="district" placeholder="District">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_customer_state">State</label>
+              <input id="admin_edit_customer_state" type="text" name="state" placeholder="State">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_customer_pin">Pin Code</label>
+              <input id="admin_edit_customer_pin" type="text" name="pin_code" placeholder="Pin code">
+            </div>
+            <div class="eco-field">
+              <label for="admin_edit_customer_is_active">Active</label>
+              <select id="admin_edit_customer_is_active" name="is_active">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>Edit</strong>
+              <span>customer profile</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-pencil-square"></i>Update Customer</button>
+            </div>
+          </div>
+        </form>
+
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;">
+          {% csrf_token %}
+          <div class="eco-lead-filter-grid">
+            <input type="hidden" name="action" value="toggle_agent_status">
+            <div class="eco-field span-2">
+              <label for="admin_manage_agent_id">Manage Agent</label>
+              <select id="admin_manage_agent_id" name="agent_id" required>
+                <option value="">Select agent</option>
+                {% for agent in admin_recent_agents %}
+                  <option value="{{ agent.id }}">{{ agent.name|default:agent.phone|default:"Agent #" }} #{{ agent.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="admin_manage_agent_state">State</label>
+              <select id="admin_manage_agent_state" name="state">
+                <option value="active">Activate</option>
+                <option value="inactive">Deactivate</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label>&nbsp;</label>
+              <div class="eco-inline-actions">
+                <button type="submit" class="eco-action-btn"><i class="bi bi-toggle-on"></i>Update Agent</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;">
+          {% csrf_token %}
+          <div class="eco-lead-filter-grid">
+            <input type="hidden" name="action" value="toggle_customer_status">
+            <div class="eco-field span-2">
+              <label for="admin_manage_customer_id">Manage Customer</label>
+              <select id="admin_manage_customer_id" name="customer_id" required>
+                <option value="">Select customer</option>
+                {% for customer in admin_recent_customers %}
+                  <option value="{{ customer.id }}">{{ customer.user.get_full_name|default:customer.user.email|default:"Customer" }} #{{ customer.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="admin_manage_customer_state">State</label>
+              <select id="admin_manage_customer_state" name="state">
+                <option value="active">Activate</option>
+                <option value="inactive">Deactivate</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label>&nbsp;</label>
+              <div class="eco-inline-actions">
+                <button type="submit" class="eco-action-btn"><i class="bi bi-toggle-on"></i>Update Customer</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete_agent">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="admin_delete_agent_id">Delete Agent</label>
+              <select id="admin_delete_agent_id" name="agent_id" required>
+                <option value="">Select agent</option>
+                {% for agent in admin_recent_agents %}
+                  <option value="{{ agent.id }}">{{ agent.name|default:agent.phone|default:"Agent #" }} #{{ agent.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label>&nbsp;</label>
+              <div class="eco-inline-actions">
+                <button type="submit" class="eco-action-btn" onclick="return confirm('Delete this agent profile? This will deactivate the linked user too.');"><i class="bi bi-trash"></i>Delete Agent</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar" style="margin-top: 14px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete_customer">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="admin_delete_customer_id">Delete Customer</label>
+              <select id="admin_delete_customer_id" name="customer_id" required>
+                <option value="">Select customer</option>
+                {% for customer in admin_recent_customers %}
+                  <option value="{{ customer.id }}">{{ customer.user.get_full_name|default:customer.user.email|default:"Customer" }} #{{ customer.id }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label>&nbsp;</label>
+              <div class="eco-inline-actions">
+                <button type="submit" class="eco-action-btn" onclick="return confirm('Delete this customer profile? This will deactivate the linked user too.');"><i class="bi bi-trash"></i>Delete Customer</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="eco-table-card eco-workspace-card" id="module-workspace">
+      <div class="eco-card-head">
+        <div>
+          <div class="muted">Module Workspace</div>
+          <h3>
+            {% if active_dashboard_tab == "dashboard" %}Dashboard Overview
+            {% elif active_dashboard_tab == "leads" %}Lead List
+            {% elif active_dashboard_tab == "properties" %}Properties Detail
+            {% elif active_dashboard_tab == "deals" %}Deals Detail
+            {% elif active_dashboard_tab == "agents" %}Agents Detail
+            {% elif active_dashboard_tab == "reports" %}Reports Detail
+            {% elif active_dashboard_tab == "wallet" %}Wallet Detail
+            {% else %}Settings Detail{% endif %}
+          </h3>
+        </div>
+        <div class="eco-module-nav">
+          {% for tab in dashboard_tabs %}
+            <a href="{{ tab.href }}" class="eco-module-link {% if active_dashboard_tab == tab.key %}active{% endif %}">{{ tab.label }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if active_dashboard_tab == "dashboard" %}
+        <div class="eco-inline-actions">
+          {% for action in dashboard_quick_actions %}
+            <a href="{{ action.href }}" class="eco-action-btn"><i class="bi {{ action.icon }}"></i>{{ action.label }}</a>
+          {% endfor %}
+        </div>
+        <div class="eco-kv-grid">
+          <div class="eco-kv"><span>Total Leads</span><strong>{{ crm_dashboard.total_leads }}</strong></div>
+          <div class="eco-kv"><span>Open Deals</span><strong>{{ crm_dashboard.open_deals }}</strong></div>
+          <div class="eco-kv"><span>Active Agents</span><strong>{{ crm_dashboard.active_agents }}</strong></div>
+          <div class="eco-kv"><span>Pending Payouts</span><strong>Rs {{ crm_dashboard.pending_payout_total }}</strong></div>
+        </div>
+      {% elif active_dashboard_tab == "leads" %}
+        {% if user.is_staff or user.is_superuser %}
+          <div class="eco-admin-panel" style="margin-bottom: 18px;">
+            <div class="eco-section-head">
+              <div>
+                <span class="eco-overline">Quick Capture</span>
+                <h3>Manual Lead Entry</h3>
+              </div>
+              <span class="eco-pill neutral">Admin only</span>
+            </div>
+            <form method="post" action="{{ admin_dashboard_action_url }}" class="eco-lead-toolbar">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="create_lead">
+              <div class="eco-lead-filter-grid">
+                <div class="eco-field span-2">
+                  <label for="manual_lead_name">Name</label>
+                  <input id="manual_lead_name" type="text" name="name" placeholder="Lead name">
+                </div>
+                <div class="eco-field">
+                  <label for="manual_lead_phone">Phone</label>
+                  <input id="manual_lead_phone" type="text" name="phone" placeholder="+91 98765 43210">
+                </div>
+                <div class="eco-field">
+                  <label for="manual_lead_email">Email</label>
+                  <input id="manual_lead_email" type="email" name="email" placeholder="lead@example.com">
+                </div>
+                <div class="eco-field">
+                  <label for="manual_lead_source">Source</label>
+                  <select id="manual_lead_source" name="source">
+                    {% for value, label in lead_source_choices %}
+                      <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="eco-field">
+                  <label for="manual_lead_stage">Stage</label>
+                  <select id="manual_lead_stage" name="stage">
+                    {% for value, label in lead_stage_choices %}
+                      <option value="{{ value }}"{% if value == "new" %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="eco-field">
+                  <label for="manual_lead_budget">Budget</label>
+                  <input id="manual_lead_budget" type="number" name="budget" min="0" step="0.01" placeholder="5000000">
+                </div>
+                <div class="eco-field">
+                  <label for="manual_lead_city">City</label>
+                  <input id="manual_lead_city" type="text" name="city" placeholder="City">
+                </div>
+                <div class="eco-field">
+                  <label for="manual_lead_auto_assign">Auto Assign</label>
+                  <select id="manual_lead_auto_assign" name="auto_assign">
+                    <option value="1" selected>Yes</option>
+                    <option value="0">No</option>
+                  </select>
+                </div>
+                <div class="eco-field span-2">
+                  <label for="manual_lead_notes">Notes</label>
+                  <input id="manual_lead_notes" type="text" name="notes" placeholder="Call back, project interest, timing, etc.">
+                </div>
+              </div>
+              <div class="eco-inline-actions" style="margin-top: 12px;">
+                <button type="submit" class="eco-action-btn"><i class="bi bi-plus-circle"></i>Create Lead</button>
+              </div>
+            </form>
+          </div>
+        {% endif %}
+        <form method="get" class="eco-lead-toolbar">
+          <input type="hidden" name="tab" value="leads">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="lead_query">Search Lead</label>
+              <input id="lead_query" type="text" name="lead_query" value="{{ lead_filters.query }}" placeholder="Name, mobile, email, city">
+            </div>
+            <div class="eco-field">
+              <label for="lead_source">Source</label>
+              <select id="lead_source" name="lead_source">
+                <option value="">All sources</option>
+                {% for value, label in lead_source_choices %}
+                  <option value="{{ value }}" {% if lead_filters.source == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="lead_status">Status</label>
+              <select id="lead_status" name="lead_status">
+                <option value="">All status</option>
+                {% for value, label in lead_status_choices %}
+                  <option value="{{ value }}" {% if lead_filters.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="lead_stage">Stage</label>
+              <select id="lead_stage" name="lead_stage">
+                <option value="">All stages</option>
+                {% for value, label in lead_stage_choices %}
+                  <option value="{{ value }}" {% if lead_filters.stage == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="lead_date_range">Quick Range</label>
+              <select id="lead_date_range" name="lead_date_range">
+                <option value="">Custom</option>
+                <option value="today" {% if lead_filters.date_range == "today" %}selected{% endif %}>Today</option>
+                <option value="this_week" {% if lead_filters.date_range == "this_week" %}selected{% endif %}>This Week</option>
+                <option value="this_month" {% if lead_filters.date_range == "this_month" %}selected{% endif %}>This Month</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="lead_date_from">From</label>
+              <input id="lead_date_from" type="date" name="lead_date_from" value="{{ lead_filters.date_from }}">
+            </div>
+            <div class="eco-field">
+              <label for="lead_date_to">To</label>
+              <input id="lead_date_to" type="date" name="lead_date_to" value="{{ lead_filters.date_to }}">
+            </div>
+          </div>
+
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>{{ lead_filtered_count }}</strong>
+              <span>visible of {{ lead_total_count }} total leads</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-funnel"></i>Apply Filters</button>
+              <a href="{{ lead_reset_href }}" class="eco-action-btn"><i class="bi bi-arrow-clockwise"></i>Reset</a>
+              <a href="{{ lead_export_href }}" class="eco-action-btn"><i class="bi bi-download"></i>Download CSV</a>
+              <a href="{{ lead_share_href }}" target="_blank" rel="noopener" class="eco-action-btn"><i class="bi bi-whatsapp"></i>Share on WhatsApp</a>
+              <a href="{{ lead_email_share_href }}" class="eco-action-btn"><i class="bi bi-envelope"></i>Share by Email</a>
+            </div>
+          </div>
+        </form>
+
+        <div class="eco-url-note">{{ lead_current_url }}</div>
+        <div class="eco-table-wrap">
+        <table class="eco-table eco-leads-list">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>AI</th>
+              <th>Source</th>
+              <th>Status</th>
+              <th>Stage</th>
+              <th>Agent</th>
+              <th>Budget</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for lead in lead_rows %}
+              <tr>
+                <td>
+                  <a href="{% url 'accounts:lead_workspace' lead.id %}" class="eco-row-link">{{ lead.name|default:lead.mobile }}</a>
+                  <div class="eco-row-sub">{{ lead.mobile|default:"No phone" }}</div>
+                </td>
+                <td>
+                  <span class="eco-score-badge {{ lead.temperature }}">
+                    {% if lead.temperature == "hot" %}🔥{% elif lead.temperature == "cold" %}❄️{% else %}⚡{% endif %}
+                    {{ lead.lead_score|default:lead.score }}
+                  </span>
+                </td>
+                <td><a href="{% url 'accounts:lead_workspace' lead.id %}" class="eco-row-link">{{ lead.get_source_display }}</a></td>
+                <td><a href="{% url 'accounts:lead_workspace' lead.id %}" class="eco-row-link">{{ lead.get_status_display }}</a></td>
+                <td><a href="{% url 'accounts:lead_workspace' lead.id %}" class="eco-row-link">{{ lead.get_stage_display }}</a></td>
+                <td>
+                  {% if lead.assigned_agent %}
+                    <a href="{% url 'accounts:lead_workspace' lead.id %}#assignment-panel" class="eco-row-link">{{ lead.assigned_agent.name }}</a>
+                  {% else %}
+                    <span class="eco-row-sub">Unassigned</span>
+                  {% endif %}
+                </td>
+                <td>Rs {{ lead.budget|default:"0" }}</td>
+                <td>
+                  <div class="eco-row-actions">
+                    <a href="{% url 'accounts:lead_workspace' lead.id %}" class="eco-mini-action">Open CRM</a>
+                    {% if lead.mobile %}
+                      <a href="https://wa.me/{{ lead.mobile }}" target="_blank" rel="noopener" class="eco-mini-action">WhatsApp</a>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="8">No leads match the current filter.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      {% elif active_dashboard_tab == "properties" %}
+        <form method="get" class="eco-lead-toolbar">
+          <input type="hidden" name="tab" value="properties">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="property_query">Search Property</label>
+              <input id="property_query" type="text" name="property_query" value="{{ property_filters.query }}" placeholder="Title, city, district, location, pin">
+            </div>
+            <div class="eco-field">
+              <label for="property_status">Status</label>
+              <select id="property_status" name="property_status">
+                <option value="">All status</option>
+                {% for value, label in property_status_choices %}
+                  <option value="{{ value }}" {% if property_filters.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="property_type">Type</label>
+              <select id="property_type" name="property_type">
+                <option value="">All types</option>
+                {% for value, label in property_type_choices %}
+                  <option value="{{ value }}" {% if property_filters.type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="property_listing_type">Listing</label>
+              <select id="property_listing_type" name="property_listing_type">
+                <option value="">All listings</option>
+                {% for value, label in property_listing_type_choices %}
+                  <option value="{{ value }}" {% if property_filters.listing_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="property_date_range">Quick Range</label>
+              <select id="property_date_range" name="property_date_range">
+                <option value="">Custom</option>
+                <option value="today" {% if property_filters.date_range == "today" %}selected{% endif %}>Today</option>
+                <option value="this_week" {% if property_filters.date_range == "this_week" %}selected{% endif %}>This Week</option>
+                <option value="this_month" {% if property_filters.date_range == "this_month" %}selected{% endif %}>This Month</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="property_date_from">From</label>
+              <input id="property_date_from" type="date" name="property_date_from" value="{{ property_filters.date_from }}">
+            </div>
+            <div class="eco-field">
+              <label for="property_date_to">To</label>
+              <input id="property_date_to" type="date" name="property_date_to" value="{{ property_filters.date_to }}">
+            </div>
+          </div>
+
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>{{ property_filtered_count }}</strong>
+              <span>visible of {{ property_total_count }} total properties</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-funnel"></i>Apply Filters</button>
+              <a href="{{ property_reset_href }}" class="eco-action-btn"><i class="bi bi-arrow-clockwise"></i>Reset</a>
+              <a href="{{ property_export_href }}" class="eco-action-btn"><i class="bi bi-download"></i>Download CSV</a>
+              <a href="{{ property_share_href }}" target="_blank" rel="noopener" class="eco-action-btn"><i class="bi bi-whatsapp"></i>Share on WhatsApp</a>
+              <a href="{{ property_email_share_href }}" class="eco-action-btn"><i class="bi bi-envelope"></i>Share by Email</a>
+            </div>
+          </div>
+        </form>
+
+        <div class="eco-url-note">{{ property_current_url }}</div>
+        <div class="eco-table-wrap">
+          <table class="eco-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>City</th>
+                <th>Type</th>
+                <th>Listing</th>
+                <th>Status</th>
+                <th>Agent</th>
+                <th>Price</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for property in property_rows %}
+                <tr>
+                  <td><a href="{% url 'accounts:property_workspace' property.id %}" class="eco-row-link">{{ property.title }}</a></td>
+                  <td>{{ property.city|default:"-" }}</td>
+                  <td>{{ property.get_property_type_display }}</td>
+                  <td>{{ property.get_listing_type_display }}</td>
+                  <td>{{ property.get_status_display }}</td>
+                  <td>{% if property.assigned_agent_id %}{{ property.assigned_agent.name }}{% else %}<span class="eco-row-sub">Unassigned</span>{% endif %}</td>
+                  <td>Rs {{ property.price }}</td>
+                  <td>
+                    <div class="eco-row-actions">
+                      <a href="{% url 'accounts:property_workspace' property.id %}" class="eco-mini-action">Open</a>
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="8">No properties match the current filter.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% elif active_dashboard_tab == "deals" %}
+        <form method="get" class="eco-lead-toolbar">
+          <input type="hidden" name="tab" value="deals">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="deal_query">Search Deal</label>
+              <input id="deal_query" type="text" name="deal_query" value="{{ deal_filters.query }}" placeholder="Lead, property, agent, customer">
+            </div>
+            <div class="eco-field">
+              <label for="deal_status">Status</label>
+              <select id="deal_status" name="deal_status">
+                <option value="">All status</option>
+                {% for value, label in deal_status_choices %}
+                  <option value="{{ value }}" {% if deal_filters.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="deal_stage">Stage</label>
+              <select id="deal_stage" name="deal_stage">
+                <option value="">All stages</option>
+                {% for value, label in deal_stage_choices %}
+                  <option value="{{ value }}" {% if deal_filters.stage == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label>Records</label>
+              <input type="text" value="{{ deal_filtered_count }} / {{ deal_total_count }}" readonly>
+            </div>
+            <div class="eco-field">
+              <label for="deal_date_range">Quick Range</label>
+              <select id="deal_date_range" name="deal_date_range">
+                <option value="">Custom</option>
+                <option value="today" {% if deal_filters.date_range == "today" %}selected{% endif %}>Today</option>
+                <option value="this_week" {% if deal_filters.date_range == "this_week" %}selected{% endif %}>This Week</option>
+                <option value="this_month" {% if deal_filters.date_range == "this_month" %}selected{% endif %}>This Month</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="deal_date_from">From</label>
+              <input id="deal_date_from" type="date" name="deal_date_from" value="{{ deal_filters.date_from }}">
+            </div>
+            <div class="eco-field">
+              <label for="deal_date_to">To</label>
+              <input id="deal_date_to" type="date" name="deal_date_to" value="{{ deal_filters.date_to }}">
+            </div>
+          </div>
+
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>{{ deal_filtered_count }}</strong>
+              <span>visible of {{ deal_total_count }} total deals</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-funnel"></i>Apply Filters</button>
+              <a href="{{ deal_reset_href }}" class="eco-action-btn"><i class="bi bi-arrow-clockwise"></i>Reset</a>
+              <a href="{{ deal_export_href }}" class="eco-action-btn"><i class="bi bi-download"></i>Download CSV</a>
+              <a href="{{ deal_share_href }}" target="_blank" rel="noopener" class="eco-action-btn"><i class="bi bi-whatsapp"></i>Share on WhatsApp</a>
+              <a href="{{ deal_email_share_href }}" class="eco-action-btn"><i class="bi bi-envelope"></i>Share by Email</a>
+            </div>
+          </div>
+        </form>
+
+        <div class="eco-url-note">{{ deal_current_url }}</div>
+        <div class="eco-table-wrap">
+          <table class="eco-table">
+            <thead>
+              <tr>
+                <th>Lead</th>
+                <th>Property</th>
+                <th>Agent</th>
+                <th>Amount</th>
+                <th>Commission</th>
+                <th>Status</th>
+                <th>Stage</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for deal in deal_rows %}
+                <tr>
+                  <td><a href="{% url 'accounts:deal_workspace' deal.id %}" class="eco-row-link">{% if deal.lead %}{{ deal.lead.name|default:"Converted Lead" }}{% else %}Deal #{{ deal.id }}{% endif %}</a></td>
+                  <td>{{ deal.property.title|default:"-" }}</td>
+                  <td>{% if deal.agent_id %}{{ deal.agent.name }}{% else %}<span class="eco-row-sub">Unassigned</span>{% endif %}</td>
+                  <td>Rs {{ deal.deal_amount }}</td>
+                  <td>Rs {{ deal.commission_amount }}</td>
+                  <td>{{ deal.get_status_display }}</td>
+                  <td>{{ deal.get_stage_display }}</td>
+                  <td>
+                    <div class="eco-row-actions">
+                      <a href="{% url 'accounts:deal_workspace' deal.id %}" class="eco-mini-action">Open</a>
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="8">No deals match the current filter.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% elif active_dashboard_tab == "agents" %}
+        <form method="get" class="eco-lead-toolbar">
+          <input type="hidden" name="tab" value="agents">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="agent_query">Search Agent</label>
+              <input id="agent_query" type="text" name="agent_query" value="{{ agent_filters.query }}" placeholder="Name, phone, city, district, pin">
+            </div>
+            <div class="eco-field">
+              <label for="agent_approval">Approval</label>
+              <select id="agent_approval" name="agent_approval">
+                <option value="">All approvals</option>
+                {% for value, label in agent_approval_choices %}
+                  <option value="{{ value }}" {% if agent_filters.approval == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="agent_specialization">Specialization</label>
+              <select id="agent_specialization" name="agent_specialization">
+                <option value="">All specializations</option>
+                {% for value, label in agent_specialization_choices %}
+                  <option value="{{ value }}" {% if agent_filters.specialization == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label>Records</label>
+              <input type="text" value="{{ agent_filtered_count }} / {{ agent_total_count }}" readonly>
+            </div>
+            <div class="eco-field">
+              <label for="agent_date_range">Quick Range</label>
+              <select id="agent_date_range" name="agent_date_range">
+                <option value="">Custom</option>
+                <option value="today" {% if agent_filters.date_range == "today" %}selected{% endif %}>Today</option>
+                <option value="this_week" {% if agent_filters.date_range == "this_week" %}selected{% endif %}>This Week</option>
+                <option value="this_month" {% if agent_filters.date_range == "this_month" %}selected{% endif %}>This Month</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="agent_date_from">From</label>
+              <input id="agent_date_from" type="date" name="agent_date_from" value="{{ agent_filters.date_from }}">
+            </div>
+            <div class="eco-field">
+              <label for="agent_date_to">To</label>
+              <input id="agent_date_to" type="date" name="agent_date_to" value="{{ agent_filters.date_to }}">
+            </div>
+          </div>
+
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>{{ agent_filtered_count }}</strong>
+              <span>visible of {{ agent_total_count }} total agents</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-funnel"></i>Apply Filters</button>
+              <a href="{{ agent_reset_href }}" class="eco-action-btn"><i class="bi bi-arrow-clockwise"></i>Reset</a>
+              <a href="{{ agent_export_href }}" class="eco-action-btn"><i class="bi bi-download"></i>Download CSV</a>
+              <a href="{{ agent_share_href }}" target="_blank" rel="noopener" class="eco-action-btn"><i class="bi bi-whatsapp"></i>Share on WhatsApp</a>
+              <a href="{{ agent_email_share_href }}" class="eco-action-btn"><i class="bi bi-envelope"></i>Share by Email</a>
+            </div>
+          </div>
+        </form>
+
+        <div class="eco-url-note">{{ agent_current_url }}</div>
+        <div class="eco-table-wrap">
+          <table class="eco-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>City</th>
+                <th>Approval</th>
+                <th>Specialization</th>
+                <th>Score</th>
+                <th>Commission</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for agent in agent_rows %}
+                <tr>
+                  <td><a href="{% url 'accounts:agent_workspace' agent.id %}" class="eco-row-link">{{ agent.name|default:agent.user.email }}</a></td>
+                  <td>{{ agent.phone|default:"-" }}</td>
+                  <td>{{ agent.city|default:agent.district|default:agent.state|default:"Not mapped" }}</td>
+                  <td>{{ agent.get_approval_status_display }}</td>
+                  <td>{{ agent.get_specialization_display }}</td>
+                  <td>{{ agent.performance_score }}</td>
+                  <td>{{ agent.commission_rate }}%</td>
+                  <td>
+                    <div class="eco-row-actions">
+                      <a href="{% url 'accounts:agent_workspace' agent.id %}" class="eco-mini-action">Open</a>
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="8">No agents match the current filter.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% elif active_dashboard_tab == "reports" %}
+        <form method="get" class="eco-lead-toolbar">
+          <input type="hidden" name="tab" value="reports">
+          <div class="eco-lead-filter-grid">
+            <div class="eco-field span-2">
+              <label for="report_query">Search Activity</label>
+              <input id="report_query" type="text" name="report_query" value="{{ report_filters.query }}" placeholder="Lead, note, actor, activity">
+            </div>
+            <div class="eco-field">
+              <label for="report_type">Activity Type</label>
+              <select id="report_type" name="report_type">
+                <option value="">All types</option>
+                {% for value, label in report_type_choices %}
+                  <option value="{{ value }}" {% if report_filters.activity_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="report_date_range">Quick Range</label>
+              <select id="report_date_range" name="report_date_range">
+                <option value="">Custom</option>
+                <option value="today" {% if report_filters.date_range == "today" %}selected{% endif %}>Today</option>
+                <option value="this_week" {% if report_filters.date_range == "this_week" %}selected{% endif %}>This Week</option>
+                <option value="this_month" {% if report_filters.date_range == "this_month" %}selected{% endif %}>This Month</option>
+              </select>
+            </div>
+            <div class="eco-field">
+              <label for="report_date_from">From</label>
+              <input id="report_date_from" type="date" name="report_date_from" value="{{ report_filters.date_from }}">
+            </div>
+            <div class="eco-field">
+              <label for="report_date_to">To</label>
+              <input id="report_date_to" type="date" name="report_date_to" value="{{ report_filters.date_to }}">
+            </div>
+          </div>
+
+          <div class="eco-lead-toolbar-foot">
+            <div class="eco-lead-count">
+              <strong>{{ report_filtered_count }}</strong>
+              <span>visible of {{ report_total_count }} total activities</span>
+            </div>
+            <div class="eco-inline-actions">
+              <button type="submit" class="eco-action-btn"><i class="bi bi-funnel"></i>Apply Filters</button>
+              <a href="{{ report_reset_href }}" class="eco-action-btn"><i class="bi bi-arrow-clockwise"></i>Reset</a>
+              <a href="{{ report_export_href }}" class="eco-action-btn"><i class="bi bi-download"></i>Download CSV</a>
+              <a href="{{ report_share_href }}" target="_blank" rel="noopener" class="eco-action-btn"><i class="bi bi-whatsapp"></i>Share on WhatsApp</a>
+              <a href="{{ report_email_share_href }}" class="eco-action-btn"><i class="bi bi-envelope"></i>Share by Email</a>
+            </div>
+          </div>
+        </form>
+
+        <div class="eco-url-note">{{ report_current_url }}</div>
+        <div class="eco-table-wrap">
+          <table class="eco-table">
+            <thead>
+              <tr>
+                <th>Lead</th>
+                <th>Activity</th>
+                <th>Actor</th>
+                <th>Created</th>
+                <th>Note</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for activity in report_rows %}
+                <tr>
+                  <td>{% if activity.lead_id %}<a href="{% url 'accounts:lead_workspace' activity.lead_id %}" class="eco-row-link">{{ activity.lead.name|default:activity.lead.mobile }}</a>{% else %}-{% endif %}</td>
+                  <td>{{ activity.activity_type|title }}</td>
+                  <td>{{ activity.actor.email|default:activity.actor.username|default:"System" }}</td>
+                  <td>{{ activity.created_at|date:"d M Y H:i" }}</td>
+                  <td>{{ activity.note|default:"-" }}</td>
+                  <td>
+                    <div class="eco-row-actions">
+                      {% if activity.lead_id %}
+                        <a href="{% url 'accounts:lead_workspace' activity.lead_id %}" class="eco-mini-action">Open Lead</a>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="6">No report rows match the current filter.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% elif active_dashboard_tab == "wallet" %}
+        <div class="eco-inline-actions">
+          <a href="{% url 'accounts:wallet_workspace' %}" class="eco-action-btn"><i class="bi bi-wallet2"></i>Open Wallet Dashboard</a>
+          {% if request.user.is_staff %}
+            <a href="/superadmin/wallet/wallet/" class="eco-action-btn"><i class="bi bi-cash-coin"></i>Wallet Admin</a>
+            <a href="/superadmin/wallet/withdrawrequest/" class="eco-action-btn"><i class="bi bi-bank"></i>Withdraw Queue</a>
+          {% else %}
+            <a href="{% url 'accounts:dashboard' %}?tab=deals#module-workspace" class="eco-action-btn"><i class="bi bi-briefcase"></i>Deal Earnings</a>
+            <a href="{% url 'accounts:edit_profile' %}" class="eco-action-btn"><i class="bi bi-person-circle"></i>Profile</a>
+          {% endif %}
+        </div>
+        <div class="eco-kv-grid">
+          <div class="eco-kv"><span>User Balance</span><strong>Rs {{ wallet_dashboard.user_wallet.balance }}</strong></div>
+          <div class="eco-kv"><span>Currency</span><strong>{{ wallet_dashboard.user_wallet.currency }}</strong></div>
+          <div class="eco-kv"><span>Withdrawals</span><strong>{{ wallet_dashboard.withdraw_rows|length }}</strong></div>
+          <div class="eco-kv"><span>Agent Wallet</span><strong>{% if wallet_dashboard.agent_wallet %}Rs {{ wallet_dashboard.agent_wallet.balance }}{% else %}N/A{% endif %}</strong></div>
+        </div>
+        <table class="eco-table">
+          <thead>
+            <tr>
+              <th>Ledger</th>
+              <th>Amount</th>
+              <th>Source</th>
+              <th>Reference</th>
+              <th>Open</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in wallet_dashboard.user_txn_rows %}
+              <tr>
+                <td>{{ row.entry_type|title }}</td>
+                <td>Rs {{ row.amount }}</td>
+                <td>{{ row.source|default:"manual"|title }}</td>
+                <td>{{ row.reference|default:"-" }}</td>
+                <td><a href="{% url 'accounts:wallet_workspace' %}" class="eco-mini-action">Open</a></td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5">No wallet transactions available yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="eco-list">
+          {% for row in wallet_dashboard.withdraw_rows %}
+            <div class="eco-list-item">
+              <div class="copy">
+                <strong>Rs {{ row.amount }}</strong>
+                <span>{{ row.requested_at|date:"d M Y H:i" }} | {{ row.payout_reference|default:"No payout ref" }}</span>
+              </div>
+              <span class="eco-pill {% if row.status == 'paid' %}neutral{% else %}warn{% endif %}">{{ row.status|title }}</span>
+            </div>
+          {% empty %}
+            <div class="eco-list-item">
+              <div class="copy">
+                <strong>No withdrawal requests</strong>
+                <span>Agent and user withdrawal requests yahan visible hongi.</span>
+              </div>
+              <span class="eco-pill warn">Empty</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="eco-inline-actions">
+          {% if request.user.is_staff %}
+            <a href="/settings/" class="eco-action-btn"><i class="bi bi-sliders"></i>Settings Center</a>
+            <a href="/superadmin/core_settings/companysettings/" class="eco-action-btn"><i class="bi bi-building-gear"></i>Company Settings</a>
+            <a href="/billing/dashboard/" class="eco-action-btn"><i class="bi bi-receipt-cutoff"></i>Billing Dashboard</a>
+          {% else %}
+            <a href="{% url 'accounts:edit_profile' %}" class="eco-action-btn"><i class="bi bi-person-circle"></i>Edit Profile</a>
+          {% endif %}
+          <a href="{% url 'accounts:settings_workspace' %}" class="eco-action-btn"><i class="bi bi-sliders2"></i>Open Settings Dashboard</a>
+        </div>
+        <div class="eco-settings-grid">
+          {% for card in dashboard_settings_cards %}
+            <div class="eco-settings-box">
+              <h4>{{ card.title }}</h4>
+              <ul class="eco-settings-list">
+                {% for item in card.items %}
+                  <li>{{ item }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% empty %}
+            <div class="eco-settings-box">
+              <h4>No settings loaded</h4>
+              <ul class="eco-settings-list">
+                <li>Workspace-specific settings will appear here.</li>
+              </ul>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </section>
+
+    {% if not compact_dashboard_mode %}
+    <div class="eco-shell">
+      <aside class="eco-rail">
+        <div class="eco-card">
+          <div class="eco-card-head">
+            <div>
+              <div class="muted">Dock</div>
+              <h3>Actions</h3>
+            </div>
+          </div>
+          <div class="eco-quick-grid">
+            {% for action in dashboard_quick_actions %}
+              <a href="{{ action.href }}" class="eco-quick-item">
+                <span>{{ action.label }}</span>
+                <i class="bi {{ action.icon }}"></i>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="eco-card">
+          <div class="eco-card-head">
+            <div>
+              <div class="muted">Signals</div>
+              <h3>System</h3>
+            </div>
+          </div>
+          <div class="eco-signal-stack">
+            {% for row in dashboard_signal_bars %}
+              <div class="eco-signal-row">
+                <div class="eco-signal-top">
+                  <span>{{ row.label }}</span>
+                  <strong>{{ row.value }}</strong>
+                </div>
+                <div class="eco-progress-track">
+                  <div class="eco-progress-fill {{ row.tone }}" style="width:{% widthratio row.value row.max 100 %}%"></div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="eco-card">
+          <div class="eco-card-head">
+            <div>
+              <div class="muted">Profile</div>
+              <h3>{% if workspace_role == "agent" %}Agent{% else %}Workspace{% endif %}</h3>
+            </div>
+          </div>
+          <div class="eco-kv-grid">
+            {% if workspace_role == "agent" and agent_profile_summary %}
+              <div class="eco-kv"><span>Approval</span><strong>{{ agent_profile_summary.approval_status|title }}</strong></div>
+              <div class="eco-kv"><span>KYC</span><strong>{% if agent_profile_summary.kyc_verified %}Verified{% else %}Pending{% endif %}</strong></div>
+              <div class="eco-kv"><span>Coverage</span><strong>{{ agent_profile_summary.coverage }}</strong></div>
+              <div class="eco-kv"><span>Sales</span><strong>Rs {{ agent_profile_summary.total_sales }}</strong></div>
+            {% elif workspace_role == "customer" and crm_dashboard.assigned_agent %}
+              <div class="eco-kv"><span>Assigned Agent</span><strong>{{ crm_dashboard.assigned_agent.name }}</strong></div>
+              <div class="eco-kv"><span>Phone</span><strong>{{ crm_dashboard.assigned_agent.phone|default:"Pending" }}</strong></div>
+              <div class="eco-kv"><span>Nearby</span><strong>{{ crm_dashboard.nearby_property_count }}</strong></div>
+              <div class="eco-kv"><span>Updates</span><strong>{{ crm_dashboard.active_conversations }}</strong></div>
+            {% else %}
+              <div class="eco-kv"><span>Role</span><strong>{{ workspace_role_label }}</strong></div>
+              <div class="eco-kv"><span>Agents</span><strong>{{ crm_dashboard.active_agents }}</strong></div>
+              <div class="eco-kv"><span>Customers</span><strong>{{ crm_dashboard.total_customers }}</strong></div>
+              <div class="eco-kv"><span>Payouts</span><strong>{{ crm_dashboard.pending_payout_count }}</strong></div>
+            {% endif %}
+          </div>
+        </div>
+      </aside>
+
+      <div class="eco-main">
+        <div class="eco-module-grid" id="leads">
+          {% for tile in dashboard_module_tiles %}
+            <a href="{{ tile.href }}" class="eco-module-tile {{ tile.accent }}">
+              <span class="icon"><i class="bi {{ tile.icon }}"></i></span>
+              <strong>{{ tile.label }}</strong>
+              <span>{{ tile.value }}</span>
+            </a>
+          {% endfor %}
+        </div>
+
+        <div class="eco-flow-strip">
+          {% for step in dashboard_flow_steps %}
+            <div class="eco-flow-step">
+              <span class="eco-flow-icon"><i class="bi {{ step.icon }}"></i></span>
+              <span>{{ step.label }}</span>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="eco-panels">
+          <div class="eco-card" id="properties">
+            <div class="eco-card-head">
+              <div>
+                <div class="muted">Featured</div>
+                <h3>Property</h3>
+              </div>
+              <span class="eco-pill neutral">{{ real_estate_counts.property_count }} Live</span>
+            </div>
+            {% if featured_property %}
+              <h3 class="eco-property-title">{{ featured_property.title }}</h3>
+              <div class="eco-property-price">Rs {{ featured_property.price }}</div>
+              <div class="eco-property-meta">
+                <span class="eco-tag"><i class="bi bi-geo-alt"></i>{{ featured_property.city }}</span>
+                <span class="eco-tag"><i class="bi bi-house"></i>{{ featured_property.property_type|title }}</span>
+                <span class="eco-tag"><i class="bi bi-rulers"></i>{{ featured_property.area_sqft|default:"-" }} sqft</span>
+                {% for badge in featured_property.metadata.badges %}
+                  <span class="eco-tag badge">{{ badge|cut:"_"|title }}</span>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="eco-list">
+                <div class="eco-list-item">
+                  <div class="copy">
+                    <strong>No property loaded</strong>
+                    <span>Seed data or create a listing.</span>
+                  </div>
+                  <span class="eco-pill warn">Empty</span>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="eco-card" id="deals">
+            <div class="eco-card-head">
+              <div>
+                <div class="muted">Capture</div>
+                <h3>Lead Import Batches</h3>
+              </div>
+              <span class="eco-pill neutral">{{ crm_dashboard.import_batch_count }} Imports</span>
+            </div>
+            <div class="eco-list">
+              {% for batch in crm_dashboard.recent_import_batches %}
+                <div class="eco-list-item">
+                  <div class="copy">
+                    <strong>{{ batch.source_name|default:batch.import_type|title }}</strong>
+                    <span>{{ batch.import_type|upper }} | {{ batch.created_leads }} created | {{ batch.duplicate_rows }} duplicates</span>
+                  </div>
+                  <span class="eco-pill {% if batch.status == 'completed' %}neutral{% else %}warn{% endif %}">{{ batch.status|title }}</span>
+                </div>
+              {% empty %}
+                <div class="eco-list-item">
+                  <div class="copy">
+                    <strong>No lead imports</strong>
+                    <span>CSV, webhook, API, and scrape batches will show here.</span>
+                  </div>
+                  <span class="eco-pill warn">Empty</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="eco-card" id="agents">
+            <div class="eco-card-head">
+              <div>
+                <div class="muted">Routing</div>
+                <h3>Assignment Engine</h3>
+              </div>
+              <span class="eco-pill neutral">{{ crm_dashboard.auto_assigned_count }} Auto</span>
+            </div>
+            <div class="eco-list">
+              {% for assignment in crm_dashboard.recent_assignments %}
+                <div class="eco-list-item">
+                  <div class="copy">
+                    <strong>{{ assignment.lead.name|default:assignment.lead.mobile }}</strong>
+                    <span>{{ assignment.agent.name|default:"Unassigned" }} | {{ assignment.matched_on|default:"manual"|title }} | {{ assignment.assignment_type|title }}</span>
+                  </div>
+                  <span class="eco-pill {% if assignment.is_active %}neutral{% else %}warn{% endif %}">{% if assignment.is_active %}Active{% else %}Released{% endif %}</span>
+                </div>
+              {% empty %}
+                <div class="eco-list-item">
+                  <div class="copy">
+                    <strong>No assignments yet</strong>
+                    <span>New lead routing and reassignments will appear here.</span>
+                  </div>
+                  <span class="eco-pill warn">Empty</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="eco-card" id="reports">
+            <div class="eco-card-head">
+              <div>
+                <div class="muted">Outreach</div>
+                <h3>Conversations</h3>
+              </div>
+              <span class="eco-pill neutral">{{ crm_dashboard.active_conversations }} Active</span>
+            </div>
+            <div class="eco-list">
+              {% for activity in crm_dashboard.recent_conversations %}
+                <div class="eco-list-item">
+                  <div class="copy">
+                    <strong>{{ activity.lead.name|default:activity.lead.mobile }}</strong>
+                    <span>{{ activity.activity_type|title }}{% if activity.actor %} | {{ activity.actor.email|default:activity.actor.username }}{% endif %}</span>
+                  </div>
+                  <span class="eco-pill neutral">{{ activity.created_at|date:"d M H:i" }}</span>
+                </div>
+              {% empty %}
+                <div class="eco-list-item">
+                  <div class="copy">
+                    <strong>No conversation logs</strong>
+                    <span>WhatsApp, email, SMS, and call activity will show here.</span>
+                  </div>
+                  <span class="eco-pill warn">Empty</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="eco-card" id="settings">
+            <div class="eco-card-head">
+              <div>
+                <div class="muted">Revenue</div>
+                <h3>Deals + Payouts</h3>
+              </div>
+              <span class="eco-pill neutral">Rs {{ crm_dashboard.pending_payout_total }}</span>
+            </div>
+            <div class="eco-list">
+              {% for deal in crm_dashboard.recent_deals %}
+                <div class="eco-list-item">
+                  <div class="copy">
+                    <strong>{{ deal.lead.name|default:"Converted Lead" }}</strong>
+                    <span>Rs {{ deal.deal_amount }} | {{ deal.agent.name|default:"No Agent" }}</span>
+                  </div>
+                  <span class="eco-pill {% if deal.status == 'won' %}neutral{% else %}warn{% endif %}">{{ deal.status|title }}</span>
+                </div>
+              {% empty %}
+                <div class="eco-list-item">
+                  <div class="copy">
+                    <strong>No deals yet</strong>
+                    <span>Converted leads and commission-ready payouts will appear here.</span>
+                  </div>
+                  <span class="eco-pill warn">Empty</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="eco-card" id="system-signals">
+            <div class="eco-card-head">
+              <div>
+                <div class="muted">Automation</div>
+                <h3>Lead Engine Signals</h3>
+              </div>
+              <span class="eco-pill neutral">{{ crm_dashboard.snapshot.conversion_rate }}% Conversion</span>
+            </div>
+            <div class="eco-kv-grid">
+              <div class="eco-kv"><span>Unassigned</span><strong>{{ crm_dashboard.unassigned_leads }}</strong></div>
+              <div class="eco-kv"><span>Follow Ups Due</span><strong>{{ crm_dashboard.followups_due }}</strong></div>
+              <div class="eco-kv"><span>Pending Response</span><strong>{{ crm_dashboard.snapshot.pending_response_count }}</strong></div>
+              <div class="eco-kv"><span>Duplicates</span><strong>{{ crm_dashboard.duplicate_leads }}</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="eco-table-card" id="operations">
+          <div class="eco-card-head">
+            <div>
+              <div class="muted">Live</div>
+              <h3>Operations</h3>
+            </div>
+          </div>
+          <table class="eco-table">
+            <thead>
+              <tr>
+                <th>Pipeline Stage</th>
+                <th>Leads</th>
+                <th>Coverage</th>
+                <th>Signal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in crm_dashboard.pipeline_rows %}
+                <tr>
+                  <td>{{ row.label }}</td>
+                  <td>{{ row.value }}</td>
+                  <td>{{ row.percentage }}%</td>
+                  <td><span class="eco-pill neutral">{{ row.tone|title }}</span></td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="4">No CRM pipeline data yet.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+<script>
+  (function () {
+    function setFieldValue(field, value) {
+      if (!field) {
+        return;
+      }
+      field.value = value || "";
     }
-});
 
-console.log("dashboard page loaded");
+    function wirePrefill(selectId, fieldMap) {
+      const select = document.getElementById(selectId);
+      if (!select) {
+        return;
+      }
+      const fillFields = () => {
+        const option = select.options[select.selectedIndex];
+        if (!option || !option.value) {
+          Object.values(fieldMap).forEach((field) => {
+            if (field) {
+              field.value = "";
+            }
+          });
+          return;
+        }
+        Object.entries(fieldMap).forEach(([attr, field]) => {
+          if (!field) {
+            return;
+          }
+          if (Object.prototype.hasOwnProperty.call(option.dataset, attr)) {
+            setFieldValue(field, option.dataset[attr]);
+          }
+        });
+      };
+      select.addEventListener("change", fillFields);
+      fillFields();
+    }
+
+    wirePrefill("admin_edit_agent_id", {
+      name: document.getElementById("admin_edit_agent_name"),
+      mobile: document.getElementById("admin_edit_agent_mobile"),
+      city: document.getElementById("admin_edit_agent_city"),
+      district: document.getElementById("admin_edit_agent_district"),
+      state: document.getElementById("admin_edit_agent_state"),
+      pin_code: document.getElementById("admin_edit_agent_pin"),
+      specialization: document.getElementById("admin_edit_agent_specialization"),
+      approval_status: document.getElementById("admin_edit_agent_approval"),
+      is_active: document.getElementById("admin_edit_agent_is_active"),
+    });
+
+    wirePrefill("admin_edit_customer_id", {
+      name: document.getElementById("admin_edit_customer_name"),
+      mobile: document.getElementById("admin_edit_customer_mobile"),
+      buyer_type: document.getElementById("admin_edit_customer_buyer_type"),
+      preferred_location: document.getElementById("admin_edit_customer_preferred_location"),
+      city: document.getElementById("admin_edit_customer_city"),
+      district: document.getElementById("admin_edit_customer_district"),
+      state: document.getElementById("admin_edit_customer_state"),
+      pin_code: document.getElementById("admin_edit_customer_pin"),
+      is_active: document.getElementById("admin_edit_customer_is_active"),
+    });
+
+    document.querySelectorAll("form[data-confirm-on-delete]").forEach((form) => {
+      form.addEventListener("submit", function (event) {
+        const bulkAction = form.querySelector('select[name="bulk_action"]');
+        if (bulkAction && bulkAction.value === "delete") {
+          const confirmed = window.confirm("Delete the selected profiles? Linked users will be deactivated too.");
+          if (!confirmed) {
+            event.preventDefault();
+          }
+        }
+      });
+    });
+
+    document.querySelectorAll("[data-select-all]").forEach((button) => {
+      button.addEventListener("click", function () {
+        const targetId = button.getAttribute("data-select-all");
+        const select = document.getElementById(targetId);
+        if (!select) {
+          return;
+        }
+        Array.from(select.options).forEach((option) => {
+          option.selected = !!option.value;
+        });
+      });
+    });
+
+    document.querySelectorAll("[data-clear-all]").forEach((button) => {
+      button.addEventListener("click", function () {
+        const targetId = button.getAttribute("data-clear-all");
+        const select = document.getElementById(targetId);
+        if (!select) {
+          return;
+        }
+        Array.from(select.options).forEach((option) => {
+          option.selected = false;
+        });
+      });
+    });
+
+    document.querySelectorAll("[data-source-preset]").forEach((button) => {
+      button.addEventListener("click", function () {
+        const preset = button.getAttribute("data-source-preset");
+        const nameField = document.getElementById("admin_source_name");
+        const kindField = document.getElementById("admin_source_kind");
+        const valueField = document.getElementById("admin_source_value");
+        const slugField = document.getElementById("admin_source_slug");
+        const urlField = document.getElementById("admin_endpoint_url");
+        const assignField = document.getElementById("admin_auto_assign");
+        if (nameField) {
+          nameField.value = button.getAttribute("data-source-name") || "";
+        }
+        if (kindField) {
+          kindField.value = button.getAttribute("data-source-kind") || "";
+        }
+        if (valueField) {
+          valueField.value = button.getAttribute("data-source-value") || "";
+        }
+        if (slugField) {
+          slugField.value = button.getAttribute("data-source-slug") || "";
+        }
+        if (urlField) {
+          urlField.value = button.getAttribute("data-source-url") || "";
+        }
+        if (assignField) {
+          assignField.value = preset === "bulk" ? "0" : "1";
+        }
+      });
+    });
+
+    function getCsrfToken() {
+      const tokenField = document.querySelector('input[name="csrfmiddlewaretoken"]');
+      return tokenField ? tokenField.value : "";
+    }
+
+    function renderKeyValueList(container, items, emptyLabel) {
+      if (!container) {
+        return;
+      }
+      if (!items || !items.length) {
+        container.innerHTML = `
+          <div class="eco-list-item">
+            <div class="copy">
+              <strong>${emptyLabel}</strong>
+              <span>No preview data yet.</span>
+            </div>
+            <span class="eco-pill neutral">Idle</span>
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = items.join("");
+    }
+
+    function setIntakeStep(step) {
+      document.querySelectorAll("[data-intake-step]").forEach((tile) => {
+        tile.classList.toggle("is-active", tile.getAttribute("data-intake-step") === step);
+      });
+    }
+
+    function scrollToTarget(targetId) {
+      const target = document.getElementById(targetId);
+      if (target && typeof target.scrollIntoView === "function") {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+
+    document.querySelectorAll("[data-intake-step]").forEach((button) => {
+      button.addEventListener("click", function () {
+        const step = button.getAttribute("data-intake-step");
+        const targetId = button.getAttribute("data-scroll-target");
+        setIntakeStep(step);
+        if (targetId) {
+          scrollToTarget(targetId);
+        }
+      });
+    });
+
+    const importPreviewBtn = document.getElementById("lead_import_preview_btn");
+    const importRunBtn = document.getElementById("lead_import_run_btn");
+    const importFile = document.getElementById("lead_import_file");
+    const importMapping = document.getElementById("lead_import_mapping");
+    const importSource = document.getElementById("lead_import_source");
+    const importAutoAssign = document.getElementById("lead_import_auto_assign");
+    const importPreviewState = document.getElementById("lead_import_preview_state");
+    const importPreviewResult = document.getElementById("lead_import_preview_result");
+    const scrapeForm = document.getElementById("lead_scrape_form");
+    const scrapeUrl = document.getElementById("lead_scrape_url");
+    const scrapeHtml = document.getElementById("lead_scrape_html");
+    const scrapeMaxItems = document.getElementById("lead_scrape_max_items");
+    const scrapeAutoAssign = document.getElementById("lead_scrape_auto_assign");
+    const scrapeState = document.getElementById("lead_scrape_state");
+    const scrapeResult = document.getElementById("lead_scrape_result");
+
+    setIntakeStep("upload");
+
+    if (importFile) {
+      importFile.addEventListener("change", function () {
+        setIntakeStep("upload");
+      });
+    }
+    if (importMapping) {
+      importMapping.addEventListener("focus", function () {
+        setIntakeStep("map");
+      });
+    }
+    if (importPreviewBtn) {
+      importPreviewBtn.addEventListener("focus", function () {
+        setIntakeStep("preview");
+      });
+    }
+    if (importRunBtn) {
+      importRunBtn.addEventListener("focus", function () {
+        setIntakeStep("import");
+      });
+    }
+    if (scrapeUrl) {
+      scrapeUrl.addEventListener("focus", function () {
+        setIntakeStep("scrape");
+      });
+    }
+
+    function parseMapping(rawValue) {
+      if (!rawValue) {
+        return {};
+      }
+      try {
+        return JSON.parse(rawValue);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function renderPreviewRows(payload) {
+      const previewRows = payload.preview_rows || [];
+      const items = previewRows.map((row) => {
+        const errors = (row.errors || []).join(", ");
+        return `
+          <div class="eco-list-item">
+            <div class="copy">
+              <strong>${row.row_number}. ${row.name || row.phone || row.email || "Lead"}</strong>
+              <span>${row.phone || "-"} | ${row.email || "-"} | ${row.city || "-"} | ${row.district || "-"}</span>
+              ${errors ? `<span class="text-warning">${errors}</span>` : ""}
+            </div>
+            <span class="eco-pill ${errors ? "warn" : "neutral"}">${errors ? "Needs review" : "Ready"}</span>
+          </div>
+        `;
+      });
+      renderKeyValueList(importPreviewResult, items, "Import Preview");
+      setIntakeStep("preview");
+    }
+
+    function renderScrapeBatch(payload) {
+      const batch = payload.batch || {};
+      const items = [
+        `
+          <div class="eco-list-item">
+            <div class="copy">
+              <strong>${batch.source_name || "Scrape batch"}</strong>
+              <span>${batch.import_type || "web_scrape"} | ${batch.created_leads || 0} created | ${batch.failed_rows || 0} failed</span>
+            </div>
+            <span class="eco-pill neutral">${payload.rows_extracted || 0} Rows</span>
+          </div>
+        `,
+      ];
+      renderKeyValueList(scrapeResult, items, "Scrape Results");
+      setIntakeStep("scrape");
+    }
+
+    async function postJson(url, data, stateField, onSuccess) {
+      if (stateField) {
+        stateField.textContent = "Working...";
+      }
+      const headers = {
+        "X-CSRFToken": getCsrfToken(),
+      };
+      if (typeof data === "string") {
+        headers["Content-Type"] = "application/json";
+      }
+      const response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: data,
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.detail || "Request failed");
+      }
+      if (stateField) {
+        stateField.textContent = "Done";
+      }
+      if (typeof onSuccess === "function") {
+        onSuccess(payload);
+      }
+      return payload;
+    }
+
+    if (importPreviewBtn && importFile) {
+      importPreviewBtn.addEventListener("click", async function () {
+        const file = importFile.files && importFile.files[0];
+        if (!file) {
+          if (importPreviewState) {
+            importPreviewState.textContent = "Pick a file first";
+          }
+          return;
+        }
+        const formData = new FormData();
+        formData.append("file", file);
+        const mappingValue = parseMapping(importMapping ? importMapping.value.trim() : "");
+        if (mappingValue === null) {
+          if (importPreviewState) {
+            importPreviewState.textContent = "Invalid mapping JSON";
+          }
+          return;
+        }
+        if (Object.keys(mappingValue).length) {
+          formData.append("mapping", JSON.stringify(mappingValue));
+        }
+        if (importSource && importSource.value) {
+          formData.append("source", importSource.value);
+        }
+        if (importAutoAssign) {
+          formData.append("auto_assign", importAutoAssign.value);
+        }
+        formData.append("preview_only", "1");
+        try {
+          const payload = await postJson("/api/v1/leads/leads/import_preview/", formData, importPreviewState, renderPreviewRows);
+          if (importPreviewState) {
+            importPreviewState.textContent = `${payload.total_rows || 0} rows`;
+          }
+          setIntakeStep("preview");
+        } catch (error) {
+          if (importPreviewState) {
+            importPreviewState.textContent = error.message;
+          }
+        }
+      });
+    }
+
+    if (importRunBtn && importFile) {
+      importRunBtn.addEventListener("click", async function () {
+        const file = importFile.files && importFile.files[0];
+        if (!file) {
+          if (importPreviewState) {
+            importPreviewState.textContent = "Pick a file first";
+          }
+          return;
+        }
+        const formData = new FormData();
+        formData.append("file", file);
+        const mappingValue = parseMapping(importMapping ? importMapping.value.trim() : "");
+        if (mappingValue === null) {
+          if (importPreviewState) {
+            importPreviewState.textContent = "Invalid mapping JSON";
+          }
+          return;
+        }
+        if (Object.keys(mappingValue).length) {
+          formData.append("mapping", JSON.stringify(mappingValue));
+        }
+        if (importSource && importSource.value) {
+          formData.append("source", importSource.value);
+        }
+        if (importAutoAssign) {
+          formData.append("auto_assign", importAutoAssign.value);
+        }
+        try {
+          const payload = await postJson("/api/v1/leads/leads/import_csv/", formData, importPreviewState, renderPreviewRows);
+          if (importPreviewState) {
+            importPreviewState.textContent = payload.created_leads ? `${payload.created_leads} created` : "Imported";
+          }
+          setIntakeStep("import");
+        } catch (error) {
+          if (importPreviewState) {
+            importPreviewState.textContent = error.message;
+          }
+        }
+      });
+    }
+
+    if (scrapeForm) {
+      scrapeForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const rawHtml = scrapeHtml ? scrapeHtml.value.trim() : "";
+        const url = scrapeUrl ? scrapeUrl.value.trim() : "";
+        if (!url && !rawHtml) {
+          if (scrapeState) {
+            scrapeState.textContent = "Provide a URL or raw HTML";
+          }
+          return;
+        }
+        const payload = {
+          url: url,
+          raw_html: rawHtml,
+          max_items: scrapeMaxItems ? scrapeMaxItems.value || 25 : 25,
+          auto_assign: scrapeAutoAssign ? scrapeAutoAssign.value : "1",
+        };
+        try {
+          const response = await postJson("/api/v1/leads/leads/scrape/", JSON.stringify(payload), scrapeState, renderScrapeBatch);
+          if (scrapeState) {
+            scrapeState.textContent = `${response.rows_extracted || 0} leads`;
+          }
+          setIntakeStep("scrape");
+        } catch (error) {
+          if (scrapeState) {
+            scrapeState.textContent = error.message;
+          }
+        }
+      });
+    }
+  })();
 </script>
-
 {% endblock %}
-
-
-
-

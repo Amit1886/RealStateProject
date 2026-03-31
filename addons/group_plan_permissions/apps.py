@@ -7,4 +7,7 @@ class GroupPlanPermissionsConfig(AppConfig):
     verbose_name = "Addons Group Plan Permissions"
 
     def ready(self):
-        from . import signals  # noqa: F401
+        try:
+            from . import signals  # noqa: F401
+        except Exception as exc:
+            print(f"[group_plan_permissions] signals skipped: {exc}")

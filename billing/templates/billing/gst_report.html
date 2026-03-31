@@ -1,0 +1,38 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}GST Report{% endblock %}
+
+{% block content %}
+<div style="padding:24px;background:linear-gradient(180deg,#f8fbff 0%,#eef6ff 100%);display:grid;gap:16px;">
+  <div>
+    <p style="margin:0 0 6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#0f766e;font-weight:800;">Tax Reporting</p>
+    <h1 style="margin:0;font-size:32px;color:#0f172a;">GST Summary</h1>
+  </div>
+
+  <article style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+    <div style="background:#fff;border:1px solid #dbe7f5;border-radius:22px;padding:18px;"><div style="font-size:11px;color:#64748b;text-transform:uppercase;">Taxable</div><div style="font-size:28px;font-weight:800;">Rs {{ summary.total_taxable }}</div></div>
+    <div style="background:#fff;border:1px solid #dbe7f5;border-radius:22px;padding:18px;"><div style="font-size:11px;color:#64748b;text-transform:uppercase;">CGST</div><div style="font-size:28px;font-weight:800;">Rs {{ summary.total_cgst }}</div></div>
+    <div style="background:#fff;border:1px solid #dbe7f5;border-radius:22px;padding:18px;"><div style="font-size:11px;color:#64748b;text-transform:uppercase;">SGST</div><div style="font-size:28px;font-weight:800;">Rs {{ summary.total_sgst }}</div></div>
+    <div style="background:#fff;border:1px solid #dbe7f5;border-radius:22px;padding:18px;"><div style="font-size:11px;color:#64748b;text-transform:uppercase;">IGST</div><div style="font-size:28px;font-weight:800;">Rs {{ summary.total_igst }}</div></div>
+    <div style="background:#fff;border:1px solid #dbe7f5;border-radius:22px;padding:18px;"><div style="font-size:11px;color:#64748b;text-transform:uppercase;">Total</div><div style="font-size:28px;font-weight:800;">Rs {{ summary.total_amount }}</div></div>
+  </article>
+
+  <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Invoice</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">User</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">CGST</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">SGST</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">IGST</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Total</th></tr></thead>
+      <tbody>
+        {% for invoice in invoices %}
+          <tr>
+            <td style="padding:12px 0;border-top:1px solid #edf2f7;"><a href="{% url 'billing:invoice_detail' invoice.invoice_number %}" style="color:#0f766e;text-decoration:none;font-weight:700;">{{ invoice.invoice_number }}</a></td>
+            <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ invoice.user.email }}</td>
+            <td style="padding:12px 0;border-top:1px solid #edf2f7;">Rs {{ invoice.cgst }}</td>
+            <td style="padding:12px 0;border-top:1px solid #edf2f7;">Rs {{ invoice.sgst }}</td>
+            <td style="padding:12px 0;border-top:1px solid #edf2f7;">Rs {{ invoice.igst }}</td>
+            <td style="padding:12px 0;border-top:1px solid #edf2f7;">Rs {{ invoice.total_amount }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</div>
+{% endblock %}

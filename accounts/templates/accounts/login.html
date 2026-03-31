@@ -1,69 +1,228 @@
 {% extends "accounts/auth_base.html" %}
-{% load widget_tweaks %}
-{% block title %}Login{% endblock %}
+{% load socialaccount %}
+
+{% block title %}Real Estate Login{% endblock %}
+
+{% block extra_css %}
+<style>
+  .re-login {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .re-login-hero,
+  .re-login-card,
+  .re-login-route,
+  .re-login-demo {
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+  }
+  .re-login-hero {
+    color: #f8fafc;
+    background:
+      radial-gradient(circle at top right, rgba(245, 158, 11, 0.3), transparent 35%),
+      linear-gradient(135deg, #103b4a 0%, #1e293b 100%);
+  }
+  .re-login-kicker {
+    margin: 0 0 0.35rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #fbbf24;
+  }
+  .re-login-hero h1 {
+    margin: 0;
+    font-size: 2rem;
+    line-height: 1.05;
+    font-family: Georgia, "Times New Roman", serif;
+  }
+  .re-login-hero p,
+  .re-login-card p,
+  .re-login-route p {
+    margin: 0.7rem 0 0;
+  }
+  .re-login-card,
+  .re-login-route,
+  .re-login-demo {
+    background: #f8fafc;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+  }
+  .re-login-chip-row,
+  .re-login-route-list,
+  .re-login-demo-list {
+    display: grid;
+    gap: 0.7rem;
+    margin-top: 0.9rem;
+  }
+  .re-login-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .re-login-route-list a,
+  .re-login-demo-list div {
+    display: block;
+    padding: 0.8rem 0.9rem;
+    border-radius: 0.9rem;
+    background: #e2e8f0;
+    color: #0f172a;
+    text-decoration: none;
+  }
+  .re-login-route-list code {
+    display: block;
+    margin-top: 0.45rem;
+    font-size: 0.78rem;
+    color: #1e293b;
+    overflow-wrap: anywhere;
+  }
+  .re-login-demo-list strong,
+  .re-login-route-list strong {
+    display: block;
+  }
+  .re-login-form {
+    display: grid;
+    gap: 1rem;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center bg-gray-50">
-  <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
-    <h1 class="text-3xl font-bold text-center mb-6">Login to KhataPro</h1>
+<div class="re-login">
+  <section class="re-login-hero">
+    <p class="re-login-kicker">Real Estate SaaS</p>
+    <h1>Enter the real estate workspace.</h1>
+    <p>Marketplace, CRM, loans, verification, schemes, content, and intelligence are now connected in one demo stack.</p>
+    <div class="re-login-chip-row">
+      <span class="re-login-chip">Lead automation</span>
+      <span class="re-login-chip">Agent services</span>
+      <span class="re-login-chip">Wallet payouts</span>
+      <span class="re-login-chip">AI intelligence</span>
+    </div>
+  </section>
 
-    <!-- Normal Login Form -->
-    <form method="post" action="" class="space-y-4">
+  <section class="re-login-card">
+    <p class="re-login-kicker" style="color:#b45309;">Sign In</p>
+    <h2 style="margin:0;">Role-based access</h2>
+    <form method="post" action="" class="re-login-form mt-3">
       {% csrf_token %}
 
-      <!-- Identifier (Email or Mobile) -->
       <div>
-        <label class="block text-gray-700 mb-1" for="id_identifier">Email or Mobile</label>
-        <input type="text" name="identifier" id="id_identifier" required
-               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-               value="{{ form.identifier.value|default_if_none:'' }}">
+        <label class="block text-gray-700 mb-1" for="id_role">Login as</label>
+        <select name="role" id="id_role" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          {% for val,label in form.ROLE_CHOICES %}
+          <option value="{{ val }}" {% if form.role.value == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-gray-700 mb-1" for="id_identifier" id="loginIdentifierLabel">Email or Mobile</label>
+        <input type="text" name="identifier" id="id_identifier" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" value="{{ form.identifier.value|default_if_none:'' }}">
         {% if form.identifier.errors %}
-          <p class="text-red-500 text-sm mt-1">{{ form.identifier.errors.0 }}</p>
+        <p class="text-red-500 text-sm mt-1">{{ form.identifier.errors.0 }}</p>
         {% endif %}
       </div>
 
-      <!-- Password (optional if OTP) -->
       <div>
         <label class="block text-gray-700 mb-1" for="id_password">Password</label>
-        <input type="password" name="password" id="id_password"
-               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        <input type="password" name="password" id="id_password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
         {% if form.password.errors %}
-          <p class="text-red-500 text-sm mt-1">{{ form.password.errors.0 }}</p>
+        <p class="text-red-500 text-sm mt-1">{{ form.password.errors.0 }}</p>
         {% endif %}
       </div>
 
-      <!-- OTP Option -->
       <div class="flex items-center space-x-2">
         <input type="checkbox" name="use_otp" id="id_use_otp" {% if form.use_otp.value %}checked{% endif %}>
         <label class="text-gray-600 text-sm" for="id_use_otp">Login via OTP instead of password</label>
       </div>
 
-      <button type="submit"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition">
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition">
         Continue
       </button>
     </form>
 
-    <!-- Divider -->
     <div class="flex items-center my-6">
       <hr class="flex-grow border-gray-300">
       <span class="px-3 text-gray-500 text-sm">OR</span>
       <hr class="flex-grow border-gray-300">
     </div>
 
-    <!-- Google Login Button -->
-{% load socialaccount %}
+    <a href="{% provider_login_url 'google' %}" class="flex items-center justify-center space-x-2 w-full border py-2 rounded-lg hover:bg-gray-100 transition">
+      <img src="https://www.svgrepo.com/show/355037/google.svg" class="w-5 h-5" alt="Google">
+      <span class="font-medium text-gray-700">Continue with Google</span>
+    </a>
+  </section>
 
-<a href="{% provider_login_url 'google' %}"
-   class="flex items-center justify-center space-x-2 w-full border py-2 rounded-lg hover:bg-gray-100 transition">
-    <img src="https://www.svgrepo.com/show/355037/google.svg" class="w-5 h-5">
-    <span class="font-medium text-gray-700">Continue with Google</span>
-</a>
+  <section class="re-login-demo">
+    <p class="re-login-kicker" style="color:#b45309;">Demo Credentials</p>
+    <h2 style="margin:0;">Quick roles</h2>
+    <div class="re-login-demo-list">
+      <div>
+        <strong>Admin Demo</strong>
+        <span>admin@example.com / 123456</span>
+      </div>
+      <div>
+        <strong>Agent Demo</strong>
+        <span>agent@example.com / 123456</span>
+      </div>
+      <div>
+        <strong>Customer Demo</strong>
+        <span>user1@example.com / 123456</span>
+      </div>
+    </div>
+  </section>
 
-    <p class="mt-6 text-center text-sm text-gray-600">
-      New to KhataPro?
-      <a href="{% url 'accounts:signup' %}" class="text-blue-600 font-medium hover:underline">Create an account</a>
-    </p>
-  </div>
+  <section class="re-login-route">
+    <p class="re-login-kicker" style="color:#b45309;">Compare Views</p>
+    <h2 style="margin:0;">Open these routes</h2>
+    <div class="re-login-route-list">
+      <a href="http://localhost:5173/" target="_blank" rel="noreferrer">
+        <strong>React Home</strong>
+        <code>http://localhost:5173/</code>
+      </a>
+      <a href="http://localhost:5173/accounts/login/" target="_blank" rel="noreferrer">
+        <strong>React Login</strong>
+        <code>http://localhost:5173/accounts/login/</code>
+      </a>
+      <a href="{% url 'accounts:dashboard' %}">
+        <strong>Django Dashboard</strong>
+        <code>{{ request.scheme }}://{{ request.get_host }}{% url 'accounts:dashboard' %}</code>
+      </a>
+    </div>
+    <p class="text-sm text-gray-600">Agent dashboard me login ke baad services, demo flow, profile, aur settings tabs sabse useful rahenge.</p>
+  </section>
+
+  <p class="mt-2 text-center text-sm text-gray-600">
+    New to the platform?
+    <a href="{% url 'accounts:signup' %}" class="text-blue-600 font-medium hover:underline">Create an account</a>
+  </p>
 </div>
+
+<script>
+  (function() {
+    const roleEl = document.getElementById("id_role");
+    const otpEl = document.getElementById("id_use_otp");
+    const labelEl = document.getElementById("loginIdentifierLabel");
+    function sync() {
+      const role = (roleEl && roleEl.value) ? roleEl.value : "user";
+      if (role === "customer" || role === "supplier") {
+        if (labelEl) labelEl.textContent = "Login ID (Username)";
+        if (otpEl) {
+          otpEl.checked = false;
+          otpEl.disabled = true;
+        }
+      } else {
+        if (labelEl) labelEl.textContent = "Email or Mobile";
+        if (otpEl) otpEl.disabled = false;
+      }
+    }
+    if (roleEl) roleEl.addEventListener("change", sync);
+    sync();
+  })();
+</script>
 {% endblock %}

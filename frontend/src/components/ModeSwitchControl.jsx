@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { changeSystemMode } from "../services/systemModeApi";
 
-const MODES = ["POS", "TABLET", "MOBILE", "DESKTOP", "ADMIN_SUPER", "AUTO"];
+const MODES = ["DESKTOP", "MOBILE", "TABLET", "ADMIN_SUPER", "AUTO"];
 
 export default function ModeSwitchControl({ modeState, onChanged }) {
   const [selectedMode, setSelectedMode] = useState(modeState.current_mode || "DESKTOP");

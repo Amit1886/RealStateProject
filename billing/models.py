@@ -97,6 +97,11 @@ class Plan(models.Model):
     
     # 📝 Description
     description = models.TextField(blank=True, null=True)
+    max_leads_per_month = models.PositiveIntegerField(default=100)
+    max_property_listings = models.PositiveIntegerField(default=25)
+    crm_access = models.BooleanField(default=True)
+    marketing_tools_access = models.BooleanField(default=False)
+    analytics_access = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -250,6 +255,7 @@ class Subscription(models.Model):
 class PaymentGateway(models.Model):
     PROVIDER_CHOICES = (
         ('razorpay', 'Razorpay'),
+        ('stripe', 'Stripe'),
         ('phonepe', 'PhonePe'),
         ('dummy', 'Dummy (Test Gateway)'),
     )
@@ -270,6 +276,111 @@ class PaymentGateway(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.provider})"
+
+
+class Invoice(models.Model):
+    class SourceType(models.TextChoices):
+        WALLET_RECHARGE = "wallet_recharge", "Wallet Recharge"
+        PROPERTY_BOOKING = "property_booking", "Property Booking"
+        SERVICE_PURCHASE = "service_purchase", "Service Purchase"
+        MANUAL = "manual", "Manual"
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        ISSUED = "issued", "Issued"
+        PAID = "paid", "Paid"
+        CANCELLED = "cancelled", "Cancelled"
+
+    invoice_number = models.CharField(max_length=30, unique=True, blank=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="fintech_invoices",
+    )
+    payment_order = models.OneToOneField(
+        "payments.PaymentOrder",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="fintech_invoice",
+    )
+    lead = models.ForeignKey(
+        "leads.Lead",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="billing_invoices",
+    )
+    source_type = models.CharField(max_length=32, choices=SourceType.choices, default=SourceType.MANUAL, db_index=True)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.DRAFT, db_index=True)
+    currency = models.CharField(max_length=10, default="INR")
+    subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    gst_rate = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("18.00"))
+    cgst = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    sgst = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    igst = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    billing_name = models.CharField(max_length=160, blank=True, default="")
+    billing_email = models.EmailField(blank=True, default="")
+    billing_address = models.TextField(blank=True, default="")
+    company_name = models.CharField(max_length=200, blank=True, default="")
+    company_gstin = models.CharField(max_length=20, blank=True, default="")
+    company_address = models.TextField(blank=True, default="")
+    issued_at = models.DateTimeField(default=timezone.now, db_index=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        ordering = ["-issued_at"]
+        indexes = [
+            models.Index(fields=["user", "issued_at"]),
+            models.Index(fields=["source_type", "status"]),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self.invoice_number:
+            last = Invoice.objects.order_by("-id").first()
+            next_num = (last.id + 1) if last else 1
+            self.invoice_number = f"INV-{timezone.localdate().year}-{next_num:05d}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.invoice_number
+
+
+class InvoiceItem(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="items")
+    description = models.CharField(max_length=255)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("1.00"))
+    unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    taxable_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    gst_rate = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("18.00"))
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self):
+        return f"{self.invoice_id}:{self.description}"
+
+
+class GSTDetail(models.Model):
+    invoice = models.OneToOneField(Invoice, on_delete=models.CASCADE, related_name="gst_detail")
+    company_gstin = models.CharField(max_length=20, blank=True, default="")
+    customer_gstin = models.CharField(max_length=20, blank=True, default="")
+    place_of_supply = models.CharField(max_length=100, blank=True, default="")
+    hsn_sac = models.CharField(max_length=30, blank=True, default="9983")
+    is_interstate = models.BooleanField(default=False)
+    cgst_rate = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("9.00"))
+    sgst_rate = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("9.00"))
+    igst_rate = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0.00"))
+    notes = models.CharField(max_length=255, blank=True, default="")
+
+    def __str__(self):
+        return f"GST {self.invoice.invoice_number}"
 
 
 # ====

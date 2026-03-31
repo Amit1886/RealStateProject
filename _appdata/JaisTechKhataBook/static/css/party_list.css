@@ -1,0 +1,80 @@
+/* Container styling */
+.party-container {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+/* Header */
+.party-header {
+    font-size: 26px;
+    font-weight: 700;
+    color: #343a40;
+    margin-bottom: 20px;
+}
+
+/* Filters */
+.filter-section input,
+.filter-section select {
+    border-radius: 8px;
+}
+
+.filter-section .btn {
+    border-radius: 8px;
+}
+
+/* Table design */
+.table-custom {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table-custom thead {
+    background: #002b5c;
+    color: #ffffff;
+}
+
+.table-custom tbody tr:hover {
+    background: #f1f5ff;
+}
+
+/* Buttons */
+.btn-edit {
+    background: #ffc107;
+    color: #000;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+}
+
+.btn-print {
+    background: #198754;
+    border-radius: 6px;
+    color: #fff;
+    padding: 7px 18px;
+}
+
+.btn-download {
+    background: #0d6efd;
+    border-radius: 6px;
+    color: #fff;
+    padding: 7px 18px;
+}
+
+.search-input {
+    border: 2px solid #dee2e6;
+}
+
+.opening-col {
+    font-weight: 600;
+    color: #0a58ca;
+}

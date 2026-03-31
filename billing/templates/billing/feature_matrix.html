@@ -9,7 +9,8 @@
       <h2>Plan Feature Matrix</h2>
       <p>Enable or disable features per plan. Changes apply immediately.</p>
     </div>
-    <div>
+    <div class="matrix-actions">
+      <a class="tower-link" href="{% url 'core_settings:feature_control_tower' %}">Open Smart Control Tower</a>
       <input id="featureSearch" type="text" placeholder="Search features..." />
     </div>
   </div>
@@ -56,11 +57,13 @@
 <style>
   .matrix-wrap h2 { margin:0; }
   .matrix-header p { margin:4px 0 12px; color:#64748b; font-size:12px; }
+  .matrix-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   .matrix-table table { width:100%; border-collapse:collapse; font-size:12px; }
   .matrix-table th, .matrix-table td { border-bottom:1px solid #e2e8f0; padding:8px; text-align:center; }
   .matrix-table th:first-child, .matrix-table td:first-child { text-align:left; }
   .muted { color:#64748b; font-size:10px; }
   #featureSearch { border:1px solid #e2e8f0; border-radius:999px; padding:6px 12px; font-size:12px; }
+  .tower-link { border:1px solid #0f766e; color:#0f766e; border-radius:999px; padding:6px 12px; font-size:12px; text-decoration:none; }
   .mini-btn { border:1px solid #0f766e; background:transparent; color:#0f766e; border-radius:999px; padding:2px 6px; font-size:9px; margin-top:6px; }
 </style>
 

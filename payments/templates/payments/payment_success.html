@@ -1,0 +1,18 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Payment Success{% endblock %}
+
+{% block content %}
+<div style="padding:24px;background:linear-gradient(180deg,#ecfdf5 0%,#f8fbff 100%);display:grid;gap:16px;">
+  <article style="background:#fff;border:1px solid #d7f5e4;border-radius:26px;padding:24px;box-shadow:0 16px 34px rgba(15,23,42,.06);">
+    <p style="margin:0 0 6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#0f766e;font-weight:800;">Payment Completed</p>
+    <h1 style="margin:0;font-size:34px;color:#0f172a;">Wallet recharge successful</h1>
+    <p style="margin:10px 0 0;color:#64748b;">Amount Rs {{ payment_order.amount }} | Gateway {{ payment_order.get_gateway_display }} | Payment ID {{ payment_order.provider_payment_id|default:"Pending" }}</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+      <a href="{% url 'accounts:wallet_workspace' %}" style="padding:10px 16px;border-radius:999px;background:#0f766e;color:#fff;text-decoration:none;">Open Wallet</a>
+      <a href="{% url 'payments:history' %}" style="padding:10px 16px;border-radius:999px;border:1px solid #0f766e;color:#0f766e;text-decoration:none;background:#fff;">Payment History</a>
+      {% if invoice %}<a href="{% url 'billing:invoice_detail' invoice.invoice_number %}" style="padding:10px 16px;border-radius:999px;background:#0f172a;color:#fff;text-decoration:none;">Open Invoice</a>{% endif %}
+    </div>
+  </article>
+</div>
+{% endblock %}

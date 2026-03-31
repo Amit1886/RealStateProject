@@ -1,0 +1,32 @@
+table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table thead th {
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+table tbody td {
+    font-size: 15px;
+}
+
+.btn {
+    border-radius: 6px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f5f7fa;
+}
+
+.badge {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.container h4 {
+    font-size: 22px;
+}
+

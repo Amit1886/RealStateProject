@@ -1,7 +1,16 @@
 from rest_framework import filters, permissions, viewsets
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import CommissionLedger, UserProfileExt, WalletLedger
-from .serializers import CommissionLedgerSerializer, UserProfileExtSerializer, WalletLedgerSerializer
+from .serializers import CommissionLedgerSerializer, CurrentUserSerializer, UserProfileExtSerializer, WalletLedgerSerializer
+
+
+class CurrentUserAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        return Response(CurrentUserSerializer(request.user, context={"request": request}).data)
 
 
 class UserProfileExtViewSet(viewsets.ModelViewSet):

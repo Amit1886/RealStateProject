@@ -1,32 +1,41 @@
-{% extends "accounts/base.html" %}
 {% for e in entries %}
-<tr>
-    <td>{{ e.date|date:"d M Y" }}</td>
+  <tr>
+    <td>{{ e.date|date:"d/m/Y" }}</td>
 
     <td>
-        {% if e.source == "order" %}
-            <span class="tag tag-order">Order</span>
-        {% elif e.txn_type == "credit" %}
-            <span class="tag tag-credit">Credit</span>
-        {% else %}
-            <span class="tag tag-debit">Debit</span>
-        {% endif %}
+      {% if e.source == "order" %}
+        <span class="tag tag-order">Order</span>
+      {% elif e.txn_type == "credit" %}
+        <span class="tag tag-credit">Credit</span>
+      {% else %}
+        <span class="tag tag-debit">Debit</span>
+      {% endif %}
     </td>
 
-    <td>{% if e.invoice_no %}#{{ e.invoice_no }}{% else %}{% endif %}</td>
-    <td>{{ e.description|default:"" }}</td>
-
-    <td class="text-end">{% if e.credit %}{{ e.credit }}{% else %}{% endif %}</td>
-    <td class="text-end">{% if e.debit %}{{ e.debit }}{% else %}{% endif %}</td>
-
-    <td class="text-end amount">
-        {% if e.txn_type == "credit" %}
-            +{{ e.amount }}
-        {% else %}
-            -{{ e.amount }}
-        {% endif %}
+    <td>
+      {% if e.invoice_no %}
+        {{ e.invoice_no }}
+      {% elif e.invoice %}
+        {{ e.invoice }}
+      {% else %}
+        -
+      {% endif %}
     </td>
 
-    <td class="text-end balance">{{ e.balance }}</td>
-</tr>
+    <td>{% firstof e.description e.desc e.notes "-" %}</td>
+
+    <td class="text-end">
+      {% if e.credit %}{{ e.credit|floatformat:2 }}{% else %}-{% endif %}
+    </td>
+    <td class="text-end">
+      {% if e.debit %}{{ e.debit|floatformat:2 }}{% else %}-{% endif %}
+    </td>
+    <td class="text-end">
+      {% if e.balance %}{{ e.balance|floatformat:2 }}{% else %}-{% endif %}
+    </td>
+  </tr>
+{% empty %}
+  <tr>
+    <td colspan="7" class="text-center text-muted py-3">No ledger entries found.</td>
+  </tr>
 {% endfor %}

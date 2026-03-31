@@ -1,184 +1,265 @@
-{% extends "admin/index.html" %}
+{% extends "admin/base_site.html" %}
+{% load i18n static jazzmin admin_dashboard %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+{% admin_crm_overview as crm_admin %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block content_title %}{% trans 'Dashboard' %}{% endblock %}
+
+{% block breadcrumbs %}
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+        <li class="breadcrumb-item">{% trans 'Dashboard' %}</li>
+    </ol>
+{% endblock %}
+
 {% block content %}
-{{ block.super }}
-<div class="ai-admin-module">
-  <h2>AI Reorder Planner</h2>
-  <p>Live purchase recommendations, supplier grouping, and stock-out alerts.</p>
-  {% include "commerce/dashboard_ai_cards.html" %}
-  <div class="ai-admin-grid">
-    <div class="ai-admin-graph">
-      <h3>Budget Usage</h3>
-      <div class="ai-bar">
-        <div class="ai-bar-fill" id="ai-budget-fill"></div>
-      </div>
-      <div class="ai-graph-meta" id="ai-budget-meta">Loading...</div>
+    {% get_side_menu using="app_list" as dashboard_list %}
+    {% if dashboard_list %}
+        {% widthratio dashboard_list|length 2 1 as middle %}
+    {% endif %}
+
+    <div class="col-12">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">Real Estate Control Tower</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-2 col-md-4 col-sm-6">
+                        <div class="small-box bg-primary">
+                            <div class="inner">
+                                <h3>{{ crm_admin.total_leads }}</h3>
+                                <p>Total Leads</p>
+                            </div>
+                            <a href="{% url 'admin:leads_lead_changelist' %}" class="small-box-footer">Open Leads</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>{{ crm_admin.auto_assigned_count }}</h3>
+                                <p>Auto Assigned</p>
+                            </div>
+                            <a href="{% url 'admin:leads_leadassignment_changelist' %}" class="small-box-footer">Assignment Queue</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>{{ crm_admin.followups_due }}</h3>
+                                <p>Follow Ups Due</p>
+                            </div>
+                            <a href="{% url 'admin:leads_lead_changelist' %}" class="small-box-footer">Follow Up Leads</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>{{ crm_admin.converted_leads }}</h3>
+                                <p>Converted</p>
+                            </div>
+                            <a href="{% url 'admin:deals_deal_changelist' %}" class="small-box-footer">Converted Deals</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6">
+                        <div class="small-box bg-secondary">
+                            <div class="inner">
+                                <h3>{{ crm_admin.pending_payout_count }}</h3>
+                                <p>Pending Payouts</p>
+                            </div>
+                            <a href="{% url 'admin:deals_payment_changelist' %}" class="small-box-footer">Open Payments</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-sm-6">
+                        <div class="small-box bg-dark">
+                            <div class="inner">
+                                <h3>{{ crm_admin.total_customers }}</h3>
+                                <p>Customers</p>
+                            </div>
+                            <a href="{% url 'admin:customers_customer_changelist' %}" class="small-box-footer">Customer Profiles</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="m-0">Automation Modules</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="btn-group mb-3" role="group">
+                                    <a href="{% url 'admin:leads_leadimportbatch_changelist' %}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }}">Imports</a>
+                                    <a href="{% url 'admin:leads_leadsource_changelist' %}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }}">Sources</a>
+                                    <a href="{% url 'admin:agents_agent_changelist' %}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }}">Agents</a>
+                                    <a href="{% url 'admin:deals_deal_changelist' %}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }}">Deals</a>
+                                    <a href="{% url 'admin:deals_payment_changelist' %}" class="btn btn-sm {{ jazzmin_ui.button_classes.info }}">Payments</a>
+                                    <a href="/accounts/dashboard/#dashboard" class="btn btn-sm {{ jazzmin_ui.button_classes.success }}">Django Dashboard</a>
+                                </div>
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Pipeline</th>
+                                            <th>Leads</th>
+                                            <th>Coverage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for row in crm_admin.pipeline_rows %}
+                                            <tr>
+                                                <td>{{ row.label }}</td>
+                                                <td>{{ row.value }}</td>
+                                                <td>{{ row.percentage }}%</td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="3">No lead pipeline data available.</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="m-0">Recent Imports</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm mb-0">
+                                    <tbody>
+                                        {% for batch in crm_admin.recent_import_batches %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ batch.source_name|default:batch.import_type|title }}</strong><br>
+                                                    <small>{{ batch.created_leads }} created, {{ batch.duplicate_rows }} duplicates</small>
+                                                </td>
+                                                <td class="text-right">{{ batch.status|title }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr>
+                                                <td class="text-muted">No imports yet.</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="ai-admin-table">
-      <h3>Supplier-Wise PO Table</h3>
-      <div class="ai-table-wrap">
-        <table class="ai-table" id="ai-supplier-table">
-          <thead>
-            <tr>
-              <th>Supplier</th>
-              <th>Item</th>
-              <th>SKU</th>
-              <th>Qty</th>
-              <th>Unit Cost</th>
-              <th>Total Cost</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td colspan="6">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
+
+    <div class="col-lg-9 col-12">
+        <div class="row">
+            <div class="col-md-6 col-sm-12">
+                {% for app in dashboard_list %}
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="m-0">{{ app.name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tbody>
+                                {% for model in app.models %}
+                                    <tr>
+                                        <td>
+                                            {% if model.url %}<a href="{{ model.url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group float-right">
+                                                {% if model.add_url %}
+                                                    <a href="{{ model.add_url }}" class="btn btn-xs {{ jazzmin_ui.button_classes.success }} addlink">{% trans 'Add' %}</a>
+                                                {% endif %}
+                                                {% if model.url %}
+                                                    {% if model.view_only %}
+                                                        <a href="{{ model.url }}" class="btn btn-xs {{ jazzmin_ui.button_classes.info }} viewlink">{% trans 'View' %}</a>
+                                                    {% else %}
+                                                        <a href="{{ model.url }}" class="btn btn-xs {{ jazzmin_ui.button_classes.info }} changelink">{% if model.custom %}{% trans 'Go' %}{% else %}{% trans 'Change' %}{% endif %}</a>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {% if forloop.counter == middle|add:"0" %}
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="ai-admin-actions">
-    <a href="{% url 'commerce:ai_reorder_plan' %}" class="ai-admin-btn">Open Planner</a>
-    <a href="{% url 'commerce:supplier_po' %}" class="ai-admin-btn ai-admin-btn-ghost">Supplier POs</a>
-    <button class="ai-admin-btn ai-admin-btn-ghost" id="ai-admin-generate">Auto-Generate PO</button>
-  </div>
-</div>
+    <div class="col-lg-3 col-12">
+        <div id="content-related">
+            <div class="module" id="recent-actions-module">
+                <h4 class="mb-3">{% trans 'Recent actions' %}</h4>
+                {% load log %}
+                {% get_admin_log 6 as admin_log for_user user %}
+                {% if not admin_log %}
+                    <p>{% trans 'None available' %}</p>
+                {% else %}
+                    <div class="timeline">
+                        {% for entry in admin_log %}
+                            <div>
+                                {% if entry.is_change %}
+                                    <i class="fas fa-edit bg-gray text-xs"></i>
+                                {% elif entry.is_deletion %}
+                                    <i class="fas fa-trash bg-danger text-xs"></i>
+                                {% elif entry.is_addition %}
+                                    <i class="fas fa-plus-circle bg-success text-xs"></i>
+                                {% endif %}
 
-<style>
-.ai-admin-module {
-  margin-top: 24px;
-  padding: 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #ffffff;
-}
-.ai-admin-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-.ai-admin-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 14px;
-  margin-top: 14px;
-}
-.ai-admin-graph {
-  border: 1px solid #e5e7eb;
-  padding: 12px;
-  border-radius: 10px;
-  background: #fafafa;
-}
-.ai-bar {
-  height: 14px;
-  border-radius: 999px;
-  background: #e5e7eb;
-  overflow: hidden;
-  margin: 10px 0;
-}
-.ai-bar-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #0f766e, #22c55e);
-}
-.ai-graph-meta {
-  font-size: 12px;
-  color: #6b7280;
-}
-.ai-admin-table {
-  border: 1px solid #e5e7eb;
-  padding: 12px;
-  border-radius: 10px;
-  background: #ffffff;
-}
-.ai-table-wrap {
-  overflow: auto;
-  max-height: 240px;
-}
-.ai-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-.ai-table th,
-.ai-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid #f1f5f9;
-  text-align: left;
-}
-.ai-admin-btn {
-  background: #0f766e;
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 12px;
-}
-.ai-admin-btn-ghost {
-  background: transparent;
-  color: #0f766e;
-  border: 1px solid #0f766e;
-}
-</style>
-<script>
-(function () {
-  const budgetFill = document.getElementById('ai-budget-fill');
-  const budgetMeta = document.getElementById('ai-budget-meta');
-  const tableBody = document.querySelector('#ai-supplier-table tbody');
-  const generateBtn = document.getElementById('ai-admin-generate');
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> {% blocktrans with timesince=entry.action_time|timesince %}{{ timesince }} ago{% endblocktrans %}</span>
+                                    <h3 class="timeline-header no-border">
+                                        {% if entry.is_deletion or not entry.get_admin_url %}
+                                            {{ entry.object_repr }}
+                                        {% else %}
+                                            <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                                        {% endif %}
 
-  function formatCurrency(value) {
-    if (value === undefined || value === null) return '0';
-    return '' + Number(value).toLocaleString('en-IN', { maximumFractionDigits: 0 });
-  }
-
-  fetch('/api/ai/reorder-plan/')
-    .then(res => res.json())
-    .then(data => {
-      const budget = data.summary ? data.summary.budget : 0;
-      const used = data.summary ? data.summary.budget_used : 0;
-      const percent = budget ? Math.min(100, Math.round((used / budget) * 100)) : 0;
-      if (budgetFill) budgetFill.style.width = percent + '%';
-      if (budgetMeta) budgetMeta.textContent = `${formatCurrency(used)} of ${formatCurrency(budget)} used`;
-
-      if (!tableBody) return;
-      const rows = [];
-      const groups = data.supplier_groups || {};
-      Object.keys(groups).forEach(key => {
-        const group = groups[key];
-        (group.items || []).forEach(item => {
-          rows.push(`
-            <tr>
-              <td>${group.supplier_name || 'Supplier'}</td>
-              <td>${item.product}</td>
-              <td>${item.sku || '-'}</td>
-              <td>${item.qty}</td>
-              <td>${formatCurrency(item.unit_cost)}</td>
-              <td>${formatCurrency(item.total_cost)}</td>
-            </tr>
-          `);
-        });
-      });
-      tableBody.innerHTML = rows.join('') || '<tr><td colspan="6">No items</td></tr>';
-    })
-    .catch(() => {
-      if (budgetMeta) budgetMeta.textContent = 'Unavailable';
-      if (tableBody) tableBody.innerHTML = '<tr><td colspan="6">Unavailable</td></tr>';
-    });
-
-  if (generateBtn) {
-    generateBtn.addEventListener('click', () => {
-      generateBtn.disabled = true;
-      fetch('/api/ai/generate-po/', { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
-        .then(res => res.json())
-        .then(data => {
-          alert(data.message || 'PO generation complete');
-          generateBtn.disabled = false;
-        })
-        .catch(() => {
-          alert('Unable to generate PO right now.');
-          generateBtn.disabled = false;
-        });
-    });
-  }
-})();
-</script>
+                                        {% if entry.model %}
+                                            <span class="mini quiet">
+                                                {% filter capfirst %}
+                                                    {{ entry.model }}
+                                                {% endfilter %}
+                                            </span>
+                                        {% endif %}
+                                    </h3>
+                                    {% if not entry.is_deletion %}
+                                        <div class="timeline-body">
+                                            {% if entry.is_addition %}
+                                                {{ entry }}
+                                            {% else %}
+                                                <ul style="list-style: none; padding: 0;">
+                                                    {% action_message_to_list entry as action_message_list %}
+                                                    {% for action_message in action_message_list %}
+                                                        <li>{{ action_message.msg|style_bold_first_word }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div>
+                            <i class="fa fa-clock bg-gray"></i>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 {% endblock %}

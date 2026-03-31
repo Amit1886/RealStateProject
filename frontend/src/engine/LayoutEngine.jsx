@@ -5,13 +5,10 @@ import { useSystemMode } from "../hooks/useSystemMode";
 import AdminSuperLayout from "../layouts/AdminSuperLayout";
 import DesktopLayout from "../layouts/DesktopLayout";
 import MobileLayout from "../layouts/MobileLayout";
-import POSLayout from "../layouts/POSLayout";
 import TabletLayout from "../layouts/TabletLayout";
 
 function pickLayout(mode) {
   switch (mode) {
-    case "POS":
-      return POSLayout;
     case "MOBILE":
       return MobileLayout;
     case "TABLET":

@@ -19,7 +19,7 @@
 ==== */
 .sidebar.collapsed {
     width: 80px;
-    overflow-y: hidden;   /* icons-only view */
+    overflow-y: auto;   /* keep scroll usable in icon-only mode */
 }
 
 /* ===
@@ -59,6 +59,22 @@
     font-size: 22px;
     cursor: pointer;
     min-width: 30px;
+    height: 34px;
+    width: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+.btn-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+.btn-toggle:active {
+    transform: scale(0.98);
+}
+.btn-toggle i {
+    line-height: 1;
 }
 
 /* ===
@@ -88,6 +104,13 @@
 .menu a:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
+}
+
+.menu li.active a,
+.menu a.active {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.9), rgba(15, 118, 110, 0.9));
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
 }
 
 /* ===
@@ -129,6 +152,15 @@
     text-transform: uppercase;
     color: #94a3b8;
     margin: 10px 0 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
 }
 
 .submenu a {
@@ -184,4 +216,10 @@
 .sidebar::-webkit-scrollbar-thumb {
     background: rgba(255,255,255,0.2);
     border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 80px;
+    }
 }

@@ -19,6 +19,63 @@ from khataapp.models import UserProfile
 from billing.models import Plan, PlanPermissions
 from billing.models import FeatureRegistry, UserFeatureOverride
 from django.contrib.auth import get_user_model
+from validation.models import FraudAlert
+
+
+SMART_PLAN_PERMISSION_SECTIONS = [
+    (
+        "Dashboard & Reports",
+        [
+            ("allow_dashboard", "Dashboard"),
+            ("allow_reports", "Reports"),
+            ("allow_pdf_export", "PDF export"),
+            ("allow_excel_export", "Excel export"),
+            ("allow_analytics", "Analytics"),
+            ("allow_ledger", "Ledger"),
+            ("allow_credit_report", "Credit report"),
+        ],
+    ),
+    (
+        "Party & Transactions",
+        [
+            ("allow_add_party", "Add party"),
+            ("allow_edit_party", "Edit party"),
+            ("allow_delete_party", "Delete party"),
+            ("max_parties", "Max parties"),
+            ("allow_add_transaction", "Add transaction"),
+            ("allow_edit_transaction", "Edit transaction"),
+            ("allow_delete_transaction", "Delete transaction"),
+            ("allow_bulk_transaction", "Bulk transaction"),
+        ],
+    ),
+    (
+        "Commerce & Communication",
+        [
+            ("allow_commerce", "Commerce"),
+            ("allow_warehouse", "Warehouse"),
+            ("allow_orders", "Orders"),
+            ("allow_inventory", "Inventory"),
+            ("allow_whatsapp", "WhatsApp"),
+            ("allow_sms", "SMS"),
+            ("allow_email", "Email"),
+        ],
+    ),
+    (
+        "Admin & API",
+        [
+            ("allow_settings", "Settings"),
+            ("allow_users", "Users"),
+            ("allow_api_access", "API access"),
+        ],
+    ),
+]
+
+SMART_PLAN_PERMISSION_FIELDS = [
+    field_name
+    for _, fields in SMART_PLAN_PERMISSION_SECTIONS
+    for field_name, _ in fields
+    if field_name != "max_parties"
+]
 
 
 def party_disabled(request):
@@ -35,7 +92,7 @@ def settings_dashboard(request):
     plan_permissions = user_plan.get_permissions() if user_plan else None
 
     # 🔐 Subscription permission
-    if not has_feature(request.user, "settings"):
+    if (not (request.user.is_staff or request.user.is_superuser)) and (not has_feature(request.user, "settings.advanced")):
         return HttpResponse("❌ Your plan does not allow Settings access")
 
     company = CompanySettings.objects.first()
@@ -77,106 +134,216 @@ def plan_permissions_view(request):
     
     if not request.user.is_staff and not request.user.is_superuser:
         return HttpResponse("❌ Admin access required")
-
     if request.method == "POST":
         plan_id = request.POST.get("plan_id")
         plan = Plan.objects.filter(id=plan_id).first()
         if not plan:
             messages.error(request, "Plan not found.")
-            return redirect("core_settings:plan_permissions")
-
-        perms = plan.get_permissions()
-
-        bool_fields = [
-            "allow_dashboard",
-            "allow_reports",
-            "allow_pdf_export",
-            "allow_excel_export",
-            "allow_analytics",
-            "allow_add_party",
-            "allow_edit_party",
-            "allow_delete_party",
-            "allow_add_transaction",
-            "allow_edit_transaction",
-            "allow_delete_transaction",
-            "allow_bulk_transaction",
-            "allow_commerce",
-            "allow_warehouse",
-            "allow_orders",
-            "allow_inventory",
-            "allow_whatsapp",
-            "allow_sms",
-            "allow_email",
-            "allow_ledger",
-            "allow_credit_report",
-            "allow_settings",
-            "allow_users",
-            "allow_api_access",
-        ]
-
-        for field in bool_fields:
-            setattr(perms, field, request.POST.get(field) == "on")
-
-        max_parties = request.POST.get("max_parties")
-        if max_parties is not None and str(max_parties).isdigit():
-            perms.max_parties = int(max_parties)
-
-        perms.save()
+            return _redirect_feature_tower()
+        _save_plan_permissions(plan, request.POST)
         messages.success(request, f"Permissions updated for {plan.name}.")
-        return redirect("core_settings:plan_permissions")
-    
-    plans = Plan.objects.filter(active=True).prefetch_related('permissions')
-    
-    return render(request, "core_settings/plan_permissions.html", {
-        "plans": plans,
-    })
+        return _redirect_feature_tower(plan_id=plan.id)
+    return _redirect_feature_tower()
 
 
 @login_required
 def user_feature_overrides_view(request):
     if not request.user.is_staff and not request.user.is_superuser:
         return HttpResponse("❌ Admin access required")
-
-    User = get_user_model()
-    users = User.objects.filter(is_active=True).order_by("email")
-    features = FeatureRegistry.objects.filter(active=True).order_by("group", "label")
-
-    selected_user_id = request.GET.get("user_id") or (users.first().id if users.exists() else None)
-    selected_user = User.objects.filter(id=selected_user_id).first() if selected_user_id else None
-
     if request.method == "POST":
         selected_user_id = request.POST.get("user_id")
-        selected_user = User.objects.filter(id=selected_user_id).first()
+        selected_user = get_user_model().objects.filter(id=selected_user_id).first()
         if not selected_user:
             messages.error(request, "User not found.")
-            return redirect("core_settings:user_feature_overrides")
-
-        # Clear existing overrides
-        UserFeatureOverride.objects.filter(user=selected_user).delete()
-
-        for feature in features:
-            field_name = f"feature_{feature.id}"
-            if field_name in request.POST:
-                UserFeatureOverride.objects.create(
-                    user=selected_user,
-                    feature=feature,
-                    is_enabled=True
-                )
-
+            return _redirect_feature_tower()
+        features = FeatureRegistry.objects.filter(active=True).order_by("group", "label")
+        _save_user_overrides(selected_user, features, request.POST)
         messages.success(request, "User overrides updated.")
-        return redirect(f"{reverse('core_settings:user_feature_overrides')}?user_id={selected_user.id}")
+        return _redirect_feature_tower(user_id=selected_user.id)
+    return _redirect_feature_tower()
 
-    overrides = {}
+
+def _redirect_feature_tower(plan_id=None, user_id=None):
+    url = reverse("core_settings:feature_control_tower")
+    query = []
+    if plan_id:
+        query.append(f"plan_id={plan_id}")
+    if user_id:
+        query.append(f"user_id={user_id}")
+    return redirect(f"{url}?{'&'.join(query)}" if query else url)
+
+
+def _plan_permission_state(plan):
+    perms = plan.get_permissions()
+    state = {}
+    for field_name in SMART_PLAN_PERMISSION_FIELDS:
+        state[field_name] = bool(getattr(perms, field_name, False))
+    state["max_parties"] = int(getattr(perms, "max_parties", 0) or 0)
+    return state
+
+
+def _save_plan_permissions(plan, post_data):
+    perms = plan.get_permissions()
+    for field_name in SMART_PLAN_PERMISSION_FIELDS:
+        setattr(perms, field_name, post_data.get(field_name) == "on")
+
+    max_parties = post_data.get("max_parties")
+    if max_parties is not None and str(max_parties).strip().isdigit():
+        perms.max_parties = int(max_parties)
+    perms.save()
+    return perms
+
+
+def _save_user_overrides(user, features, post_data):
+    current_overrides = {
+        ov.feature_id: ov
+        for ov in UserFeatureOverride.objects.filter(user=user, feature__in=features)
+    }
+    for feature in features:
+        mode = (post_data.get(f"override_{feature.id}") or "inherit").strip().lower()
+        existing = current_overrides.get(feature.id)
+        if mode == "inherit":
+            if existing:
+                existing.delete()
+            continue
+        UserFeatureOverride.objects.update_or_create(
+            user=user,
+            feature=feature,
+            defaults={
+                "is_enabled": mode == "enabled",
+                "note": "",
+            },
+        )
+
+
+def _save_feature_registry(post_data):
+    active_ids = set()
+    for raw_id in post_data.getlist("registry_feature"):
+        try:
+            active_ids.add(int(raw_id))
+        except Exception:
+            continue
+    FeatureRegistry.objects.update(active=False)
+    if active_ids:
+        FeatureRegistry.objects.filter(id__in=active_ids).update(active=True)
+
+
+@login_required
+def feature_control_tower(request):
+    if not request.user.is_staff and not request.user.is_superuser:
+        return HttpResponse("❌ Admin access required", status=403)
+
+    sync_qs = FeatureRegistry.objects.all()
+    if not sync_qs.exists():
+        # Keep the registry fresh before rendering the UI.
+        from billing.services import sync_feature_registry
+
+        sync_feature_registry()
+
+    plans = Plan.objects.filter(active=True).prefetch_related("permissions").order_by("price_monthly", "price", "name")
+    users = get_user_model().objects.filter(is_active=True).order_by("email")
+    features = FeatureRegistry.objects.filter(active=True).order_by("group", "label")
+    registry_active_count = features.count()
+    active_plan_count = plans.count()
+    active_user_count = users.count()
+
+    selected_plan_id = request.GET.get("plan_id") or request.POST.get("plan_id")
+    selected_plan = Plan.objects.filter(id=selected_plan_id).first() if selected_plan_id else plans.first()
+    if selected_plan is None:
+        selected_plan = plans.first()
+
+    selected_user_id = request.GET.get("user_id") or request.POST.get("user_id")
+    selected_user = users.filter(id=selected_user_id).first() if selected_user_id else users.first()
+
+    if request.method == "POST":
+        action = (request.POST.get("action") or "").strip().lower()
+        if action == "plan" and selected_plan:
+            _save_plan_permissions(selected_plan, request.POST)
+            messages.success(request, f"Plan permissions saved for {selected_plan.name}.")
+            return _redirect_feature_tower(plan_id=selected_plan.id, user_id=getattr(selected_user, "id", None))
+        if action == "user" and selected_user:
+            _save_user_overrides(selected_user, features, request.POST)
+            messages.success(request, f"Feature overrides saved for {selected_user.email or selected_user}.")
+            return _redirect_feature_tower(plan_id=getattr(selected_plan, "id", None), user_id=selected_user.id)
+        if action == "registry":
+            _save_feature_registry(request.POST)
+            messages.success(request, "Global feature registry updated.")
+            return _redirect_feature_tower(plan_id=getattr(selected_plan, "id", None), user_id=getattr(selected_user, "id", None))
+
+    selected_plan_permissions = _plan_permission_state(selected_plan) if selected_plan else {}
+    selected_plan_enabled_count = sum(
+        1 for key, value in selected_plan_permissions.items() if key != "max_parties" and bool(value)
+    ) if selected_plan_permissions else 0
+    selected_plan_disabled_count = max(len(SMART_PLAN_PERMISSION_FIELDS) - selected_plan_enabled_count, 0)
+    selected_user_overrides = {}
     if selected_user:
-        for ov in UserFeatureOverride.objects.filter(user=selected_user):
-            overrides[ov.feature_id] = ov.is_enabled
+        selected_user_overrides = {
+            ov.feature_id: ("enabled" if ov.is_enabled else "disabled")
+            for ov in UserFeatureOverride.objects.filter(user=selected_user)
+        }
+    selected_user_enabled_overrides = sum(1 for mode in selected_user_overrides.values() if mode == "enabled")
+    selected_user_disabled_overrides = sum(1 for mode in selected_user_overrides.values() if mode == "disabled")
+    selected_user_inherited_features = max(len(features) - len(selected_user_overrides), 0)
+    feature_groups = []
+    current_group = None
+    current_items = []
+    for feature in features:
+        feature_item = {
+            "id": feature.id,
+            "key": feature.key,
+            "label": feature.label,
+            "active": feature.active,
+            "description": feature.description,
+            "mode": selected_user_overrides.get(feature.id, "inherit"),
+        }
+        if current_group != feature.group:
+            if current_group is not None:
+                feature_groups.append({"name": current_group, "items": current_items})
+            current_group = feature.group
+            current_items = []
+        current_items.append(feature_item)
+    if current_group is not None:
+        feature_groups.append({"name": current_group, "items": current_items})
 
-    return render(request, "core_settings/user_feature_overrides.html", {
-        "users": users,
-        "features": features,
-        "selected_user": selected_user,
-        "overrides": overrides,
-    })
+    plan_sections = []
+    for section_title, fields in SMART_PLAN_PERMISSION_SECTIONS:
+        plan_sections.append(
+            {
+                "title": section_title,
+                "fields": [
+                    {
+                        "name": field_name,
+                        "label": label,
+                        "value": selected_plan_permissions.get(field_name, False),
+                    }
+                    for field_name, label in fields
+                ],
+            }
+        )
+
+    return render(
+        request,
+        "core_settings/admin_control_tower.html",
+        {
+            "plans": plans,
+            "users": users,
+            "feature_groups": feature_groups,
+            "selected_plan": selected_plan,
+            "selected_user": selected_user,
+            "selected_plan_permissions": selected_plan_permissions,
+            "selected_plan_enabled_count": selected_plan_enabled_count,
+            "selected_plan_disabled_count": selected_plan_disabled_count,
+            "selected_user_overrides": selected_user_overrides,
+            "selected_user_enabled_overrides": selected_user_enabled_overrides,
+            "selected_user_disabled_overrides": selected_user_disabled_overrides,
+            "selected_user_inherited_features": selected_user_inherited_features,
+            "plan_sections": plan_sections,
+            "all_features": features,
+            "registry_active_count": registry_active_count,
+            "active_plan_count": active_plan_count,
+            "active_user_count": active_user_count,
+        },
+    )
 
 
 @login_required
@@ -244,13 +411,20 @@ def user_permissions_view(request):
 
 @login_required
 def settings_center(request):
+    if (not (request.user.is_staff or request.user.is_superuser)) and (not has_feature(request.user, "settings.advanced")):
+        return HttpResponse("Your plan does not allow Settings access")
     payload = get_settings_payload(request.user)
     ai_hints = build_ai_hints(payload)
     status_cards = get_status_cards(payload)
+    if request.user.is_staff or request.user.is_superuser:
+        open_alerts = FraudAlert.objects.filter(status=FraudAlert.Status.OPEN).count()
+    else:
+        open_alerts = FraudAlert.objects.filter(owner=request.user, status=FraudAlert.Status.OPEN).count()
     return render(request, "core_settings/settings_dashboard.html", {
         "settings_payload": payload,
         "ai_hints": ai_hints,
         "status_cards": status_cards,
+        "open_alerts_count": open_alerts,
     })
 
 

@@ -10,6 +10,7 @@ from django.dispatch import receiver
 from django.db.models import Sum
 from django.utils.text import slugify
 from decimal import Decimal
+import secrets
  
 
 
@@ -73,6 +74,13 @@ class LedgerEntry(models.Model):
         ordering = ['date', 'id']
 
     def save(self, *args, **kwargs):
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None:
+            update_fields_set = set(update_fields)
+            # Prevent infinite recursion/perf issues when only updating computed balance.
+            if update_fields_set and update_fields_set.issubset({"balance"}):
+                return super().save(*args, **kwargs)
+
         # auto fill credit/debit from txn_type
         if self.txn_type == "credit":
             self.credit = self.amount
@@ -93,14 +101,14 @@ class LedgerEntry(models.Model):
         entries = LedgerEntry.objects.filter(
             account=self.account,
             party=self.party
-        ).order_by("date", "id")
+        ).order_by("date", "id").only("id", "credit", "debit", "balance")
 
-        running = 0
+        running = Decimal("0.00")
         for e in entries:
             running += (e.credit - e.debit)
             if e.balance != running:
-                e.balance = running
-                e.save(update_fields=["balance"])
+                # Avoid calling model.save() inside the loop (prevents recursion and speeds up).
+                LedgerEntry.objects.filter(id=e.id).update(balance=running)
 
     def __str__(self):
         return f"{self.party.name} – {self.txn_type.upper()} ₹{self.amount}"
@@ -124,10 +132,47 @@ def _gen_otp():
 
 
 # ----------------- CUSTOM USER MODEL -----------------
+class SaaSRole(models.TextChoices):
+    SUPER_ADMIN = "super_admin", "SuperAdmin"
+    STATE_ADMIN = "state_admin", "StateAdmin"
+    DISTRICT_ADMIN = "district_admin", "DistrictAdmin"
+    AREA_ADMIN = "area_admin", "AreaAdmin"
+    SUPER_AGENT = "super_agent", "SuperAgent"
+    AGENT = "agent", "Agent"
+    CUSTOMER = "customer", "Customer"
+
+
 class User(AbstractUser):
     username = models.CharField(max_length=150, blank=True, null=True)
     mobile = models.CharField(max_length=15, unique=True, blank=True, null=True)
     email = models.EmailField(unique=True)
+    role = models.CharField(max_length=40, choices=SaaSRole.choices, blank=True, default="", db_index=True)
+    company = models.ForeignKey(
+        "saas_core.Company",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="users",
+        help_text="Tenant company for multi-tenant isolation.",
+    )
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="children",
+        help_text="Downline/upline hierarchy. Optional for backward compatibility.",
+        db_index=True,
+    )
+    referral_code = models.CharField(max_length=24, unique=True, blank=True, null=True, default=None, db_index=True)
+    referred_by = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="referred_users",
+        help_text="Referral attribution. May be same as parent in simple setups.",
+    )
 
     email_verified = models.BooleanField(default=False)
     mobile_verified = models.BooleanField(default=False)
@@ -152,6 +197,16 @@ class User(AbstractUser):
 
     USERNAME_FIELD = "email"  # login by email
     REQUIRED_FIELDS = ["username", "mobile"]
+
+    def save(self, *args, **kwargs):
+        if not self.referral_code:
+            # Short, URL-safe code (no PII). Retry on the extremely rare collision.
+            for _ in range(8):
+                candidate = secrets.token_urlsafe(9).replace("-", "").replace("_", "")[:12].upper()
+                if not User.objects.filter(referral_code=candidate).exists():
+                    self.referral_code = candidate
+                    break
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.username or self.email or str(self.mobile)
@@ -216,6 +271,34 @@ class UserProfile(models.Model):
         null=True,
         blank=True,
         related_name='user_profiles'
+    )
+    country = models.ForeignKey(
+        "location.Country",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="account_user_profiles",
+    )
+    state = models.ForeignKey(
+        "location.State",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="account_user_profiles",
+    )
+    district = models.ForeignKey(
+        "location.District",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="account_user_profiles",
+    )
+    pincode = models.ForeignKey(
+        "location.Pincode",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="account_user_profiles",
     )
 
     full_name = models.CharField(max_length=150)

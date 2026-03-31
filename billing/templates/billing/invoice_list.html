@@ -1,0 +1,60 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Invoices{% endblock %}
+
+{% block content %}
+<div style="padding:24px;background:linear-gradient(180deg,#f8fbff 0%,#eef6ff 100%);display:grid;gap:16px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+    <div>
+      <p style="margin:0 0 6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#0f766e;font-weight:800;">GST Billing Engine</p>
+      <h1 style="margin:0;font-size:32px;color:#0f172a;">Invoices</h1>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <a href="{% url 'payments:checkout' %}" style="padding:10px 16px;border-radius:999px;background:#0f766e;color:#fff;text-decoration:none;">New Recharge</a>
+      {% if request.user.is_staff %}<a href="{% url 'billing:gst_report' %}" style="padding:10px 16px;border-radius:999px;border:1px solid #0f766e;color:#0f766e;text-decoration:none;background:#fff;">GST Report</a>{% endif %}
+    </div>
+  </div>
+
+  <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;">
+    <form method="get" style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:16px;">
+      <label style="display:grid;gap:6px;font-size:12px;font-weight:600;color:#334155;">Status
+        <select name="status" style="min-height:44px;border:1px solid #c7d5e7;border-radius:12px;padding:10px 12px;">
+          <option value="">All</option>
+          <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+          <option value="issued" {% if status_filter == 'issued' %}selected{% endif %}>Issued</option>
+          <option value="paid" {% if status_filter == 'paid' %}selected{% endif %}>Paid</option>
+        </select>
+      </label>
+      <label style="display:grid;gap:6px;font-size:12px;font-weight:600;color:#334155;">Source
+        <select name="source" style="min-height:44px;border:1px solid #c7d5e7;border-radius:12px;padding:10px 12px;">
+          <option value="">All</option>
+          <option value="wallet_recharge" {% if source_filter == 'wallet_recharge' %}selected{% endif %}>Wallet Recharge</option>
+          <option value="property_booking" {% if source_filter == 'property_booking' %}selected{% endif %}>Property Booking</option>
+          <option value="service_purchase" {% if source_filter == 'service_purchase' %}selected{% endif %}>Service Purchase</option>
+        </select>
+      </label>
+      <button type="submit" style="padding:10px 16px;border:none;border-radius:999px;background:#0f766e;color:#fff;font-weight:700;">Apply</button>
+    </form>
+
+    {% if invoices %}
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Invoice</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">User</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Source</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">GST</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Amount</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Action</th></tr></thead>
+        <tbody>
+          {% for invoice in invoices %}
+            <tr>
+              <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ invoice.invoice_number }}<br><span style="font-size:12px;color:#64748b;">{{ invoice.issued_at|date:"d M Y H:i" }}</span></td>
+              <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ invoice.user.email }}</td>
+              <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ invoice.get_source_type_display }}</td>
+              <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ invoice.gst_rate }}%</td>
+              <td style="padding:12px 0;border-top:1px solid #edf2f7;">Rs {{ invoice.total_amount }}</td>
+              <td style="padding:12px 0;border-top:1px solid #edf2f7;"><a href="{% url 'billing:invoice_detail' invoice.invoice_number %}" style="color:#0f766e;font-weight:700;text-decoration:none;">Open</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div style="padding:14px;border-radius:16px;background:#f8fbff;border:1px dashed #dbe7f5;color:#64748b;">No invoices generated yet.</div>
+    {% endif %}
+  </article>
+</div>
+{% endblock %}

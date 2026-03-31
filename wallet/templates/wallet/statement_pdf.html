@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #0f172a; }
+    h1 { font-size: 20px; margin: 0 0 8px; }
+    h2 { font-size: 12px; margin: 0 0 16px; color: #475569; font-weight: normal; }
+    .meta { margin: 0 0 16px; }
+    .meta div { margin-bottom: 4px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; background: #e2e8f0; padding: 8px; font-size: 10px; text-transform: uppercase; }
+    td { padding: 8px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  </style>
+</head>
+<body>
+  <h1>Wallet Statement</h1>
+  <h2>{{ user.email }} | {{ wallet.wallet_code }}</h2>
+  <div class="meta">
+    <div><strong>Generated:</strong> {{ generated_at|date:"d M Y H:i" }}</div>
+    <div><strong>Range:</strong> {{ start_date|default:"All" }} to {{ end_date|default:"All" }}</div>
+    <div><strong>Balance:</strong> Rs {{ wallet.balance }} | <strong>Available:</strong> Rs {{ wallet.available_balance }}</div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Reference</th>
+        <th>Type</th>
+        <th>Source</th>
+        <th>Status</th>
+        <th>Amount</th>
+        <th>Counterparty</th>
+        <th>Balance After</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td>{{ row.created_at|date:"d M Y H:i" }}</td>
+          <td>{{ row.reference_id }}</td>
+          <td>{{ row.entry_type }}</td>
+          <td>{{ row.source }}</td>
+          <td>{{ row.status }}</td>
+          <td>Rs {{ row.amount }}</td>
+          <td>{{ row.counterparty|default:"-" }}</td>
+          <td>Rs {{ row.balance_after }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="8">No transactions found for this statement.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

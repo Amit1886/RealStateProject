@@ -8,7 +8,11 @@ class AccountsConfig(AppConfig):
     name = "accounts"
 
     def ready(self):
-        import accounts.signals
+        try:
+            import accounts.signals  # noqa: F401
+        except Exception as exc:
+            # Skip optional legacy signals when dependent apps are disabled
+            print(f"[accounts] signals not loaded: {exc}")
 
         # ❌ avoid DB work during migrate / collectstatic
         if "runserver" not in sys.argv and "gunicorn" not in sys.argv:

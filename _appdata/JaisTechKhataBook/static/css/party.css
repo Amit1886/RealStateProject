@@ -1,0 +1,120 @@
+/* MAIN WRAPPER */
+.party-container, .party-list-container {
+    padding: 25px;
+}
+
+/* CARD */
+.party-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+/* HEADER */
+.party-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+    font-weight: 600;
+    padding-bottom: 20px;
+}
+
+/* INPUTS */
+.party-form input,
+.party-form select,
+.party-form textarea {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+}
+
+.party-form input:focus,
+.party-form select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.2);
+}
+
+/* TITLES */
+.section-title {
+    font-weight: 600;
+    color: #2563eb;
+    margin-top: 20px;
+}
+
+/* BUTTONS */
+.btn-primary-big {
+    padding: 12px 35px;
+    background: #2563eb;
+    color: #fff;
+    border-radius: 10px;
+    border: none;
+    font-size: 18px;
+}
+
+.btn-primary-small, .btn-sm-light {
+    padding: 6px 15px;
+    border-radius: 8px;
+    color: #fff;
+    background: #2563eb;
+    border: none;
+}
+
+.btn-sm-light { background: #475569; }
+
+.btn-primary-small:hover,
+.btn-sm-light:hover {
+    opacity: .85;
+}
+
+.btn-center { text-align: center; margin-top: 15px; }
+
+/* TABLE */
+.table-wrapper {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+#partyTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#partyTable th {
+    background: #0f172a;
+    color: #fff;
+    padding: 10px;
+}
+
+#partyTable td {
+    padding: 10px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* TABLE ACTION BUTTONS */
+.btn-table {
+    padding: 4px 10px;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 12px;
+}
+
+.btn-table.edit { background: #10b981; }
+.btn-table.delete { background: #ef4444; }
+
+/* EXPORT BUTTONS */
+.export-row {
+    margin: 15px 0;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-dark-small {
+    background: #1e293b;
+    color: #fff;
+    padding: 6px 15px;
+    border-radius: 8px;
+    border: none;
+}

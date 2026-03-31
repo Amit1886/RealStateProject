@@ -231,11 +231,20 @@ footer a{color:#94a3b8;display:block;margin:8px 0;font-size:14px}
   <img src="{% static 'images/default-avatar.png' %}" alt="KhataPro">
   <div>
     <a href="#pricing">Pricing</a>
+    {% if desktop_download_url %}
+      <a href="{{ desktop_download_url }}" class="btn btn-outline">{{ desktop_download_label|default:"Download Desktop App" }}</a>
+    {% endif %}
+    {% if android_download_url %}
+      <a href="{{ android_download_url }}" class="btn btn-outline">{{ android_download_label|default:"Download Android APK" }}</a>
+    {% endif %}
     <a href="/accounts/login/" class="btn btn-outline">Login</a>
     <a href="/accounts/signup/" class="btn btn-primary">Sign Up</a>
   </div>
 </div>
 </header>
+<div class="container" style="padding:8px 20px;color:#64748b;font-size:13px;">
+  Desktop App Version: {{ desktop_app_version|default:"0.0.0" }}
+</div>
 <!-- ===== HERO SLIDER START ===== -->
 <section class="hero-slider">
 

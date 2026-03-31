@@ -11,9 +11,10 @@ import json
 from .models import (
     Plan, Subscription, BillingInvoice, PaymentGateway, Payment,
     Order, OrderItem, Warehouse, Stock, ChatMessage, ChatThread,
-    Notification, PartyPortal
+    Notification, PartyPortal, Invoice
 )
 from .forms import CommerceForm   # if used later
+from accounts.utils import render_to_pdf_bytes
 
 from django.contrib.auth import authenticate, login
 from billing.services import sync_feature_registry, get_active_subscription, upgrade_subscription
@@ -373,3 +374,63 @@ def billing_history(request):
         "subscriptions": subscriptions,
         "events": events,
     })
+
+
+@login_required
+def invoice_list(request):
+    invoices = Invoice.objects.select_related("payment_order", "user").order_by("-issued_at")
+    if not request.user.is_staff:
+        invoices = invoices.filter(user=request.user)
+    status_filter = (request.GET.get("status") or "").strip()
+    source_filter = (request.GET.get("source") or "").strip()
+    if status_filter:
+        invoices = invoices.filter(status=status_filter)
+    if source_filter:
+        invoices = invoices.filter(source_type=source_filter)
+    return render(
+        request,
+        "billing/invoice_list.html",
+        {
+            "invoices": invoices[:50],
+            "status_filter": status_filter,
+            "source_filter": source_filter,
+        },
+    )
+
+
+@login_required
+def invoice_detail(request, invoice_number):
+    queryset = Invoice.objects.select_related("payment_order", "gst_detail", "user").prefetch_related("items")
+    if not request.user.is_staff:
+        queryset = queryset.filter(user=request.user)
+    invoice = get_object_or_404(queryset, invoice_number=invoice_number)
+    return render(request, "billing/invoice_detail.html", {"invoice": invoice})
+
+
+@login_required
+def invoice_pdf(request, invoice_number):
+    queryset = Invoice.objects.select_related("payment_order", "gst_detail", "user").prefetch_related("items")
+    if not request.user.is_staff:
+        queryset = queryset.filter(user=request.user)
+    invoice = get_object_or_404(queryset, invoice_number=invoice_number)
+    pdf_bytes = render_to_pdf_bytes("billing/invoice_pdf.html", {"invoice": invoice}, request=request)
+    if pdf_bytes:
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{invoice.invoice_number}.pdf"'
+        return response
+    return render(request, "billing/invoice_pdf.html", {"invoice": invoice})
+
+
+@login_required
+def gst_report(request):
+    if not request.user.is_staff and not request.user.is_superuser:
+        return HttpResponse("Admin access required", status=403)
+    invoices = Invoice.objects.filter(status__in=[Invoice.Status.ISSUED, Invoice.Status.PAID]).order_by("-issued_at")[:100]
+    summary = {
+        "total_taxable": sum((invoice.subtotal for invoice in invoices), start=Decimal("0.00")),
+        "total_cgst": sum((invoice.cgst for invoice in invoices), start=Decimal("0.00")),
+        "total_sgst": sum((invoice.sgst for invoice in invoices), start=Decimal("0.00")),
+        "total_igst": sum((invoice.igst for invoice in invoices), start=Decimal("0.00")),
+        "total_amount": sum((invoice.total_amount for invoice in invoices), start=Decimal("0.00")),
+    }
+    return render(request, "billing/gst_report.html", {"invoices": invoices, "summary": summary})

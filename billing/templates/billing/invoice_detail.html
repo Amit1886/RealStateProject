@@ -1,0 +1,75 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Invoice Detail{% endblock %}
+
+{% block content %}
+<div style="padding:24px;background:linear-gradient(180deg,#f8fbff 0%,#eef6ff 100%);display:grid;gap:16px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+    <div>
+      <p style="margin:0 0 6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#0f766e;font-weight:800;">Invoice Preview</p>
+      <h1 style="margin:0;font-size:32px;color:#0f172a;">{{ invoice.invoice_number }}</h1>
+      <p style="margin:8px 0 0;color:#64748b;">Status {{ invoice.get_status_display }} | Source {{ invoice.get_source_type_display }} | Issued {{ invoice.issued_at|date:"d M Y H:i" }}</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <a href="{% url 'billing:invoice_pdf' invoice.invoice_number %}" style="padding:10px 16px;border-radius:999px;background:#0f766e;color:#fff;text-decoration:none;">Download PDF</a>
+      <a href="{% url 'billing:invoice_list' %}" style="padding:10px 16px;border-radius:999px;border:1px solid #0f766e;color:#0f766e;text-decoration:none;background:#fff;">Back</a>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:16px;">
+    <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;">
+      <h3 style="margin:0 0 12px;font-size:24px;color:#0f172a;">Billing Parties</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;font-size:13px;color:#334155;">
+        <div>
+          <strong>Bill To</strong><br>
+          {{ invoice.billing_name }}<br>
+          {{ invoice.billing_email }}<br>
+          {{ invoice.billing_address|linebreaksbr }}
+        </div>
+        <div>
+          <strong>Company</strong><br>
+          {{ invoice.company_name }}<br>
+          GSTIN: {{ invoice.company_gstin|default:"-" }}<br>
+          {{ invoice.company_address|linebreaksbr }}
+        </div>
+      </div>
+    </article>
+
+    <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;">
+      <h3 style="margin:0 0 12px;font-size:24px;color:#0f172a;">Amount Summary</h3>
+      <div style="display:grid;gap:10px;font-size:13px;color:#334155;">
+        <div><strong>Subtotal:</strong> Rs {{ invoice.subtotal }}</div>
+        <div><strong>CGST:</strong> Rs {{ invoice.cgst }}</div>
+        <div><strong>SGST:</strong> Rs {{ invoice.sgst }}</div>
+        <div><strong>IGST:</strong> Rs {{ invoice.igst }}</div>
+        <div><strong>Total:</strong> Rs {{ invoice.total_amount }}</div>
+      </div>
+      {% if invoice.gst_detail %}
+        <div style="margin-top:14px;padding:12px;border-radius:16px;background:#f8fbff;border:1px dashed #dbe7f5;font-size:13px;color:#334155;">
+          Place of Supply: {{ invoice.gst_detail.place_of_supply|default:"-" }}<br>
+          HSN/SAC: {{ invoice.gst_detail.hsn_sac }}<br>
+          {% if invoice.gst_detail.is_interstate %}Interstate{% else %}Intrastate{% endif %}
+        </div>
+      {% endif %}
+    </article>
+  </div>
+
+  <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;">
+    <h3 style="margin:0 0 12px;font-size:24px;color:#0f172a;">Line Items</h3>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Description</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Qty</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Taxable</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">GST</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Total</th></tr></thead>
+      <tbody>
+        {% for item in invoice.items.all %}
+          <tr>
+            <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ item.description }}</td>
+            <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ item.quantity }}</td>
+            <td style="padding:12px 0;border-top:1px solid #edf2f7;">Rs {{ item.taxable_amount }}</td>
+            <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ item.gst_rate }}%</td>
+            <td style="padding:12px 0;border-top:1px solid #edf2f7;">Rs {{ item.total_amount }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Add Money{% endblock %}
+
+{% block content %}
+<div style="padding:24px;background:linear-gradient(180deg,#f8fbff 0%,#eef6ff 100%);">
+  <section style="display:grid;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+      <div>
+        <p style="margin:0 0 6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#0f766e;font-weight:800;">Payment Gateway Workspace</p>
+        <h1 style="margin:0;font-size:32px;line-height:1.05;color:#0f172a;">Add money to wallet</h1>
+        <p style="margin:8px 0 0;color:#64748b;font-size:13px;">Razorpay aur Stripe compatible order engine. Demo mode me same page se payment capture simulate kar sakte ho.</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="{% url 'accounts:wallet_workspace' %}" style="padding:10px 16px;border-radius:999px;border:1px solid #0f766e;color:#0f766e;text-decoration:none;background:#fff;">Back To Wallet</a>
+        <a href="{% url 'payments:history' %}" style="padding:10px 16px;border-radius:999px;background:#0f766e;color:#fff;text-decoration:none;">Payment History</a>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);gap:16px;">
+      <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;box-shadow:0 16px 34px rgba(15,23,42,.06);">
+        <h3 style="margin:0 0 14px;font-size:24px;color:#0f172a;">Create Payment Order</h3>
+        <form method="post" style="display:grid;gap:14px;">
+          {% csrf_token %}
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+            <label style="display:grid;gap:6px;font-size:12px;font-weight:600;color:#334155;">Amount
+              <input type="number" min="1" step="0.01" name="amount" value="{{ selected_amount }}" style="min-height:46px;border:1px solid #c7d5e7;border-radius:14px;padding:10px 12px;">
+            </label>
+            <label style="display:grid;gap:6px;font-size:12px;font-weight:600;color:#334155;">Gateway
+              <select name="gateway" style="min-height:46px;border:1px solid #c7d5e7;border-radius:14px;padding:10px 12px;">
+                {% for gateway in gateways %}
+                  <option value="{{ gateway.provider }}" {% if selected_gateway == gateway.provider %}selected{% endif %}>{{ gateway.label }} {% if gateway.mode == "demo" %}(Demo){% endif %}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label style="display:grid;gap:6px;font-size:12px;font-weight:600;color:#334155;grid-column:1 / -1;">Narration
+              <input type="text" name="note" placeholder="Wallet top-up for property bookings" style="min-height:46px;border:1px solid #c7d5e7;border-radius:14px;padding:10px 12px;">
+            </label>
+          </div>
+          <button type="submit" style="width:max-content;padding:12px 18px;border:none;border-radius:999px;background:#0f766e;color:#fff;font-weight:700;">Create Order</button>
+        </form>
+      </article>
+
+      <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;box-shadow:0 16px 34px rgba(15,23,42,.06);">
+        <h3 style="margin:0 0 14px;font-size:24px;color:#0f172a;">Wallet Snapshot</h3>
+        <div style="display:grid;gap:10px;font-size:13px;color:#334155;">
+          <div><strong>Wallet ID:</strong> {{ wallet.wallet_code }}</div>
+          <div><strong>Balance:</strong> Rs {{ wallet.balance }}</div>
+          <div><strong>Locked:</strong> Rs {{ wallet.locked_balance }}</div>
+          <div><strong>Currency:</strong> {{ wallet.currency }}</div>
+        </div>
+      </article>
+    </div>
+
+    <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;box-shadow:0 16px 34px rgba(15,23,42,.06);">
+      <h3 style="margin:0 0 12px;font-size:24px;color:#0f172a;">Recent Payment Orders</h3>
+      {% if recent_orders %}
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr><th style="text-align:left;padding-bottom:10px;font-size:11px;text-transform:uppercase;color:#64748b;">Reference</th><th style="text-align:left;padding-bottom:10px;font-size:11px;text-transform:uppercase;color:#64748b;">Gateway</th><th style="text-align:left;padding-bottom:10px;font-size:11px;text-transform:uppercase;color:#64748b;">Amount</th><th style="text-align:left;padding-bottom:10px;font-size:11px;text-transform:uppercase;color:#64748b;">Status</th><th style="text-align:left;padding-bottom:10px;font-size:11px;text-transform:uppercase;color:#64748b;">Action</th></tr></thead>
+          <tbody>
+            {% for row in recent_orders %}
+              <tr>
+                <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ row.reference_id }}</td>
+                <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ row.get_gateway_display }}</td>
+                <td style="padding:12px 0;border-top:1px solid #edf2f7;">Rs {{ row.amount }}</td>
+                <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ row.get_status_display }}</td>
+                <td style="padding:12px 0;border-top:1px solid #edf2f7;"><a href="{% url 'payments:order_detail' row.reference_id %}" style="color:#0f766e;font-weight:700;text-decoration:none;">Open</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div style="padding:14px;border-radius:16px;background:#f8fbff;border:1px dashed #dbe7f5;color:#64748b;">No payment orders yet.</div>
+      {% endif %}
+    </article>
+  </section>
+</div>
+{% endblock %}

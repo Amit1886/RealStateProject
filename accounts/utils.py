@@ -39,10 +39,14 @@ def send_sms_otp(mobile, code, api_key=None):
     except Exception:
         pass
 
-def render_to_pdf_bytes(template_src, context_dict={}):
-    """Render HTML template into PDF bytes."""
+def render_to_pdf_bytes(template_src, context_dict=None, *, request=None):
+    """Render HTML template into PDF bytes (xhtml2pdf)."""
+    if pisa is None:
+        return None
+
+    context_dict = context_dict or {}
     template = get_template(template_src)
-    html = template.render(context_dict)
+    html = template.render(context_dict, request=request) if request is not None else template.render(context_dict)
 
     result = BytesIO()
     pdf = pisa.CreatePDF(html, dest=result)

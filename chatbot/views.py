@@ -9,13 +9,6 @@ from django.views.decorators.http import require_POST
 import uuid
 import json
 
-try:
-    import openai
-    from django.conf import settings
-    openai.api_key = settings.OPENAI_API_KEY
-except ImportError:
-    openai = None
-
 
 @csrf_exempt
 def chatbot_reply(request):
@@ -130,6 +123,13 @@ def flow_save(request, flow_id):
 
 def get_ai_reply(message):
     try:
+        from django.conf import settings
+        try:
+            import openai
+        except ImportError:
+            return "Our executive will reply shortly 🙏"
+
+        openai.api_key = settings.OPENAI_API_KEY
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[

@@ -6,6 +6,23 @@
 <div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow">
   <h1 class="text-2xl font-bold mb-4">Create your account</h1>
   <form method="post">{% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+      <label for="id_referral_code" class="block text-gray-700 mb-1">Referral Code</label>
+      <input type="text" name="referral_code" id="id_referral_code" value="{{ referral_code|default_if_none:'' }}" class="border rounded p-2 w-full">
+      {% if referral_inviter %}
+        <p class="text-emerald-700 text-sm mt-2">Referral linked with {{ referral_inviter.first_name|default:referral_inviter.username|default:referral_inviter.email }}.</p>
+      {% else %}
+        <p class="text-gray-500 text-sm mt-2">Optional: add a code to unlock welcome rewards after signup.</p>
+      {% endif %}
+    </div>
 
     <!-- Username -->
     <div class="mb-4">

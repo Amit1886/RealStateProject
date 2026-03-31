@@ -1,0 +1,415 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Lead CRM{% endblock %}
+
+{% block extra_css %}
+  {{ block.super }}
+  <style>
+    .leadcrm-page,.leadcrm-main,.leadcrm-side,.leadcrm-list,.leadcrm-timeline,.leadcrm-meta{display:grid;gap:16px}
+    .leadcrm-hero,.leadcrm-layout,.leadcrm-grid,.leadcrm-stats{display:grid;gap:16px}
+    .leadcrm-hero{grid-template-columns:minmax(0,1.5fr) minmax(280px,.95fr);padding:20px;border-radius:24px;background:linear-gradient(135deg,#11233b 0%,#12384a 55%,#1f2937 100%);color:#f8fafc;box-shadow:0 20px 44px rgba(15,23,42,.18)}
+    .leadcrm-layout{grid-template-columns:minmax(0,1.45fr) minmax(300px,.95fr);align-items:start}
+    .leadcrm-stats{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+    .leadcrm-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .leadcrm-card,.leadcrm-stat{background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:16px;box-shadow:0 14px 28px rgba(15,23,42,.06)}
+    .leadcrm-kicker{margin:0 0 10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#a7f3d0;font-weight:700}
+    .leadcrm-title{margin:0;font-size:34px;line-height:1.04;font-weight:800;letter-spacing:-.04em}
+    .leadcrm-copy,.leadcrm-muted,.leadcrm-item span{color:#64748b;font-size:13px;line-height:1.6}
+    .leadcrm-copy{color:rgba(248,250,252,.84);margin:10px 0 0}
+    .leadcrm-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .leadcrm-head h2,.leadcrm-head h3,.leadcrm-item strong{margin:0;color:#0f172a;font-weight:800}
+    .leadcrm-label,.leadcrm-stat span:first-child{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#64748b;font-weight:700}
+    .leadcrm-stat strong{display:block;margin-top:8px;font-size:30px;line-height:1;color:#0f172a}
+    .leadcrm-chiprow,.leadcrm-actions,.leadcrm-inline{display:flex;flex-wrap:wrap;gap:10px}
+    .leadcrm-chip,.leadcrm-badge,.leadcrm-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 12px;border-radius:999px;font-size:12px;font-weight:700}
+    .leadcrm-chip{margin-top:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);color:#fff}
+    .leadcrm-badge{background:#eff6ff;border:1px solid #dbeafe;color:#1d4ed8}
+    .leadcrm-badge.hot{background:#fee2e2;border-color:#fecaca;color:#b91c1c}
+    .leadcrm-badge.warm{background:#fef3c7;border-color:#fde68a;color:#92400e}
+    .leadcrm-badge.cold{background:#dbeafe;border-color:#bfdbfe;color:#1d4ed8}
+    .leadcrm-badge.high{background:#dcfce7;border-color:#bbf7d0;color:#166534}
+    .leadcrm-badge.medium{background:#fef3c7;border-color:#fde68a;color:#92400e}
+    .leadcrm-badge.low{background:#e2e8f0;border-color:#cbd5e1;color:#334155}
+    .leadcrm-btn{border:1px solid #dbeafe;background:#eff6ff;color:#1d4ed8;text-decoration:none;cursor:pointer}
+    .leadcrm-btn.dark{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.12)}
+    .leadcrm-btn.strong{background:linear-gradient(135deg,#0f766e,#1d4ed8);border-color:transparent;color:#fff}
+    .leadcrm-form{display:grid;gap:12px}
+    .leadcrm-form.twocol{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .leadcrm-field{display:grid;gap:6px}
+    .leadcrm-field.full{grid-column:1/-1}
+    .leadcrm-field label{font-size:12px;color:#334155;font-weight:700}
+    .leadcrm-field input,.leadcrm-field select,.leadcrm-field textarea{width:100%;padding:10px 12px;border-radius:14px;border:1px solid #dbe2ea;background:#f8fafc;color:#0f172a;font-size:14px}
+    .leadcrm-field textarea{min-height:100px;resize:vertical}
+    .leadcrm-item,.leadcrm-meta div{padding:12px 14px;border-radius:16px;background:#f8fafc;border:1px solid #edf2f7}
+    .leadcrm-item strong,.leadcrm-item span{display:block}
+    .leadcrm-meta div{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .leadcrm-meta span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:700}
+    .leadcrm-meta strong{font-size:13px;color:#0f172a}
+    .leadcrm-link{color:#1d4ed8;text-decoration:none;font-weight:800}
+    .leadcrm-link:hover{text-decoration:underline}
+    .leadcrm-empty{padding:16px;border-radius:16px;border:1px dashed #cbd5e1;background:#f8fafc;color:#64748b;font-size:13px}
+    @media (max-width:1100px){.leadcrm-hero,.leadcrm-layout,.leadcrm-grid{grid-template-columns:1fr}}
+    @media (max-width:760px){.leadcrm-title{font-size:28px}.leadcrm-form.twocol{grid-template-columns:1fr}.leadcrm-field.full{grid-column:auto}}
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrap">
+  <div class="leadcrm-page">
+    <section class="leadcrm-hero">
+      <div>
+        <p class="leadcrm-kicker">Lead CRM Workspace</p>
+        <h1 class="leadcrm-title">{{ lead.name|default:lead.mobile }}</h1>
+        <p class="leadcrm-copy">Yeh ek lead ka dedicated dashboard hai. Yahin se agent/admin outreach, follow-up, AI priority, property match, aur conversion handle kar sakte hain.</p>
+        <div class="leadcrm-chiprow">
+          <span class="leadcrm-chip">{{ lead.mobile|default:"No phone" }}</span>
+          <span class="leadcrm-chip">{{ lead.email|default:"No email" }}</span>
+          <span class="leadcrm-chip">{{ lead.preferred_location|default:lead.city|default:lead.district|default:"Area pending" }}</span>
+          <span class="leadcrm-badge {{ ai_temperature.tone }}">{{ ai_temperature.emoji }} {{ ai_temperature.label }} {{ ai_temperature.score }}/100</span>
+          <span class="leadcrm-badge {{ prediction.tone }}">{{ prediction.probability }}% {{ prediction.label }}</span>
+        </div>
+      </div>
+      <div class="leadcrm-card" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);box-shadow:none;">
+        <div class="leadcrm-head">
+          <div>
+            <span class="leadcrm-label" style="color:rgba(248,250,252,.72);">Quick Access</span>
+            <h2 style="color:#fff;">Lead Controls</h2>
+          </div>
+        </div>
+        <div class="leadcrm-actions">
+          <a href="{% url 'accounts:dashboard' %}?tab=leads#module-workspace" class="leadcrm-btn">Back To Leads</a>
+          {% if lead.mobile %}<a href="tel:{{ lead.mobile }}" class="leadcrm-btn dark">Dial</a>{% endif %}
+          {% if lead.mobile %}<a href="https://wa.me/{{ lead.mobile }}" target="_blank" rel="noopener" class="leadcrm-btn dark">Open WhatsApp</a>{% endif %}
+          {% if lead.email %}<a href="mailto:{{ lead.email }}" class="leadcrm-btn dark">Email App</a>{% endif %}
+          {% if request.user.is_staff %}<a href="/superadmin/leads/lead/{{ lead.id }}/change/" class="leadcrm-btn dark">Admin Record</a>{% endif %}
+        </div>
+      </div>
+    </section>
+
+    <section class="leadcrm-stats">
+      <article class="leadcrm-stat"><span>AI Score</span><strong>{{ ai_temperature.score }}</strong><span class="leadcrm-muted">{{ ai_temperature.label }} priority.</span></article>
+      <article class="leadcrm-stat"><span>Prediction</span><strong>{{ prediction.probability }}%</strong><span class="leadcrm-muted">{{ prediction.label }} | Best time {{ prediction.best_time }}</span></article>
+      <article class="leadcrm-stat"><span>Assigned Agent</span><strong style="font-size:22px">{{ lead.assigned_agent.name|default:"Not assigned" }}</strong><span class="leadcrm-muted">{% if active_assignment %}{{ active_assignment.matched_on|title }} match{% else %}No active assignment{% endif %}</span></article>
+      <article class="leadcrm-stat"><span>Next Follow-Up</span><strong style="font-size:22px">{{ lead.next_followup_at|date:"d M, H:i"|default:"Not planned" }}</strong><span class="leadcrm-muted">{{ lead.followup_channel|default:"No channel"|title }}</span></article>
+    </section>
+
+    <div class="leadcrm-layout">
+      <div class="leadcrm-main">
+        <section class="leadcrm-card" id="action-center">
+          <div class="leadcrm-head">
+            <div><span class="leadcrm-label">Action Center</span><h2>Agent Action Buttons</h2></div>
+            {% if not can_operate %}<span class="leadcrm-badge low">View Only</span>{% endif %}
+          </div>
+          {% if can_operate %}
+            <div class="leadcrm-actions">
+              <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}">{% csrf_token %}<input type="hidden" name="action" value="start_call"><input type="hidden" name="script" value="Call {{ lead.name|default:lead.mobile }}, confirm requirement, budget, and visit time."><input type="hidden" name="return_anchor" value="action-center"><button type="submit" class="leadcrm-btn">Call Lead</button></form>
+              <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}">{% csrf_token %}<input type="hidden" name="action" value="send_message"><input type="hidden" name="channel" value="whatsapp"><input type="hidden" name="message" value="Hi {{ lead.name|default:'there' }}, I am your assigned real estate agent. I can share matching properties and arrange a visit."><input type="hidden" name="return_anchor" value="action-center"><button type="submit" class="leadcrm-btn">WhatsApp</button></form>
+              <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}">{% csrf_token %}<input type="hidden" name="action" value="send_message"><input type="hidden" name="channel" value="sms"><input type="hidden" name="message" value="Hi {{ lead.name|default:'there' }}, your enquiry is active. Reply to schedule the next step."><input type="hidden" name="return_anchor" value="action-center"><button type="submit" class="leadcrm-btn">SMS</button></form>
+              <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}">{% csrf_token %}<input type="hidden" name="action" value="send_message"><input type="hidden" name="channel" value="messenger"><input type="hidden" name="message" value="Hi {{ lead.name|default:'there' }}, I can help you shortlist the best property options."><input type="hidden" name="return_anchor" value="action-center"><button type="submit" class="leadcrm-btn">Messenger</button></form>
+              <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}">{% csrf_token %}<input type="hidden" name="action" value="send_message"><input type="hidden" name="channel" value="instagram_dm"><input type="hidden" name="message" value="Hi {{ lead.name|default:'there' }}, your property enquiry is active. Want options in your budget?"><input type="hidden" name="return_anchor" value="action-center"><button type="submit" class="leadcrm-btn">Instagram DM</button></form>
+              <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}">{% csrf_token %}<input type="hidden" name="action" value="quick_followup"><input type="hidden" name="hours" value="2"><input type="hidden" name="channel" value="whatsapp"><input type="hidden" name="message" value="Hi {{ lead.name|default:'there' }}, this is a quick follow-up on your property enquiry."><input type="hidden" name="return_anchor" value="followup-plan"><button type="submit" class="leadcrm-btn">Follow-Up 2h</button></form>
+              <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}">{% csrf_token %}<input type="hidden" name="action" value="refresh_ai"><input type="hidden" name="return_anchor" value="action-center"><button type="submit" class="leadcrm-btn">Refresh AI</button></form>
+              <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}">{% csrf_token %}<input type="hidden" name="action" value="reassign_best_agent"><input type="hidden" name="return_anchor" value="assignment-panel"><button type="submit" class="leadcrm-btn">Best Agent</button></form>
+            </div>
+          {% else %}
+            <div class="leadcrm-empty">Yeh lead aapke scope me hai, lekin outreach actions sirf assigned agent ya admin use kar sakte hain.</div>
+          {% endif %}
+        </section>
+
+        <section class="leadcrm-card">
+          <div class="leadcrm-head">
+            <div><span class="leadcrm-label">Composer</span><h2>Custom Communication</h2></div>
+          </div>
+          {% if can_operate %}
+            <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}" class="leadcrm-form twocol">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="send_message">
+              <input type="hidden" name="return_anchor" value="action-center">
+              <div class="leadcrm-field">
+                <label for="channel">Channel</label>
+                <select id="channel" name="channel">
+                  {% for value, label in message_channel_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="leadcrm-field">
+                <label for="subject">Email Subject</label>
+                <input id="subject" type="text" name="subject" value="Lead update for {{ lead.name|default:lead.mobile }}">
+              </div>
+              <div class="leadcrm-field full">
+                <label for="message">Message</label>
+                <textarea id="message" name="message">{{ default_whatsapp_message }}</textarea>
+              </div>
+              <div class="leadcrm-inline"><button type="submit" class="leadcrm-btn strong">Send Action</button></div>
+            </form>
+          {% else %}
+            <div class="leadcrm-empty">Custom composer view-only mode me locked hai.</div>
+          {% endif %}
+        </section>
+
+        <section class="leadcrm-card" id="pipeline-panel">
+          <div class="leadcrm-head">
+            <div><span class="leadcrm-label">Pipeline</span><h2>Status, Stage, Notes</h2></div>
+          </div>
+          {% if can_operate %}
+            <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}" class="leadcrm-form twocol">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="update_pipeline">
+              <input type="hidden" name="return_anchor" value="pipeline-panel">
+              <div class="leadcrm-field">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                  {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if lead.status == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="leadcrm-field">
+                <label for="stage">Stage</label>
+                <select id="stage" name="stage">
+                  {% for value, label in stage_choices %}
+                    <option value="{{ value }}" {% if lead.stage == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="leadcrm-field full">
+                <label for="pipeline-note">Update Note</label>
+                <textarea id="pipeline-note" name="note" placeholder="What happened on this lead?"></textarea>
+              </div>
+              <div class="leadcrm-inline"><button type="submit" class="leadcrm-btn strong">Update Pipeline</button></div>
+            </form>
+          {% else %}
+            <div class="leadcrm-empty">Pipeline controls are available to the operating team only.</div>
+          {% endif %}
+        </section>
+
+        <section class="leadcrm-card" id="followup-plan">
+          <div class="leadcrm-head">
+            <div><span class="leadcrm-label">Follow-Up</span><h2>Planner + Reminder Queue</h2></div>
+          </div>
+          {% if can_operate %}
+            <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}" class="leadcrm-form twocol">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="schedule_followup">
+              <input type="hidden" name="return_anchor" value="followup-plan">
+              <div class="leadcrm-field">
+                <label for="followup_at">Follow-Up At</label>
+                <input id="followup_at" type="datetime-local" name="followup_at" value="{{ lead.next_followup_at|date:'Y-m-d\\TH:i' }}">
+              </div>
+              <div class="leadcrm-field">
+                <label for="followup-channel">Channel</label>
+                <select id="followup-channel" name="channel">
+                  {% for value, label in followup_channel_choices %}
+                    <option value="{{ value }}" {% if lead.followup_channel == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="leadcrm-field full">
+                <label for="followup-message">Follow-Up Message</label>
+                <textarea id="followup-message" name="message">{{ default_followup_message }}</textarea>
+              </div>
+              <div class="leadcrm-inline"><button type="submit" class="leadcrm-btn strong">Schedule Follow-Up</button></div>
+            </form>
+          {% endif %}
+          <div class="leadcrm-list">
+            {% for row in followup_rows %}
+              <div class="leadcrm-item">
+                <strong>{{ row.get_channel_display }} | {{ row.followup_date|date:"d M Y, H:i" }}</strong>
+                <span>{{ row.message }}</span>
+                <span>Status: {{ row.get_status_display }}{% if row.last_error %} | {{ row.last_error }}{% endif %}</span>
+              </div>
+            {% empty %}
+              <div class="leadcrm-empty">Is lead ke liye abhi koi queued follow-up nahi hai.</div>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="leadcrm-card" id="conversion-desk">
+          <div class="leadcrm-head">
+            <div><span class="leadcrm-label">Conversion</span><h2>Deal + Customer Creation</h2></div>
+          </div>
+          {% if can_operate %}
+            <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}" class="leadcrm-form twocol">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="convert">
+              <input type="hidden" name="return_anchor" value="conversion-desk">
+              <div class="leadcrm-field"><label for="deal_amount">Deal Amount</label><input id="deal_amount" type="number" step="0.01" min="0" name="deal_amount" value="{{ lead.deal_value|default:lead.budget|default:'0' }}"></div>
+              <div class="leadcrm-field"><label for="customer_name">Customer Name</label><input id="customer_name" type="text" name="customer_name" value="{{ lead.name }}"></div>
+              <div class="leadcrm-field"><label for="customer_email">Customer Email</label><input id="customer_email" type="email" name="customer_email" value="{{ lead.email }}"></div>
+              <div class="leadcrm-field"><label for="customer_phone">Customer Phone</label><input id="customer_phone" type="text" name="customer_phone" value="{{ lead.mobile }}"></div>
+              <div class="leadcrm-field full"><label for="conversion-note">Conversion Note</label><textarea id="conversion-note" name="note" placeholder="Deal summary, final discussion, or payout note"></textarea></div>
+              <div class="leadcrm-inline"><button type="submit" class="leadcrm-btn strong">Convert Lead</button></div>
+            </form>
+          {% else %}
+            <div class="leadcrm-empty">Conversion controls are hidden for non-operating users.</div>
+          {% endif %}
+        </section>
+
+        <section class="leadcrm-card" id="timeline-panel">
+          <div class="leadcrm-head">
+            <div><span class="leadcrm-label">Timeline</span><h2>Full Lead Activity</h2></div>
+          </div>
+          <div class="leadcrm-timeline">
+            {% for row in timeline_rows %}
+              <article class="leadcrm-item">
+                <strong>{{ row.title }}</strong>
+                <span>{{ row.timestamp|date:"d M Y, H:i" }}</span>
+                <span>{{ row.body|default:"No description logged." }}</span>
+              </article>
+            {% empty %}
+              <div class="leadcrm-empty">Abhi tak is lead par koi activity timeline entry nahi hai.</div>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="leadcrm-card" id="communication-history">
+          <div class="leadcrm-head">
+            <div><span class="leadcrm-label">Omni-Channel</span><h2>Communication + Call Logs</h2></div>
+          </div>
+          <div class="leadcrm-grid">
+            <div class="leadcrm-list">
+              {% for row in message_logs %}
+                <div class="leadcrm-item">
+                  <strong>{{ row.provider|default:row.get_message_type_display }}</strong>
+                  <span>{{ row.message }}</span>
+                  <span>{{ row.created_at|date:"d M, H:i" }}</span>
+                </div>
+              {% empty %}
+                <div class="leadcrm-empty">WhatsApp, messenger, aur chat logs yahan dikhenge.</div>
+              {% endfor %}
+            </div>
+            <div class="leadcrm-list">
+              {% for row in email_logs %}
+                <div class="leadcrm-item">
+                  <strong>Email | {{ row.subject|default:"Lead update" }}</strong>
+                  <span>{{ row.body|truncatechars:160 }}</span>
+                  <span>{{ row.created_at|date:"d M, H:i" }}</span>
+                </div>
+              {% empty %}
+                <div class="leadcrm-empty">Email logs abhi empty hain.</div>
+              {% endfor %}
+            </div>
+            <div class="leadcrm-list">
+              {% for row in sms_logs %}
+                <div class="leadcrm-item">
+                  <strong>SMS | {{ row.phone }}</strong>
+                  <span>{{ row.message }}</span>
+                  <span>{{ row.created_at|date:"d M, H:i" }}</span>
+                </div>
+              {% empty %}
+                <div class="leadcrm-empty">SMS logs abhi empty hain.</div>
+              {% endfor %}
+            </div>
+            <div class="leadcrm-list">
+              {% for row in call_logs %}
+                <div class="leadcrm-item">
+                  <strong>Call | {{ row.outcome|default:"logged" }}</strong>
+                  <span>{{ row.note|default:"Call action recorded." }}</span>
+                  <span>{{ row.created_at|date:"d M, H:i" }}</span>
+                </div>
+              {% empty %}
+                <div class="leadcrm-empty">Call logs abhi empty hain.</div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="leadcrm-list">
+            {% for row in voice_calls %}
+              <div class="leadcrm-item">
+                <strong>Voice AI | {{ row.get_status_display }}{% if row.recording_url %} | <a href="{{ row.recording_url }}" target="_blank" rel="noopener" class="leadcrm-link">Recording</a>{% endif %}</strong>
+                <span>{{ row.summary|default:row.script_prompt|truncatechars:220 }}</span>
+                <span>{{ row.created_at|date:"d M, H:i" }}</span>
+              </div>
+            {% empty %}
+              <div class="leadcrm-empty">Auto dialer and call AI records yahan visible honge.</div>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+
+      <aside class="leadcrm-side">
+        <section class="leadcrm-card" id="lead-profile">
+          <div class="leadcrm-head">
+            <div><span class="leadcrm-label">Lead Profile</span><h3>Identity + Location</h3></div>
+          </div>
+          <div class="leadcrm-meta">
+            <div><span>Source</span><strong>{{ lead.get_source_display }}</strong></div>
+            <div><span>Status</span><strong>{{ lead.get_status_display }}</strong></div>
+            <div><span>Stage</span><strong>{{ lead.get_stage_display }}</strong></div>
+            <div><span>Interest</span><strong>{{ lead.get_interest_type_display }}</strong></div>
+            <div><span>Budget</span><strong>Rs {{ lead.budget|default:"0" }}</strong></div>
+            <div><span>Area</span><strong>{{ lead.village|default:lead.tehsil|default:lead.city|default:lead.district|default:lead.state|default:"Pending" }}</strong></div>
+            <div><span>Map Engine</span><strong>{{ map_provider }}</strong></div>
+            <div><span>Last Contact</span><strong>{{ lead.last_contacted_at|date:"d M, H:i"|default:"Not yet" }}</strong></div>
+          </div>
+          {% if lead.notes %}<p class="leadcrm-muted">{{ lead.notes }}</p>{% endif %}
+        </section>
+
+        <section class="leadcrm-card" id="assignment-panel">
+          <div class="leadcrm-head">
+            <div><span class="leadcrm-label">AI Recommendation</span><h3>Best Agent + Match</h3></div>
+          </div>
+          <div class="leadcrm-meta">
+            <div><span>Suggested Agent</span><strong>{{ recommended_agent.name|default:"No recommendation" }}</strong></div>
+            <div><span>Suggested Time</span><strong>{{ prediction.best_time }}</strong></div>
+            <div><span>Interactions</span><strong>{{ prediction.interaction_count }}</strong></div>
+            <div><span>Current Agent Score</span><strong>{{ lead.assigned_agent.performance_score|default:"0" }}</strong></div>
+          </div>
+          <p class="leadcrm-muted">Distance-based assignment, current load, aur performance ko combine karke recommendation nikali gayi hai.</p>
+        </section>
+
+        <section class="leadcrm-card">
+          <div class="leadcrm-head">
+            <div><span class="leadcrm-label">Property Match</span><h3>Nearby Recommendations</h3></div>
+          </div>
+          <div class="leadcrm-list">
+            {% for property in property_matches %}
+              <div class="leadcrm-item">
+                <strong>{% if request.user.is_staff %}<a href="/superadmin/leads/property/{{ property.id }}/change/" class="leadcrm-link">{{ property.title }}</a>{% else %}{{ property.title }}{% endif %}</strong>
+                <span>{{ property.city|default:"-" }} | {{ property.property_type|title }} | {{ property.listing_type|title }}</span>
+                <span>Rs {{ property.price }}{% if property.assigned_agent %} | Agent {{ property.assigned_agent.name }}{% endif %}</span>
+              </div>
+            {% empty %}
+              <div class="leadcrm-empty">Location aur budget ke hisab se recommended properties yahan dikhenge.</div>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="leadcrm-card">
+          <div class="leadcrm-head">
+            <div><span class="leadcrm-label">Related Leads</span><h3>Duplicates + Similar Cases</h3></div>
+          </div>
+          <div class="leadcrm-list">
+            {% for item in related_leads %}
+              <div class="leadcrm-item">
+                <strong><a class="leadcrm-link" href="{% url 'accounts:lead_workspace' item.id %}">{{ item.name|default:item.mobile }}</a></strong>
+                <span>{{ item.get_status_display }} | {{ item.get_stage_display }} | {{ item.city|default:item.preferred_location|default:"Area pending" }}</span>
+              </div>
+            {% empty %}
+              <div class="leadcrm-empty">Duplicate detection aur same-city related leads yahan surface honge.</div>
+            {% endfor %}
+          </div>
+        </section>
+
+        {% if can_operate %}
+          <section class="leadcrm-card">
+            <div class="leadcrm-head">
+              <div><span class="leadcrm-label">Notes</span><h3>Add CRM Note</h3></div>
+            </div>
+            <form method="post" action="{% url 'accounts:lead_workspace_action' lead.id %}" class="leadcrm-form">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="add_note">
+              <input type="hidden" name="return_anchor" value="timeline-panel">
+              <div class="leadcrm-field">
+                <label for="lead-note">New Note</label>
+                <textarea id="lead-note" name="note" placeholder="What happened on call, meeting, or site visit?"></textarea>
+              </div>
+              <div class="leadcrm-inline"><button type="submit" class="leadcrm-btn strong">Add Note</button></div>
+            </form>
+          </section>
+        {% endif %}
+      </aside>
+    </div>
+  </div>
+</div>
+{% endblock %}

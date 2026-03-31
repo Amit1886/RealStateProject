@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ invoice.invoice_number }}</title>
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #0f172a; }
+    h1, h2, h3 { margin: 0 0 8px; }
+    .header { margin-bottom: 18px; }
+    .grid { width: 100%; margin-bottom: 14px; }
+    .grid td { vertical-align: top; width: 50%; padding-right: 12px; }
+    table.items { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    table.items th, table.items td { border-bottom: 1px solid #dbe7f5; padding: 8px 0; text-align: left; }
+    .summary { margin-top: 14px; width: 45%; float: right; }
+    .summary td { padding: 5px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>{{ invoice.company_name|default:"Demo Realty Technologies" }}</h1>
+    <div>{{ invoice.company_address }}</div>
+    <div>GSTIN: {{ invoice.company_gstin|default:"-" }}</div>
+    <div><strong>Invoice:</strong> {{ invoice.invoice_number }}</div>
+    <div><strong>Issued:</strong> {{ invoice.issued_at|date:"d M Y H:i" }}</div>
+  </div>
+
+  <table class="grid">
+    <tr>
+      <td>
+        <h3>Bill To</h3>
+        <div>{{ invoice.billing_name }}</div>
+        <div>{{ invoice.billing_email }}</div>
+        <div>{{ invoice.billing_address }}</div>
+      </td>
+      <td>
+        <h3>GST Detail</h3>
+        {% if invoice.gst_detail %}
+          <div>Place of Supply: {{ invoice.gst_detail.place_of_supply }}</div>
+          <div>HSN/SAC: {{ invoice.gst_detail.hsn_sac }}</div>
+          <div>{% if invoice.gst_detail.is_interstate %}Interstate{% else %}Intrastate{% endif %}</div>
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+
+  <table class="items">
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Qty</th>
+        <th>Taxable</th>
+        <th>GST</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in invoice.items.all %}
+      <tr>
+        <td>{{ item.description }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>Rs {{ item.taxable_amount }}</td>
+        <td>{{ item.gst_rate }}%</td>
+        <td>Rs {{ item.total_amount }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <table class="summary">
+    <tr><td>Subtotal</td><td>Rs {{ invoice.subtotal }}</td></tr>
+    <tr><td>CGST</td><td>Rs {{ invoice.cgst }}</td></tr>
+    <tr><td>SGST</td><td>Rs {{ invoice.sgst }}</td></tr>
+    <tr><td>IGST</td><td>Rs {{ invoice.igst }}</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>Rs {{ invoice.total_amount }}</strong></td></tr>
+  </table>
+</body>
+</html>

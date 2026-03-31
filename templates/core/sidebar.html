@@ -1,216 +1,56 @@
-<!-- sidebar.html -->
-{% load feature_tags %}
-
+<!-- Minimal real-estate sidebar -->
 <div id="sidebar" class="sidebar sidebar-style-2">
     <div class="logo-header">
-        <button class="btn-toggle" id="togglePin"></button>
+        <button class="btn-toggle" id="togglePin" type="button" aria-label="Toggle sidebar" aria-expanded="true" title="Toggle sidebar">
+            <i class="bi bi-layout-sidebar-inset"></i>
+        </button>
         <div class="logo-text">
-            {{ company.company_name|default:"JaisTech" }}
+            {{ company.company_name|default:"RealEstate" }}
         </div>
     </div>
 
     <ul class="menu">
-        <li>
-            <a href="{% url 'accounts:dashboard' %}">
-                <span class="icon"></span>
-                <span class="label">Dashboard</span>
-            </a>
+        <li class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab|default:'dashboard' == 'dashboard' %}active{% endif %}">
+            <a class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab|default:'dashboard' == 'dashboard' %}active{% endif %}" href="{% url 'accounts:dashboard' %}?tab=dashboard#module-workspace"><span class="label">Dashboard</span></a>
         </li>
-        <li>
-            <a href="{% url 'billing:billing_history' %}">
-                <span class="icon"></span>
-                <span class="label">Billing History</span>
-            </a>
+        <li class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'lead_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'leads' %}active{% endif %}">
+            <a class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'lead_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'leads' %}active{% endif %}" href="{% url 'accounts:dashboard' %}?tab=leads#module-workspace"><span class="label">Leads</span></a>
         </li>
-
-        {% feature_allowed 'commerce.suppliers' as parties_allowed %}
-        <li>
-            {% if parties_allowed %}
-            <a href="{% url 'khataapp:party_list' %}">
-                <span class="icon"></span>
-                <span class="label">Parties</span>
-            </a>
-            {% else %}
-            <a href="{% url 'billing:upgrade_plan' %}" class="locked-feature" data-upgrade-url="{% url 'billing:upgrade_plan' %}" title="Upgrade to unlock">
-                <span class="icon"></span>
-                <span class="label">Parties</span>
-            </a>
-            {% endif %}
+        <li class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'property_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'properties' %}active{% endif %}">
+            <a class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'property_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'properties' %}active{% endif %}" href="{% url 'accounts:dashboard' %}?tab=properties#module-workspace"><span class="label">Properties</span></a>
         </li>
-
-        {% feature_allowed 'billing.invoices' as transactions_allowed %}
-        <li>
-            {% if transactions_allowed %}
-            <a href="{% url 'khataapp:transaction_list' %}">
-                <span class="icon">'</span>
-                <span class="label">Transactions</span>
-            </a>
-            {% else %}
-            <a href="{% url 'billing:upgrade_plan' %}" class="locked-feature" data-upgrade-url="{% url 'billing:upgrade_plan' %}" title="Upgrade to unlock">
-                <span class="icon">'</span>
-                <span class="label">Transactions</span>
-            </a>
-            {% endif %}
+        <li class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'deal_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'deals' %}active{% endif %}">
+            <a class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'deal_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'deals' %}active{% endif %}" href="{% url 'accounts:dashboard' %}?tab=deals#module-workspace"><span class="label">Deals</span></a>
         </li>
-
-        {% feature_allowed 'commerce.inventory' as products_allowed %}
-        <li>
-            {% if products_allowed %}
-            <a href="{% url 'commerce:product_list' %}">
-                <span class="icon"></span>
-                <span class="label">Product List</span>
-            </a>
-            {% else %}
-            <a href="{% url 'billing:upgrade_plan' %}" class="locked-feature" data-upgrade-url="{% url 'billing:upgrade_plan' %}" title="Upgrade to unlock">
-                <span class="icon"></span>
-                <span class="label">Product List</span>
-            </a>
-            {% endif %}
+        <li class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'agent_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'agents' %}active{% endif %}">
+            <a class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'agent_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'agents' %}active{% endif %}" href="{% url 'accounts:dashboard' %}?tab=agents#module-workspace"><span class="label">Agents</span></a>
         </li>
-
-        {% feature_allowed 'commerce.orders' as orders_allowed %}
-        <li class="sidebar-item has-submenu">
-            {% if orders_allowed %}
-            <a href="javascript:void(0)" class="submenu-toggle">
-                <span class="icon"></span>
-                <span class="label">Order List</span>
-                <span class="arrow">-</span>
-            </a>
-
-            <ul class="submenu">
-                <li>
-                    <a href="{% url 'commerce:sales_order_list' %}">
-                         Sales Orders
-                    </a>
-                </li>
-
-                <li>
-                    <a href="{% url 'commerce:purchase_order_list' %}">
-                         Purchase Orders
-                    </a>
-                </li>
-            </ul>
-            {% else %}
-            <a href="{% url 'billing:upgrade_plan' %}" class="submenu-toggle locked-feature" data-upgrade-url="{% url 'billing:upgrade_plan' %}" title="Upgrade to unlock">
-                <span class="icon"></span>
-                <span class="label">Order List</span>
-                <span class="arrow">-</span>
-            </a>
-            {% endif %}
+        <li class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'reports_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'reports' %}active{% endif %}">
+            <a class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'reports_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'reports' %}active{% endif %}" href="{% url 'accounts:reports_workspace' %}"><span class="label">Reports</span></a>
         </li>
-        {% feature_allowed 'commerce.inventory' as warehouse_allowed %}
-        <li>
-            {% if warehouse_allowed %}
-            <a href="{% url 'commerce:warehouse_list' %}">
-                <span class="icon"></span>
-                <span class="label">Warehouse</span>
-            </a>
-            {% else %}
-            <a href="{% url 'billing:upgrade_plan' %}" class="locked-feature" data-upgrade-url="{% url 'billing:upgrade_plan' %}" title="Upgrade to unlock">
-                <span class="icon"></span>
-                <span class="label">Warehouse</span>
-            </a>
-            {% endif %}
+        <li class="has-submenu {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'wallet_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'wallet' %}open active{% endif %}">
+            <button type="button" class="submenu-title {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'wallet_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'wallet' %}active{% endif %} submenu-toggle" aria-expanded="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'wallet_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'wallet' %}true{% else %}false{% endif %}">
+                <span class="label">Wallet</span>
+                <i class="bi bi-chevron-down ms-auto"></i>
+            </button>
+            <div class="submenu">
+                <a href="#wallet-dashboard" class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'wallet_workspace' and active_wallet_tab == 'dashboard' %}active{% endif %}">Wallet Dashboard</a>
+                <a href="#wallet-transactions" class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'wallet_workspace' and active_wallet_tab == 'transactions' %}active{% endif %}">Transactions</a>
+                <a href="#wallet-rewards" class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'wallet_workspace' and active_wallet_tab == 'rewards' %}active{% endif %}">Rewards</a>
+                <a href="#wallet-referrals" class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'wallet_workspace' and active_wallet_tab == 'referrals' %}active{% endif %}">Refer & Earn</a>
+                <a href="#wallet-scratch" class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'wallet_workspace' and active_wallet_tab == 'scratch' %}active{% endif %}">Scratch Card</a>
+                <a href="#wallet-spin" class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'wallet_workspace' and active_wallet_tab == 'spin' %}active{% endif %}">Spin Wheel</a>
+            </div>
         </li>
-
-        {% if request.user.is_superuser %}
-            {% feature_allowed 'chatbot.flows' as chatbot_flows_allowed %}
-            {% if chatbot_flows_allowed %}
-            <li>
-                <a href="{% url 'chatbot_flow_list' %}">
-                    <span class="icon">BOT</span>
-                    <span class="label">Chatbot Flows</span>
-                </a>
-            </li>
-            {% else %}
-            <li>
-                <a href="{% url 'billing:upgrade_plan' %}" class="locked-feature" data-upgrade-url="{% url 'billing:upgrade_plan' %}" title="Upgrade to unlock">
-                    <span class="icon">BOT</span>
-                    <span class="label">Chatbot Flows</span>
-                </a>
-            </li>
-            {% endif %}
-        {% endif %}
-
+        <li class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'settings_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'settings' %}active{% endif %}">
+            <a class="{% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'settings_workspace' or request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'dashboard' and active_dashboard_tab == 'settings' %}active{% endif %}" href="{% url 'accounts:settings_workspace' %}"><span class="label">Settings</span></a>
+        </li>
         {% if request.user.is_staff or request.user.is_superuser %}
-            {% feature_allowed 'field.agents' as field_agents_allowed %}
-            {% if field_agents_allowed %}
-            <li>
-                <a href="{% url 'khataapp:field_agent_list' %}">
-                    <span class="icon">'</span>
-                    <span class="label">Field Agents</span>
-                </a>
-            </li>
-            {% endif %}
-        {% endif %}
-
-        <!-- Reports -->
-        {% feature_allowed 'reports.advanced' as reports_allowed %}
-        <li class="has-submenu">
-            {% if reports_allowed %}
-            <a href="javascript:void(0)" class="submenu-toggle">
-                <span class="icon"></span>
-                <span class="label">Reports</span>
-                <span class="arrow">-</span>
+        <li class="{% if request.resolver_match.namespace == 'core_settings' and request.resolver_match.url_name == 'feature_control_tower' %}active{% endif %}">
+            <a class="{% if request.resolver_match.namespace == 'core_settings' and request.resolver_match.url_name == 'feature_control_tower' %}active{% endif %}" href="{% url 'core_settings:feature_control_tower' %}">
+                <span class="label">Feature Control Tower</span>
             </a>
-            <ul class="submenu">
-                <li class="sidebar-item has-submenu">
-                <a href="javascript:void(0)" class="submenu-toggle">
-                <span class="icon"></span>
-                <span class="label">Transactions</span>
-                <span class="arrow">-</span>
-            </a>
-            <ul class="submenu">
-                <li><a href="{% url 'reports:all_transactions' %}">All Transactions</a></li>
-            </ul>
-                <li><a href="{% url 'reports:cash_book' %}">Cash Book</a></li>
-                <li><a href="#">Voucher Report</a></li>
-
-                <li class="submenu-title">Sales & Purchase</li>
-                <li><a href="{% url 'reports:sales_report' %}">Sales Report</a></li>
-                <li><a href="{% url 'reports:purchase_report' %}">Purchase Report</a></li>
-
-                <li class="submenu-title">Inventory</li>
-                <li><a href="{% url 'reports:stock_summary' %}">Stock Summary</a></li>
-                <li><a href="#">Low Stock</a></li>
-
-                <li class="submenu-title">Accounts</li>
-                <li><a href="{% url 'reports:party_ledger' %}">Party Ledger</a></li>
-                <li><a href="#">Outstanding</a></li>
-
-                <li class="submenu-title">Financial</li>
-                <li><a href="{% url 'reports:profit_loss' %}">Profit & Loss</a></li>
-                <li><a href="{% url 'reports:day_book' %}">Day Book</a></li>
-            </ul>
-            {% else %}
-            <a href="{% url 'billing:upgrade_plan' %}" class="submenu-toggle locked-feature" data-upgrade-url="{% url 'billing:upgrade_plan' %}" title="Upgrade to unlock">
-                <span class="icon"></span>
-                <span class="label">Reports</span>
-                <span class="arrow">-</span>
-            </a>
-            {% endif %}
         </li>
-{% if request.user.is_authenticated %}
-    {% feature_allowed 'settings.advanced' as settings_allowed %}
-    <li>
-        {% if settings_allowed %}
-        <a href="{% url 'core_settings:settings_center' %}" class="sidebar-link">
-             Settings
-        </a>
-        {% else %}
-        <a href="{% url 'billing:upgrade_plan' %}" class="sidebar-link locked-feature" data-upgrade-url="{% url 'billing:upgrade_plan' %}" title="Upgrade to unlock">
-             Settings
-        </a>
         {% endif %}
-    <a href="{% url 'core_settings:dashboard' %}" class="sidebar-link">
-        ⚙️ Settings
-    </a>
-    </li>
-{% endif %}
-
     </ul>
 </div>
-
-
-
-

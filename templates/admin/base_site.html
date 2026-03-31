@@ -1,0 +1,17 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block branding %}
+  <h1 id="site-name">
+    <a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a>
+  </h1>
+{% endblock %}
+
+{% block nav-global %}
+  {% if user.is_active and user.is_staff %}
+    <div style="padding: 0 20px 10px;">
+      <a href="/superadmin/core_settings/desktoprelease/desktop-logs/">Desktop Logs</a>
+    </div>
+  {% endif %}
+{% endblock %}
+

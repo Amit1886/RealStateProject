@@ -1,0 +1,92 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}KYC Verification{% endblock %}
+
+{% block content %}
+<div style="padding:24px;background:linear-gradient(180deg,#f8fbff 0%,#eef6ff 100%);">
+  <section style="display:grid;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+      <div>
+        <p style="margin:0 0 6px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#0f766e;font-weight:800;">KYC Verification Center</p>
+        <h1 style="margin:0;font-size:32px;line-height:1.05;color:#0f172a;">Identity and compliance workspace</h1>
+        <p style="margin:8px 0 0;color:#64748b;font-size:13px;">Upload documents, track status, aur admin review queue ek jagah visible hai.</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="{% url 'accounts:edit_profile' %}" style="padding:10px 16px;border-radius:999px;border:1px solid #0f766e;color:#0f766e;text-decoration:none;background:#fff;">Back To Profile</a>
+        <span style="padding:10px 16px;border-radius:999px;background:{% if kyc_profile.status == 'verified' %}#dcfce7{% elif kyc_profile.status == 'pending' %}#fef3c7{% elif kyc_profile.status == 'rejected' %}#fee2e2{% else %}#e2e8f0{% endif %};font-weight:700;">
+          {{ kyc_profile.get_status_display }}
+        </span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,.9fr);gap:16px;">
+      <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;box-shadow:0 16px 34px rgba(15,23,42,.06);">
+        <h3 style="margin:0 0 16px;font-size:24px;color:#0f172a;">Submit / Update KYC</h3>
+        <form method="post" enctype="multipart/form-data" style="display:grid;gap:14px;">
+          {% csrf_token %}
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+            <label style="display:grid;gap:6px;font-size:12px;font-weight:600;color:#334155;">Full Name {{ form.full_name }}</label>
+            <label style="display:grid;gap:6px;font-size:12px;font-weight:600;color:#334155;">PAN {{ form.pan_number }}</label>
+            <label style="display:grid;gap:6px;font-size:12px;font-weight:600;color:#334155;">Aadhaar {{ form.aadhaar_number_masked }}</label>
+            <label style="display:grid;gap:6px;font-size:12px;font-weight:600;color:#334155;">Document Type {{ doc_form.document_type }}</label>
+            <label style="display:grid;gap:6px;font-size:12px;font-weight:600;color:#334155;">Document File {{ doc_form.document_file }}</label>
+            <label style="display:grid;gap:6px;font-size:12px;font-weight:600;color:#334155;">Document Number {{ doc_form.document_number_masked }}</label>
+          </div>
+          <button type="submit" style="width:max-content;padding:12px 18px;border:none;border-radius:999px;background:#0f766e;color:#fff;font-weight:700;">Submit KYC</button>
+        </form>
+      </article>
+
+      <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;box-shadow:0 16px 34px rgba(15,23,42,.06);">
+        <h3 style="margin:0 0 12px;font-size:24px;color:#0f172a;">Profile Snapshot</h3>
+        <div style="display:grid;gap:10px;color:#334155;font-size:13px;">
+          <div><strong>Name:</strong> {{ kyc_profile.full_name|default:request.user.username }}</div>
+          <div><strong>PAN:</strong> {{ kyc_profile.pan_masked|default:"-" }}</div>
+          <div><strong>Aadhaar:</strong> {{ kyc_profile.aadhaar_number_masked|default:"-" }}</div>
+          <div><strong>Submitted:</strong> {{ kyc_profile.last_submitted_at|date:"d M Y H:i"|default:"-" }}</div>
+          <div><strong>Verified:</strong> {{ kyc_profile.verified_at|date:"d M Y H:i"|default:"-" }}</div>
+          {% if kyc_profile.rejection_reason %}<div><strong>Reason:</strong> {{ kyc_profile.rejection_reason }}</div>{% endif %}
+        </div>
+      </article>
+    </div>
+
+    <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;box-shadow:0 16px 34px rgba(15,23,42,.06);">
+      <h3 style="margin:0 0 12px;font-size:24px;color:#0f172a;">Uploaded Documents</h3>
+      {% if documents %}
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Type</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Masked Number</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Status</th><th style="text-align:left;padding-bottom:10px;font-size:11px;color:#64748b;text-transform:uppercase;">Uploaded</th></tr></thead>
+          <tbody>
+            {% for row in documents %}
+              <tr>
+                <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ row.get_document_type_display }}</td>
+                <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ row.document_number_masked|default:"-" }}</td>
+                <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ row.get_status_display }}</td>
+                <td style="padding:12px 0;border-top:1px solid #edf2f7;">{{ row.uploaded_at|date:"d M Y H:i" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div style="padding:14px;border-radius:16px;background:#f8fbff;border:1px dashed #dbe7f5;color:#64748b;">No documents uploaded yet.</div>
+      {% endif %}
+    </article>
+
+    {% if pending_profiles %}
+      <article style="background:#fff;border:1px solid #dbe7f5;border-radius:24px;padding:20px;box-shadow:0 16px 34px rgba(15,23,42,.06);">
+        <h3 style="margin:0 0 12px;font-size:24px;color:#0f172a;">Admin Review Queue</h3>
+        <div style="display:grid;gap:12px;">
+          {% for row in pending_profiles %}
+            <form method="post" action="{% url 'kyc:review_profile' row.id %}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 0;border-top:1px solid #edf2f7;">
+              {% csrf_token %}
+              <strong style="min-width:220px;">{{ row.user.email }}</strong>
+              <span>{{ row.full_name|default:"-" }}</span>
+              <input type="text" name="reason" placeholder="Reason if rejecting" style="min-height:42px;border:1px solid #c7d5e7;border-radius:12px;padding:10px 12px;">
+              <button type="submit" name="action" value="approve" style="padding:10px 14px;border:none;border-radius:999px;background:#0f766e;color:#fff;font-weight:700;">Approve</button>
+              <button type="submit" name="action" value="reject" style="padding:10px 14px;border:1px solid #ef4444;border-radius:999px;background:#fff;color:#ef4444;font-weight:700;">Reject</button>
+            </form>
+          {% endfor %}
+        </div>
+      </article>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

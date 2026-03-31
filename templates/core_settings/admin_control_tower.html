@@ -1,70 +1,377 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="container-fluid" style="padding:24px; background:linear-gradient(135deg,#eef7ff,#fff8ef); min-height:100vh;">
-  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+{% extends "billing/base.html" %}
+{% block billing_content %}
+<div class="feature-tower">
+  <div class="tower-hero">
     <div>
-      <h2 style="margin:0;">Admin Control Tower</h2>
-      <p style="margin:4px 0 0; color:#4b5563;">Plan-based governance for Billing + POS + Quick Commerce</p>
+      <p class="eyebrow">Smart Admin</p>
+      <h1>Feature Control Tower</h1>
+      <p class="subtitle">Manage global feature flags, plan permissions, and user-specific overrides from one place.</p>
     </div>
-    <div style="display:flex; gap:8px;">
-      <a href="{% url 'core_settings:plan_permissions' %}" class="btn btn-primary">Plan Permissions</a>
-      <a href="{% url 'core_settings:user_feature_overrides' %}" class="btn btn-dark">User Overrides</a>
+    <div class="tower-actions">
+      <a class="ghost-btn" href="{% url 'billing:feature_matrix' %}">Open legacy matrix</a>
     </div>
   </div>
 
-  <div class="row" style="margin-top:12px;">
-    <div class="col-md-2 col-6"><div class="card p-3"><div style="font-size:12px;color:#6b7280;">Active Plans</div><div style="font-size:24px;font-weight:700;">{{ metrics.active_plans }}</div></div></div>
-    <div class="col-md-2 col-6"><div class="card p-3"><div style="font-size:12px;color:#6b7280;">Products</div><div style="font-size:24px;font-weight:700;">{{ metrics.total_products }}</div></div></div>
-    <div class="col-md-2 col-6"><div class="card p-3"><div style="font-size:12px;color:#6b7280;">Warehouses</div><div style="font-size:24px;font-weight:700;">{{ metrics.total_warehouses }}</div></div></div>
-    <div class="col-md-2 col-6"><div class="card p-3"><div style="font-size:12px;color:#6b7280;">Low Stock</div><div style="font-size:24px;font-weight:700;">{{ metrics.low_stock_rows }}</div></div></div>
-    <div class="col-md-2 col-6"><div class="card p-3"><div style="font-size:12px;color:#6b7280;">Pending Orders</div><div style="font-size:24px;font-weight:700;">{{ metrics.pending_orders }}</div></div></div>
+  <div class="status-strip">
+    <div class="status-pill">
+      <span>Plan Active</span>
+      <strong>{{ active_plan_count|default:0 }}</strong>
+    </div>
+    <div class="status-pill">
+      <span>User Active</span>
+      <strong>{{ active_user_count|default:0 }}</strong>
+    </div>
+    <div class="status-pill">
+      <span>Registry Active</span>
+      <strong>{{ registry_active_count|default:0 }}</strong>
+    </div>
   </div>
 
-  <div class="card" style="margin-top:14px;">
-    <div class="card-header"><strong>Plan Permission Matrix</strong></div>
-    <div class="card-body" style="overflow:auto;">
-      <table class="table table-bordered" style="min-width:1000px;">
-        <thead>
-          <tr>
-            <th>Plan</th><th>Dashboard</th><th>Commerce</th><th>Warehouse</th><th>Orders</th><th>Inventory</th><th>Analytics</th><th>Settings</th><th>API</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-        {% for plan in plans %}
-          <tr>
-            <td><strong>{{ plan.name }}</strong><br><small>{{ plan.price }}</small></td>
-            <td>{{ plan.permissions.allow_dashboard|yesno:"Yes,No" }}</td>
-            <td>{{ plan.permissions.allow_commerce|yesno:"Yes,No" }}</td>
-            <td>{{ plan.permissions.allow_warehouse|yesno:"Yes,No" }}</td>
-            <td>{{ plan.permissions.allow_orders|yesno:"Yes,No" }}</td>
-            <td>{{ plan.permissions.allow_inventory|yesno:"Yes,No" }}</td>
-            <td>{{ plan.permissions.allow_analytics|yesno:"Yes,No" }}</td>
-            <td>{{ plan.permissions.allow_settings|yesno:"Yes,No" }}</td>
-            <td>{{ plan.permissions.allow_api_access|yesno:"Yes,No" }}</td>
-            <td><a class="btn btn-sm btn-outline-primary" target="_blank" href="/superadmin/billing/planpermissions/{{ plan.permissions.id }}/change/">Edit</a></td>
-          </tr>
+  <div class="focus-strip">
+    <div class="focus-card">
+      <span>Selected Plan</span>
+      <strong>{{ selected_plan.name|default:"No plan selected" }}</strong>
+      <small>{{ selected_plan_enabled_count|default:0 }} enabled, {{ selected_plan_disabled_count|default:0 }} disabled</small>
+      <div class="focus-actions">
+        <a class="focus-btn" href="#planSection">Jump to Plan</a>
+      </div>
+    </div>
+    <div class="focus-card">
+      <span>Selected User</span>
+      <strong>{{ selected_user.email|default:selected_user.username|default:"No user selected" }}</strong>
+      <small>{{ selected_user_enabled_overrides|default:0 }} on, {{ selected_user_disabled_overrides|default:0 }} off, {{ selected_user_inherited_features|default:0 }} inherit</small>
+      <div class="focus-actions">
+        <a class="focus-btn" href="#userSection">Jump to User</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <span>Plans</span>
+      <strong>{{ plans|length }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Users</span>
+      <strong>{{ users|length }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Global Features</span>
+      <strong>{{ all_features|length }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Plan Enabled</span>
+      <strong>{{ selected_plan_enabled_count|default:0 }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Plan Disabled</span>
+      <strong>{{ selected_plan_disabled_count|default:0 }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>User Overrides</span>
+      <strong>{{ selected_user_overrides|length }}</strong>
+    </div>
+  </div>
+
+  <div class="control-grid">
+    <section class="panel" id="planSection">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Global</p>
+          <h2>Feature Registry</h2>
+        </div>
+        <input id="registrySearch" class="search" type="search" placeholder="Search features, groups, labels">
+      </div>
+      <form method="post" class="stack-form" id="registryForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="registry">
+        <div class="panel-toolbar">
+          <button type="button" class="mini-btn" id="registrySelectAll">Select All</button>
+          <button type="button" class="mini-btn" id="registryClearAll">Clear All</button>
+          <button type="submit" class="primary-btn">Save Registry</button>
+        </div>
+        {% for group in feature_groups %}
+          <div class="group-card registry-group">
+            <div class="group-head">
+              <h3>{{ group.name }}</h3>
+              <span>{{ group.items|length }} items</span>
+            </div>
+            <div class="toggle-list">
+              {% for feature in group.items %}
+                <label class="toggle-row search-target">
+                  <div>
+                    <strong>{{ feature.label }}</strong>
+                    <span>{{ feature.key }}</span>
+                  </div>
+                  <input type="checkbox" name="registry_feature" value="{{ feature.id }}" {% if feature.active %}checked{% endif %}>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
         {% empty %}
-          <tr><td colspan="10">No active plans found.</td></tr>
+          <div class="empty-state">No features found. Sync the registry first.</div>
         {% endfor %}
-        </tbody>
-      </table>
-    </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Plan Wise</p>
+          <h2>Plan Permissions</h2>
+        </div>
+        <div class="inline-form">
+          <input id="planSearch" class="search" type="search" placeholder="Search plan">
+          <form method="post" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="plan">
+            <select name="plan_id" class="select" id="planSelect">
+              {% for plan in plans %}
+                <option value="{{ plan.id }}" {% if selected_plan and plan.id == selected_plan.id %}selected{% endif %}>{{ plan.name }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="primary-btn">Save Plan</button>
+          </form>
+        </div>
+      </div>
+
+      {% if selected_plan %}
+        <form method="post" class="stack-form">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="plan">
+          <input type="hidden" name="plan_id" value="{{ selected_plan.id }}">
+          <div class="panel-toolbar">
+            <span class="note">Selected plan: {{ selected_plan.name }}</span>
+            <button type="button" class="mini-btn" id="planEnableAll">Enable Visible</button>
+            <button type="button" class="mini-btn" id="planDisableAll">Disable Visible</button>
+          </div>
+          {% for section in plan_sections %}
+            <div class="group-card plan-section">
+              <div class="group-head">
+                <h3>{{ section.title }}</h3>
+                <span>Plan toggles</span>
+              </div>
+              <div class="toggle-list compact">
+                {% for field in section.fields %}
+                  <label class="toggle-row plan-toggle search-target">
+                    <div>
+                      <strong>{{ field.label }}</strong>
+                      <span>{{ field.name }}</span>
+                    </div>
+                    <input type="checkbox" name="{{ field.name }}" {% if field.value %}checked{% endif %}>
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+          <div class="inline-fields">
+            <label>
+              <span>Max parties</span>
+              <input type="number" name="max_parties" min="0" value="{{ selected_plan_permissions.max_parties|default:0 }}" class="input">
+            </label>
+          </div>
+          <div class="panel-toolbar">
+            <button type="submit" class="primary-btn">Save Plan Permissions</button>
+          </div>
+        </form>
+      {% else %}
+        <div class="empty-state">Create a plan first to edit plan permissions.</div>
+      {% endif %}
+    </section>
   </div>
 
-  <div class="card" style="margin-top:14px;">
-    <div class="card-header"><strong>Latest Unified Orders</strong></div>
-    <div class="card-body" style="overflow:auto;">
-      <table class="table table-striped">
-        <thead><tr><th>Order No</th><th>Type</th><th>Status</th><th>Total</th><th>Created</th></tr></thead>
-        <tbody>
-          {% for o in latest_orders %}
-          <tr><td>{{ o.order_number }}</td><td>{{ o.order_type }}</td><td>{{ o.status }}</td><td>{{ o.total_amount }}</td><td>{{ o.created_at }}</td></tr>
-          {% empty %}
-          <tr><td colspan="5">No orders yet.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <section class="panel full-width" id="userSection">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">User Wise</p>
+          <h2>User Feature Overrides</h2>
+        </div>
+        <div class="inline-form">
+          <input id="userSearch" class="search" type="search" placeholder="Search user">
+          <form method="post" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="user">
+            <select name="user_id" class="select" id="userSelect">
+              {% for user in users %}
+                <option value="{{ user.id }}" {% if selected_user and user.id == selected_user.id %}selected{% endif %}>{{ user.email|default:user.username }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="primary-btn">Save Overrides</button>
+          </form>
+        </div>
+      </div>
+
+    {% if selected_user %}
+      <form method="post" class="stack-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="user">
+        <input type="hidden" name="user_id" value="{{ selected_user.id }}">
+        <div class="panel-toolbar">
+          <span class="note">Selected user: {{ selected_user.email|default:selected_user.username }}</span>
+        </div>
+        <div class="summary-grid" style="margin-bottom:10px;">
+          <div class="summary-card">
+            <span>Override On</span>
+            <strong>{{ selected_user_enabled_overrides|default:0 }}</strong>
+          </div>
+          <div class="summary-card">
+            <span>Override Off</span>
+            <strong>{{ selected_user_disabled_overrides|default:0 }}</strong>
+          </div>
+          <div class="summary-card">
+            <span>Inherit</span>
+            <strong>{{ selected_user_inherited_features|default:0 }}</strong>
+          </div>
+        </div>
+        {% for group in feature_groups %}
+          <div class="group-card">
+            <div class="group-head">
+              <h3>{{ group.name }}</h3>
+              <span>Override mode: Inherit / On / Off</span>
+            </div>
+            <div class="toggle-list">
+              {% for feature in group.items %}
+                <div class="override-row search-target">
+                  <div class="override-copy">
+                    <strong>{{ feature.label }}</strong>
+                    <span>{{ feature.key }}</span>
+                  </div>
+                  <select name="override_{{ feature.id }}" class="select select-sm">
+                    <option value="inherit" {% if feature.mode == "inherit" %}selected{% endif %}>Inherit</option>
+                    <option value="enabled" {% if feature.mode == "enabled" %}selected{% endif %}>Force On</option>
+                    <option value="disabled" {% if feature.mode == "disabled" %}selected{% endif %}>Force Off</option>
+                  </select>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+        <div class="panel-toolbar">
+          <button type="submit" class="primary-btn">Save User Overrides</button>
+        </div>
+      </form>
+    {% else %}
+      <div class="empty-state">No active users found.</div>
+    {% endif %}
+  </section>
 </div>
+
+<style>
+  .feature-tower { display:grid; gap:20px; }
+  .tower-hero { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:24px; border-radius:24px; color:#fff; background:linear-gradient(135deg,#0f172a,#0f766e 55%,#2563eb); box-shadow:0 20px 60px rgba(15,23,42,.28); }
+  .tower-hero h1 { margin:4px 0 6px; font-size:32px; }
+  .subtitle { margin:0; max-width:760px; color:rgba(255,255,255,.84); }
+  .eyebrow { margin:0; text-transform:uppercase; letter-spacing:.12em; font-size:11px; font-weight:700; color:rgba(255,255,255,.72); }
+  .tower-actions { display:flex; gap:10px; }
+  .ghost-btn, .primary-btn, .mini-btn { border:none; border-radius:999px; padding:10px 16px; font-weight:700; text-decoration:none; }
+  .ghost-btn { background:rgba(255,255,255,.12); color:#fff; }
+  .primary-btn { background:#0f766e; color:#fff; }
+  .mini-btn { background:#e2e8f0; color:#0f172a; padding:8px 12px; }
+  .summary-grid, .control-grid { display:grid; gap:18px; }
+  .status-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+  .status-pill { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:14px 16px; border-radius:16px; background:#0f172a; color:#fff; box-shadow:0 10px 30px rgba(15,23,42,.12); }
+  .status-pill span { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.72); }
+  .status-pill strong { font-size:24px; line-height:1; }
+  .focus-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; }
+  .focus-card { padding:16px 18px; border-radius:18px; border:1px solid #dbeafe; background:linear-gradient(180deg,#eff6ff,#ffffff); box-shadow:0 10px 30px rgba(59,130,246,.08); }
+  .focus-card span { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:#2563eb; font-weight:700; }
+  .focus-card strong { display:block; margin:6px 0 4px; color:#0f172a; font-size:18px; }
+  .focus-card small { color:#64748b; font-size:12px; }
+  .focus-actions { margin-top:10px; display:flex; gap:8px; }
+  .focus-btn { display:inline-flex; align-items:center; justify-content:center; padding:8px 12px; border-radius:999px; background:#0f766e; color:#fff; text-decoration:none; font-size:12px; font-weight:700; }
+  .focus-btn:hover { color:#fff; background:#115e59; }
+  .summary-grid { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
+  .summary-card, .panel, .group-card { background:#fff; border:1px solid #e2e8f0; border-radius:20px; box-shadow:0 10px 30px rgba(15,23,42,.05); }
+  .summary-card { padding:18px 20px; }
+  .summary-card span, .group-head span, .toggle-row span, .override-copy span, .note { color:#64748b; font-size:12px; }
+  .summary-card strong { display:block; margin-top:4px; font-size:28px; color:#0f172a; }
+  .control-grid { grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); }
+  .panel { padding:18px; }
+  .full-width { padding:20px; }
+  .panel-head { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+  .panel-head h2 { margin:4px 0 0; font-size:24px; color:#0f172a; }
+  .search, .select, .input { border:1px solid #cbd5e1; border-radius:14px; padding:10px 14px; font-size:14px; background:#fff; }
+  .inline-form { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .stack-form { display:grid; gap:14px; }
+  .panel-toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:4px; }
+  .group-card { padding:16px; }
+  .group-head { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:12px; }
+  .group-head h3 { margin:0; font-size:16px; color:#0f172a; }
+  .toggle-list { display:grid; gap:10px; }
+  .toggle-list.compact { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+  .toggle-row, .override-row { display:flex; justify-content:space-between; align-items:center; gap:16px; border:1px solid #e2e8f0; border-radius:16px; padding:12px 14px; background:#f8fafc; }
+  .toggle-row strong, .override-row strong { display:block; color:#0f172a; }
+  .override-row { display:grid; grid-template-columns:1fr auto; align-items:center; }
+  .select-sm { min-width:170px; }
+  .inline-fields { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+  .inline-fields label { display:grid; gap:8px; }
+  .empty-state { padding:24px; border:1px dashed #cbd5e1; border-radius:18px; color:#64748b; text-align:center; background:#f8fafc; }
+  .search-target { transition:opacity .2s ease, transform .2s ease; }
+  @media (max-width: 768px) {
+    .tower-hero { flex-direction:column; }
+    .control-grid { grid-template-columns:1fr; }
+    .override-row { grid-template-columns:1fr; }
+  }
+</style>
+
+<script>
+  const registrySearch = document.getElementById("registrySearch");
+  const registrySelectAll = document.getElementById("registrySelectAll");
+  const registryClearAll = document.getElementById("registryClearAll");
+
+  if (registrySearch) {
+    registrySearch.addEventListener("input", () => {
+      const term = registrySearch.value.toLowerCase();
+      document.querySelectorAll(".search-target").forEach((row) => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(term) ? "" : "none";
+      });
+    });
+  }
+
+  if (registrySelectAll) {
+    registrySelectAll.addEventListener("click", () => {
+      document.querySelectorAll('input[name="registry_feature"]').forEach((box) => box.checked = true);
+    });
+  }
+
+  if (registryClearAll) {
+    registryClearAll.addEventListener("click", () => {
+      document.querySelectorAll('input[name="registry_feature"]').forEach((box) => box.checked = false);
+    });
+  }
+
+  const planEnableAll = document.getElementById("planEnableAll");
+  const planDisableAll = document.getElementById("planDisableAll");
+  if (planEnableAll) {
+    planEnableAll.addEventListener("click", () => {
+      document.querySelectorAll(".plan-toggle input[type='checkbox']").forEach((box) => box.checked = true);
+    });
+  }
+  if (planDisableAll) {
+    planDisableAll.addEventListener("click", () => {
+      document.querySelectorAll(".plan-toggle input[type='checkbox']").forEach((box) => box.checked = false);
+    });
+  }
+
+  function filterSelectOptions(selectId, term) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    const q = (term || "").toLowerCase().trim();
+    Array.from(select.options).forEach((option) => {
+      const matches = !q || option.textContent.toLowerCase().includes(q) || option.selected;
+      option.hidden = !matches;
+    });
+  }
+
+  const planSearch = document.getElementById("planSearch");
+  if (planSearch) {
+    planSearch.addEventListener("input", () => filterSelectOptions("planSelect", planSearch.value));
+  }
+
+  const userSearch = document.getElementById("userSearch");
+  if (userSearch) {
+    userSearch.addEventListener("input", () => filterSelectOptions("userSelect", userSearch.value));
+  }
+</script>
 {% endblock %}
