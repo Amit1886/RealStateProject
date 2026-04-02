@@ -108,6 +108,7 @@ _base_url_l = (BASE_URL or "").strip().lower()
 IS_LOCAL_BASE_URL = _base_url_l.startswith(("http://localhost", "https://localhost", "http://127.0.0.1", "https://127.0.0.1"))
 # Serve static/media via Django only for local/dev + Desktop builds.
 SERVE_STATICFILES = bool(DEBUG or DESKTOP_MODE or RUNNING_RUNSERVER or IS_LOCAL_BASE_URL or _SERVE_STATICFILES_ENV)
+LIGHTWEIGHT_DEPLOYMENT = os.getenv("LIGHTWEIGHT_DEPLOYMENT", "False").strip().lower() in {"1", "true", "yes", "on"}
 CELERY_BROKER_URL_ENV = (os.getenv("CELERY_BROKER_URL") or "").strip()
 CELERY_RESULT_BACKEND_ENV = (os.getenv("CELERY_RESULT_BACKEND") or "").strip()
 REDIS_URL = os.getenv("REDIS_URL", "").strip()
@@ -154,12 +155,12 @@ AGENT_PAYOUT_RATE = os.getenv("AGENT_PAYOUT_RATE", "0.10")
 
 # ---------------- APPLICATIONS ----------------
 INSTALLED_APPS = [
-    "jazzmin",
+    *([] if LIGHTWEIGHT_DEPLOYMENT else ["jazzmin"]),
 
     # Django Core
     # Daphne provides ASGI `runserver`. In desktop mode we prefer the built-in
     # Django runserver (WSGI) for maximum PyInstaller reliability.
-    *([] if DESKTOP_MODE else ["daphne"]),
+    *([] if (DESKTOP_MODE or LIGHTWEIGHT_DEPLOYMENT) else ["daphne"]),
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -172,7 +173,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
+    *([] if LIGHTWEIGHT_DEPLOYMENT else ["allauth.socialaccount.providers.google"]),
 
     # Platform Stack
     "rest_framework",
@@ -181,7 +182,7 @@ INSTALLED_APPS = [
     "django_filters",
     # Channels is used for WebSocket features on the cloud/server deployment.
     # Desktop runs without Daphne/ASGI, so channels is optional there.
-    *([] if DESKTOP_MODE else ["channels"]),
+    *([] if (DESKTOP_MODE or LIGHTWEIGHT_DEPLOYMENT) else ["channels"]),
 
     # Custom Apps
     # "reports.apps.ReportsConfig",  # disabled for real-estate build
@@ -287,7 +288,7 @@ MIDDLEWARE = [
     # WhiteNoise is useful in cloud/prod deployments for static files.
     # In desktop/local runserver mode, we serve static directly and avoid
     # relying on optional packaged dependencies.
-    *([] if (DESKTOP_MODE or RUNNING_RUNSERVER) else ["whitenoise.middleware.WhiteNoiseMiddleware"]),
+    *([] if (DESKTOP_MODE or RUNNING_RUNSERVER or LIGHTWEIGHT_DEPLOYMENT) else ["whitenoise.middleware.WhiteNoiseMiddleware"]),
 
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -399,7 +400,7 @@ if CHANNEL_REDIS_URL and _CHANNEL_REDIS_REACHABLE:
         }
     }
 else:
-    CHANNEL_LAYERS = {
+    CHANNEL_LAYERS = {} if LIGHTWEIGHT_DEPLOYMENT else {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
         }
