@@ -1,11 +1,26 @@
 from __future__ import annotations
 
-from celery import shared_task
 from django.contrib.auth import get_user_model
 
 from rewards.services import award_daily_login_reward, award_lead_conversion_reward, award_signup_bonus, ensure_default_reward_rules, process_referral_for_user
 
 User = get_user_model()
+
+try:
+    from celery import shared_task
+except ImportError:  # pragma: no cover - PythonAnywhere lightweight deploy fallback
+    def shared_task(func=None, **kwargs):
+        if func is None:
+            def decorator(inner):
+                inner.delay = inner
+                inner.run = inner
+                return inner
+
+            return decorator
+
+        func.delay = func
+        func.run = func
+        return func
 
 
 @shared_task
