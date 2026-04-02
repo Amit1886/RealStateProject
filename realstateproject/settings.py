@@ -453,7 +453,7 @@ STORAGES = {
     "staticfiles": {
         "BACKEND": (
             "django.contrib.staticfiles.storage.StaticFilesStorage"
-            if (DEBUG or DESKTOP_MODE or RUNNING_RUNSERVER or RUNNING_TESTS)
+            if (DEBUG or DESKTOP_MODE or RUNNING_RUNSERVER or RUNNING_TESTS or LIGHTWEIGHT_DEPLOYMENT)
             else "whitenoise.storage.CompressedManifestStaticFilesStorage"
         )
     },
@@ -466,11 +466,8 @@ GOOGLE_SMS_API_KEY = (os.getenv("GOOGLE_SMS_API_KEY") or "").strip()
 GOOGLE_SMS_SENDER_ID = (os.getenv("GOOGLE_SMS_SENDER_ID") or "").strip()
 GOOGLE_SMS_API_URL = (os.getenv("GOOGLE_SMS_API_URL") or "").strip()
 
-# Back-compat for older Django/settings usage.
-STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
-
 # For desktop/offline-first builds (DEBUG=False) and local runserver, still serve static via finders.
-WHITENOISE_USE_FINDERS = bool(DEBUG or DESKTOP_MODE or RUNNING_RUNSERVER)
+WHITENOISE_USE_FINDERS = bool(DEBUG or DESKTOP_MODE or RUNNING_RUNSERVER or LIGHTWEIGHT_DEPLOYMENT)
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = DESKTOP_DATA_DIR / "media"
