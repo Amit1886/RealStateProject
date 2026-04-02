@@ -1,4 +1,5 @@
 import os
+import importlib.util
 import socket
 import sys
 from datetime import timedelta
@@ -109,6 +110,17 @@ IS_LOCAL_BASE_URL = _base_url_l.startswith(("http://localhost", "https://localho
 # Serve static/media via Django only for local/dev + Desktop builds.
 SERVE_STATICFILES = bool(DEBUG or DESKTOP_MODE or RUNNING_RUNSERVER or IS_LOCAL_BASE_URL or _SERVE_STATICFILES_ENV)
 LIGHTWEIGHT_DEPLOYMENT = os.getenv("LIGHTWEIGHT_DEPLOYMENT", "False").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _module_available(module_name: str) -> bool:
+    return importlib.util.find_spec(module_name) is not None
+
+
+HAS_JAZZMIN = _module_available("jazzmin")
+HAS_DAPHNE = _module_available("daphne")
+HAS_CHANNELS = _module_available("channels")
+HAS_WHITENOISE = _module_available("whitenoise")
+HAS_GOOGLE_PROVIDER = _module_available("allauth.socialaccount.providers.google")
 CELERY_BROKER_URL_ENV = (os.getenv("CELERY_BROKER_URL") or "").strip()
 CELERY_RESULT_BACKEND_ENV = (os.getenv("CELERY_RESULT_BACKEND") or "").strip()
 REDIS_URL = os.getenv("REDIS_URL", "").strip()
@@ -155,12 +167,12 @@ AGENT_PAYOUT_RATE = os.getenv("AGENT_PAYOUT_RATE", "0.10")
 
 # ---------------- APPLICATIONS ----------------
 INSTALLED_APPS = [
-    *([] if LIGHTWEIGHT_DEPLOYMENT else ["jazzmin"]),
+    *([] if (LIGHTWEIGHT_DEPLOYMENT or not HAS_JAZZMIN) else ["jazzmin"]),
 
     # Django Core
     # Daphne provides ASGI `runserver`. In desktop mode we prefer the built-in
     # Django runserver (WSGI) for maximum PyInstaller reliability.
-    *([] if (DESKTOP_MODE or LIGHTWEIGHT_DEPLOYMENT) else ["daphne"]),
+    *([] if (DESKTOP_MODE or LIGHTWEIGHT_DEPLOYMENT or not HAS_DAPHNE) else ["daphne"]),
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -173,7 +185,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    *([] if LIGHTWEIGHT_DEPLOYMENT else ["allauth.socialaccount.providers.google"]),
+    *([] if (LIGHTWEIGHT_DEPLOYMENT or not HAS_GOOGLE_PROVIDER) else ["allauth.socialaccount.providers.google"]),
 
     # Platform Stack
     "rest_framework",
@@ -182,7 +194,7 @@ INSTALLED_APPS = [
     "django_filters",
     # Channels is used for WebSocket features on the cloud/server deployment.
     # Desktop runs without Daphne/ASGI, so channels is optional there.
-    *([] if (DESKTOP_MODE or LIGHTWEIGHT_DEPLOYMENT) else ["channels"]),
+    *([] if (DESKTOP_MODE or LIGHTWEIGHT_DEPLOYMENT or not HAS_CHANNELS) else ["channels"]),
 
     # Custom Apps
     # "reports.apps.ReportsConfig",  # disabled for real-estate build
@@ -453,7 +465,7 @@ STORAGES = {
     "staticfiles": {
         "BACKEND": (
             "django.contrib.staticfiles.storage.StaticFilesStorage"
-            if (DEBUG or DESKTOP_MODE or RUNNING_RUNSERVER or RUNNING_TESTS or LIGHTWEIGHT_DEPLOYMENT)
+            if (DEBUG or DESKTOP_MODE or RUNNING_RUNSERVER or RUNNING_TESTS or LIGHTWEIGHT_DEPLOYMENT or not HAS_WHITENOISE)
             else "whitenoise.storage.CompressedManifestStaticFilesStorage"
         )
     },
@@ -467,7 +479,7 @@ GOOGLE_SMS_SENDER_ID = (os.getenv("GOOGLE_SMS_SENDER_ID") or "").strip()
 GOOGLE_SMS_API_URL = (os.getenv("GOOGLE_SMS_API_URL") or "").strip()
 
 # For desktop/offline-first builds (DEBUG=False) and local runserver, still serve static via finders.
-WHITENOISE_USE_FINDERS = bool(DEBUG or DESKTOP_MODE or RUNNING_RUNSERVER or LIGHTWEIGHT_DEPLOYMENT)
+WHITENOISE_USE_FINDERS = bool(DEBUG or DESKTOP_MODE or RUNNING_RUNSERVER or LIGHTWEIGHT_DEPLOYMENT or not HAS_WHITENOISE)
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = DESKTOP_DATA_DIR / "media"
