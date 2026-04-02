@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from celery import shared_task
 from django.utils import timezone
 
 from intelligence.models import InvestorMatch, PremiumLeadListing, PropertyImportBatch
@@ -13,6 +12,23 @@ from intelligence.services import (
     run_import_batch,
 )
 from leads.models import Property, PropertyProject
+
+
+try:
+    from celery import shared_task
+except ImportError:  # pragma: no cover - lightweight deployment fallback
+    def shared_task(func=None, **kwargs):
+        if func is None:
+            def decorator(inner):
+                inner.delay = inner
+                inner.run = inner
+                return inner
+
+            return decorator
+
+        func.delay = func
+        func.run = func
+        return func
 
 
 @shared_task
