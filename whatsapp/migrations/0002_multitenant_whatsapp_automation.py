@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("whatsapp", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("khataapp", "0001_initial"),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
@@ -162,7 +162,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
                         related_name="whatsapp_customers",
-                        to="khataapp.party",
+                        to="accounts.userprofile",
                     ),
                 ),
                 (
@@ -467,4 +467,3 @@ class Migration(migrations.Migration):
             index=models.Index(fields=["provider_message_id"], name="wa_msg_provider_id_idx"),
         ),
     ]
-

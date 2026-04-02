@@ -8,7 +8,7 @@ from .models import SMSLog, SMSTemplate
 
 
 def _get_company_settings():
-    from khataapp.models import CompanySettings
+    from core_settings.models import CompanySettings
 
     cs = CompanySettings.objects.first()
     if cs is None:

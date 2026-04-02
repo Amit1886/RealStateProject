@@ -15,7 +15,7 @@ from core_settings.services import (
     build_ai_hints,
     get_status_cards,
 )
-from khataapp.models import UserProfile
+from accounts.models import UserProfile
 from billing.models import Plan, PlanPermissions
 from billing.models import FeatureRegistry, UserFeatureOverride
 from django.contrib.auth import get_user_model

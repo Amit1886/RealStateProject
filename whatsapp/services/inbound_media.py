@@ -144,7 +144,7 @@ def handle_inbound_media_message(
     # Supplier invoice automation (image/pdf)
     if typ in {"image", "document"} and _is_supplier(customer):
         try:
-            from khataapp.models import Party
+            from accounts.models import UserProfile as Party
 
             supplier = customer.party if customer.party_id else None
             if not supplier or getattr(supplier, "party_type", "") != "supplier":

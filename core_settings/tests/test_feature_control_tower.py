@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from billing.models import FeatureRegistry, Plan, UserFeatureOverride
-from khataapp.models import UserProfile
+from accounts.models import UserProfile
 
 
 class FeatureControlTowerTests(TestCase):

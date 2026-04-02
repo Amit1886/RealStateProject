@@ -50,7 +50,7 @@ def render_sms_template(text: str, context: Dict[str, Any]) -> str:
 
 def _get_company_auto_sms_enabled() -> bool:
     try:
-        from khataapp.models import CompanySettings
+        from core_settings.models import CompanySettings
 
         cs = CompanySettings.objects.first()
         if cs is None:

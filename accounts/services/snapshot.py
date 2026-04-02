@@ -5,8 +5,7 @@ from django.db.models import DecimalField, F, Sum
 from django.db.utils import OperationalError, ProgrammingError
 from django.utils.timezone import now
 
-from accounts.models import BusinessSnapshot
-from khataapp.models import Transaction, Party
+from accounts.models import BusinessSnapshot, LedgerEntry as Transaction, UserProfile as Party
 
 # Commerce module is optional in the real-estate build; guard imports to keep
 # dashboard working even when commerce is disabled.
@@ -119,8 +118,8 @@ def build_business_snapshot(user, date=None, refresh=False):
     snapshot.net_position = snapshot.receivable_amount - snapshot.payable_amount
 
     # Counts (KhataApp is enabled in this build)
-    snapshot.total_parties = Party.objects.filter(owner=user).count()
-    snapshot.total_transactions = Transaction.objects.filter(party__owner=user, date=date).count()
+    snapshot.total_parties = Party.objects.filter(user=user).count()
+    snapshot.total_transactions = Transaction.objects.filter(party__user=user, date=date).count()
 
     snapshot.save()
     cache.set(cache_key, snapshot, 120)

@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('commerce', '0013_order_bill_sundry'),
-        ('khataapp', '0007_offlinemessage_recipient_mobile_and_more'),
+        ('accounts', '0001_initial'),
         ('ledger', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]

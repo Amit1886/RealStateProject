@@ -11,7 +11,7 @@ try:
     from xhtml2pdf import pisa
 except ImportError:
     pisa = None
-from khataapp.models import Transaction
+from accounts.models import LedgerEntry as Transaction
 from django.utils import timezone
 from django.db.models import Sum
 from accounts.models import DailySummary

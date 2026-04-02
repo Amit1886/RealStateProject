@@ -12,7 +12,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ("accounts", "0001_initial"),
         ("billing", "0001_initial"),
-        ("khataapp", "0001_initial"),
     ]
 
     operations = [
@@ -24,7 +23,7 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="ledger_entries",
-                to="khataapp.creditaccount",
+                to="accounts.userprofile",
             ),
         ),
         migrations.AddField(
@@ -33,7 +32,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="ledger_entries",
-                to="khataapp.party",
+                to="accounts.userprofile",
             ),
         ),
         migrations.AddField(

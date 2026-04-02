@@ -8,7 +8,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.utils import timezone
 
-from khataapp.models import UserProfile as KhataProfile
+from accounts.models import UserProfile as KhataProfile
 from wallet.models import (
     Wallet,
     WalletAccount,
@@ -68,12 +68,16 @@ def sync_profile_payment_accounts(user):
     profile = KhataProfile.objects.filter(user=user).first()
     wallet = get_or_create_wallet(user)
     created_accounts = []
-    if profile and profile.upi_id:
+    upi_id = (getattr(profile, "upi_id", "") or "").strip() if profile else ""
+    bank_name = (getattr(profile, "bank_name", "") or "").strip() if profile else ""
+    account_number = (getattr(profile, "account_number", "") or "").strip() if profile else ""
+    ifsc_code = (getattr(profile, "ifsc_code", "") or "").strip() if profile else ""
+    if upi_id:
         account, created = _find_or_create_synced_account(
             user=user,
             wallet=wallet,
             account_type=WalletAccount.AccountType.UPI,
-            upi_id=profile.upi_id,
+            upi_id=upi_id,
             defaults={
                 "label": "Primary UPI",
                 "beneficiary_name": profile.full_name or user.get_full_name() or user.username or user.email,
@@ -83,17 +87,17 @@ def sync_profile_payment_accounts(user):
         )
         if created:
             created_accounts.append(account)
-    if profile and profile.account_number:
+    if account_number:
         account, created = _find_or_create_synced_account(
             user=user,
             wallet=wallet,
             account_type=WalletAccount.AccountType.BANK,
-            account_number=profile.account_number,
-            ifsc_code=profile.ifsc_code,
+            account_number=account_number,
+            ifsc_code=ifsc_code,
             defaults={
-                "label": profile.bank_name or "Primary Bank",
+                "label": bank_name or "Primary Bank",
                 "beneficiary_name": profile.full_name or user.get_full_name() or user.username or user.email,
-                "bank_name": profile.bank_name or "",
+                "bank_name": bank_name or "",
                 "status": WalletAccount.Status.VERIFIED,
                 "is_default": not WalletAccount.objects.filter(user=user, account_type=WalletAccount.AccountType.BANK).exists(),
             },

@@ -56,7 +56,7 @@ def build_receipt_context(
     # Example reference_type: "khataapp.Transaction"
     if reference_type == "khataapp.Transaction":
         try:
-            from khataapp.models import Transaction  # local import
+            from accounts.models import LedgerEntry as Transaction  # local import
 
             t = (
                 Transaction.objects.select_related("party")

@@ -134,7 +134,7 @@ def whatsapp_control_center(request):
 
         if action == "update_quick" and selected:
             try:
-                from khataapp.models import FieldAgent
+                from agents.models import Agent as FieldAgent
 
                 selected.quick_commerce_enabled = bool(request.POST.get("quick_commerce_enabled"))
                 selected.quick_delivery_radius_km = Decimal(str(request.POST.get("quick_delivery_radius_km") or "0") or "0")
@@ -630,7 +630,7 @@ def whatsapp_control_center(request):
             if flow_id:
                 edit_flow = BotFlow.objects.filter(bot=bot, id=flow_id).first()
         try:
-            from khataapp.models import FieldAgent
+            from agents.models import Agent as FieldAgent
 
             field_agents = list(FieldAgent.objects.filter(owner=request.user, is_active=True).select_related("user").order_by("user__username")[:200])
         except Exception:

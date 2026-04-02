@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         ("procurement", "0002_rename_procurement_owner_i_4d1a75_idx_procurement_owner_i_0e8034_idx_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("commerce", "0025_order_festival_campaign_and_more"),
-        ("khataapp", "0011_business_growth_engine"),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
@@ -169,7 +169,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
                         related_name="purchase_drafts",
-                        to="khataapp.party",
+                        to="accounts.userprofile",
                     ),
                 ),
             ],
@@ -237,7 +237,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="purchase_invoices",
-                        to="khataapp.party",
+                        to="accounts.userprofile",
                     ),
                 ),
             ],
@@ -273,7 +273,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="api_connections",
-                        to="khataapp.party",
+                        to="accounts.userprofile",
                     ),
                 ),
             ],
@@ -318,7 +318,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="product_aliases",
-                        to="khataapp.party",
+                        to="accounts.userprofile",
                     ),
                 ),
             ],
@@ -354,7 +354,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="invoice_templates",
-                        to="khataapp.party",
+                        to="accounts.userprofile",
                     ),
                 ),
             ],
@@ -459,4 +459,3 @@ class Migration(migrations.Migration):
             constraint=models.UniqueConstraint(fields=("owner", "supplier", "normalized_name"), name="uniq_owner_supplier_alias"),
         ),
     ]
-

@@ -6,9 +6,6 @@ from django.urls import reverse
 from django.contrib.auth.models import Group
 from django.utils.text import slugify
 from decimal import Decimal
-from khataapp.models import Party
-
-
 # ====
 # 🎛 FEATURE TOGGLE MODEL
 # ====
@@ -482,7 +479,7 @@ class Payment(models.Model):
     ]
 
     order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='billing_payments', null=True, blank=True)
-    party = models.ForeignKey(Party, on_delete=models.CASCADE, related_name="payments")  # ADD THIS FIELD
+    party = models.ForeignKey("accounts.UserProfile", on_delete=models.CASCADE, related_name="payments")
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=100, default='Cash')
     transaction_id = models.CharField(max_length=255, blank=True, null=True)

@@ -9,7 +9,7 @@ from django.db.models import Sum
 from django.db.models import Avg
 from django.utils import timezone
 
-from khataapp.models import Transaction
+from accounts.models import LedgerEntry as Transaction
 from ledger.models import StockLedger
 
 

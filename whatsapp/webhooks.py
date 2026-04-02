@@ -14,7 +14,7 @@ from django.conf import settings
 
 DISABLE_CELERY = getattr(settings, "DISABLE_CELERY", True)
 try:
-    from khataapp.models import Party
+    from accounts.models import UserProfile as Party
 except Exception:
     Party = None
 from whatsapp.models import Customer, WhatsAppAccount, WhatsAppMessage

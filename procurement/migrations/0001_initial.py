@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("commerce", "0024_product_image"),
-        ("khataapp", "0009_companysettings_auto_sms_send"),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="price_alerts",
-                        to="khataapp.party",
+                        to="accounts.userprofile",
                     ),
                 ),
             ],
@@ -92,7 +92,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="price_history",
-                        to="khataapp.party",
+                        to="accounts.userprofile",
                     ),
                 ),
                 (
@@ -147,7 +147,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="supplier_products",
-                        to="khataapp.party",
+                        to="accounts.userprofile",
                     ),
                 ),
             ],
@@ -212,7 +212,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="ratings",
-                        to="khataapp.party",
+                        to="accounts.userprofile",
                     ),
                 ),
             ],

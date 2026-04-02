@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 from billing.models import Plan, PlanFeature, FeatureRegistry
 from billing.services import sync_feature_registry, upgrade_subscription
 from billing.models import PlanPermissions, UserFeatureOverride
-from khataapp.models import UserProfile as KhataUserProfile
+from accounts.models import UserProfile as KhataUserProfile
 
 User = get_user_model()
 

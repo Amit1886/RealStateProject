@@ -14,8 +14,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ("accounts", "0001_initial"),
         ("commerce", "0013_order_bill_sundry"),
-        ("khataapp", "0007_offlinemessage_recipient_mobile_and_more"),
     ]
 
     operations = [
@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("owner", models.ForeignKey(db_index=True, on_delete=django.db.models.deletion.CASCADE, related_name="gl_accounts", to=settings.AUTH_USER_MODEL)),
-                ("party", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name="gl_accounts", to="khataapp.party")),
+                ("party", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name="gl_accounts", to="accounts.userprofile")),
             ],
             options={
                 "ordering": ["code"],
@@ -166,7 +166,7 @@ class Migration(migrations.Migration):
                 ("debit", models.DecimalField(decimal_places=2, default=decimal.Decimal("0.00"), max_digits=14)),
                 ("credit", models.DecimalField(decimal_places=2, default=decimal.Decimal("0.00"), max_digits=14)),
                 ("account", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name="journal_lines", to="ledger.ledgeraccount")),
-                ("party", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name="journal_lines", to="khataapp.party")),
+                ("party", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name="journal_lines", to="accounts.userprofile")),
                 ("voucher", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="lines", to="ledger.journalvoucher")),
             ],
             options={
@@ -188,7 +188,7 @@ class Migration(migrations.Migration):
                 ("credit", models.DecimalField(decimal_places=2, default=decimal.Decimal("0.00"), max_digits=14)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("account", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name="entries", to="ledger.ledgeraccount")),
-                ("party", models.ForeignKey(blank=True, help_text="Optional party sub-ledger for this line.", null=True, on_delete=django.db.models.deletion.PROTECT, related_name="gl_entries", to="khataapp.party")),
+                ("party", models.ForeignKey(blank=True, help_text="Optional party sub-ledger for this line.", null=True, on_delete=django.db.models.deletion.PROTECT, related_name="gl_entries", to="accounts.userprofile")),
                 ("transaction", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="entries", to="ledger.ledgertransaction")),
             ],
             options={

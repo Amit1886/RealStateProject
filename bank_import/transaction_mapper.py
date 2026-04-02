@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from accounts.models import Expense, ExpenseCategory
 from bank_import.statement_parser import BankTxn
-from khataapp.models import Party, Transaction as KhataTransaction
+from accounts.models import LedgerEntry as KhataTransaction, UserProfile as Party
 
 
 @dataclass(frozen=True)

@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("whatsapp", "0002_multitenant_whatsapp_automation"),
-        ("khataapp", "0001_initial"),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name="whatsapp_quick_accounts",
-                to="khataapp.fieldagent",
+                to="agents.agent",
             ),
         ),
         migrations.AddField(
@@ -98,4 +98,3 @@ class Migration(migrations.Migration):
             },
         ),
     ]
-

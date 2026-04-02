@@ -9,7 +9,7 @@ django.setup()
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from khataapp.models import Party, Transaction
+from accounts.models import LedgerEntry as Transaction, UserProfile as Party
 
 User = get_user_model()
 user = User.objects.get(username='Demotest3')

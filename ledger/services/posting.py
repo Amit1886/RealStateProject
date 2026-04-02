@@ -606,7 +606,7 @@ def post_payment(payment_id: int) -> None:
 
 
 def post_khata_transaction(txn_id: int) -> None:
-    from khataapp.models import Transaction as KhataTxn
+    from accounts.models import LedgerEntry as KhataTxn
 
     txn = (
         KhataTxn.objects.select_related("party")

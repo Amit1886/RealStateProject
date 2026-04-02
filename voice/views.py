@@ -60,7 +60,7 @@ def _redirect_for_reference(reference_type: str, reference_id: int | None) -> st
         if reference_type == "accounts.Expense":
             return reverse("accounts:expense_list")
         if reference_type == "khataapp.Transaction":
-            return reverse("khataapp:transaction_view", kwargs={"id": reference_id})
+            return reverse("accounts:expense_list")
     except Exception:
         return ""
     return ""

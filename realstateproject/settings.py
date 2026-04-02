@@ -189,7 +189,6 @@ INSTALLED_APPS = [
     "solo",
     "mathfilters",
     "accounts.apps.AccountsConfig",
-    "khataapp.apps.KhataappConfig",
     "core_settings",
     "sms_center.apps.SMSCenterConfig",
     "mobileapi",
@@ -233,7 +232,6 @@ INSTALLED_APPS = [
     "saas_core",
     "deals.apps.DealsConfig",
     "addons.group_plan_permissions",
-    "addons.testing_access",
     "addons.plan_feature_sync",
     "whatsapp_gateway",
     "location.apps.LocationConfig",
@@ -597,7 +595,7 @@ JAZZMIN_SETTINGS = {
     "search_model": "accounts.User",
     "show_sidebar": True,
     "navigation_expanded": True,
-    "order_with_respect_to": ["accounts", "khataapp", "core_settings", "mobileapi", "chatbot"],
+    "order_with_respect_to": ["accounts", "core_settings", "mobileapi", "chatbot"],
     "topmenu_links": [
         {
             "name": "Desktop Logs",
@@ -636,7 +634,6 @@ JAZZMIN_SETTINGS = {
         "reports",
         "realtime",
         "commission",
-        "payments",
         # "accounts",
         "core_settings",  # hide noisy config models
         "smart_bi",

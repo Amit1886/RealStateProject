@@ -17,7 +17,7 @@ from django.contrib.staticfiles.views import serve as staticfiles_serve
 from django.urls import reverse, NoReverseMatch
 from django.urls import path, include
 
-# Fallback upgrade redirect for disabled modules (commerce/khataapp/etc.)
+# Fallback upgrade redirect for disabled modules (commerce/etc.)
 def upgrade_redirect(request, *args, **kwargs):
     try:
         upgrade_url = reverse("billing:upgrade_plan")
@@ -46,17 +46,6 @@ commerce_stub_patterns = [
     path("quotation/list/", upgrade_redirect, name="quotation_list"),
     path("orders/", upgrade_redirect, name="order_list"),
     path("invoice/<int:pk>/", upgrade_redirect, name="invoice_view"),
-]
-
-khataapp_stub_patterns = [
-    path("add-transaction/", upgrade_redirect, name="add_transaction"),
-    path("add-party/", upgrade_redirect, name="add_party"),
-    path("transactions/", upgrade_redirect, name="transaction_list"),
-    path("transactions/<int:pk>/", upgrade_redirect, name="transaction_view"),
-    path("transactions/<int:pk>/edit/", upgrade_redirect, name="transaction_edit"),
-    path("transactions/<int:pk>/delete/", upgrade_redirect, name="transaction_delete"),
-    path("parties/", upgrade_redirect, name="party_list"),
-    path("agents/", upgrade_redirect, name="field_agent_list"),
 ]
 
 central_engine_stub_patterns = [
@@ -293,7 +282,7 @@ urlpatterns = [
     path("api/v1/fraud/", include("fraud_detection.urls")),
     path("api/v1/integrations/", include("api_integrations.urls")),
     path("api/v1/wallet/", include("wallet.urls")),
-    path("api/v1/payments/", include("payments.api_urls")),
+    path("api/v1/payments/", include("billing.api_urls")),
     path("api/v1/kyc/", include("kyc.api_urls")),
     path("api/v1/billing/", include("billing.api_urls")),
     path("api/v1/crm/", include("crm.urls")),
@@ -336,10 +325,9 @@ urlpatterns = [
     # ---------------- Admin ----------------
     path('superadmin/', admin.site.urls),  # ✅ New admin URL
 
-    # ---------------- KhataApp (homepage, parties, transactions, reports) ----------------
+    # ---------------- Landing ----------------
     # path("app/khata/", include(("smart_khata.urls", "smart_khata"), namespace="smart_khata")),
     # path("app/engine/", include(("khataapp.core_engine.urls", "central_engine"), namespace="central_engine")),
-    # path("app/", include("khataapp.urls")),
     path("", landing, name="landing"),   # 👈 HOME PAGE
     path("privacy-policy/", privacy),
     path("terms/", terms),
@@ -347,13 +335,12 @@ urlpatterns = [
     # ---------------- Accounts (login/signup/dashboard) ----------------
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("billing/", include(("billing.urls", "billing"), namespace="billing")),
-    path("payments/", include(("payments.urls", "payments"), namespace="payments")),
+    path("payments/", include(("billing.urls", "payments"), namespace="payments")),
     path("kyc/", include(("kyc.urls", "kyc"), namespace="kyc")),
     # Root fallbacks (non-namespaced)
     *root_stub_patterns,
     # Fallback stubs so dashboard links resolve even when modules are disabled
     path("commerce/", include((commerce_stub_patterns, "commerce"), namespace="commerce")),
-    path("khataapp/", include((khataapp_stub_patterns, "khataapp"), namespace="khataapp")),
     path("engine/", include((central_engine_stub_patterns, "central_engine"), namespace="central_engine")),
     path("app/khata/", include((smart_khata_stub_patterns, "smart_khata"), namespace="smart_khata")),
     path("ledger/", include((ledger_stub_patterns, "ledger"), namespace="ledger")),

@@ -8,7 +8,7 @@ from django.db.models import Sum
 from accounts.models import UserProfile, DailySummary
 from billing.models import Plan, Subscription
 from core_settings.models import CompanySettings
-from khataapp.models import Transaction
+from accounts.models import LedgerEntry as Transaction
 from django.db.models.signals import post_migrate
 
 User = get_user_model()

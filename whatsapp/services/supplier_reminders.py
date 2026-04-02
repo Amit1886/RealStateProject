@@ -10,7 +10,7 @@ from django.utils import timezone
 
 try:
     from commerce.models import Order
-    from khataapp.models import Party
+    from accounts.models import UserProfile as Party
     REMINDERS_ENABLED = True
 except Exception:
     Order = Party = None

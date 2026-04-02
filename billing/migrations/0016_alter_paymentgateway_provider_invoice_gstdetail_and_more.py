@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('billing', '0015_plan_analytics_access_plan_crm_access_and_more'),
-        ('payments', '0002_rename_payments_pa_user_id_dcc045_idx_payments_pa_user_id_367e5d_idx_and_more'),
+        ('payments', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

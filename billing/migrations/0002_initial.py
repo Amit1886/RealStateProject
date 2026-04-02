@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("auth", "0012_alter_user_first_name_max_length"),
         ("billing", "0001_initial"),
-        ("khataapp", "0001_initial"),
+        ("accounts", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="payments",
-                to="khataapp.party",
+                to="accounts.userprofile",
             ),
         ),
         migrations.AddField(

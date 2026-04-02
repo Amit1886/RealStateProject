@@ -1,7 +1,7 @@
 # accounts/forms.py
 from django import forms
 from django.contrib.auth import get_user_model
-from khataapp.models import UserProfile
+from accounts.models import UserProfile
 
 User = get_user_model()
 
@@ -109,8 +109,7 @@ class UserProfileForm(forms.ModelForm):
             "email",
             "full_name", "mobile", "address",
             "business_name", "business_type", "gst_number",
-            "profile_picture", "plan", "bank_name", "account_number",
-            "ifsc_code", "upi_id", "qr_code"
+            "profile_picture", "plan",
         ]
 
     def __init__(self, *args, **kwargs):

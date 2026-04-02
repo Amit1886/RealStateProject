@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group
 from billing.services import ensure_free_plan, get_effective_plan
 from core_settings.models import CompanySettings
 from accounts.models import UserProfile as AccountsUserProfile
-from khataapp.models import UserProfile
+from accounts.models import UserProfile
 
 
 class Command(BaseCommand):

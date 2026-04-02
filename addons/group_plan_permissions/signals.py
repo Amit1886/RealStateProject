@@ -17,7 +17,7 @@ def _resolve_group_plan(user):
 def apply_group_plan_to_profile(sender, request, user, **kwargs):
     """If a user has no explicit UserProfile.plan, fill it from group->plan mapping."""
     try:
-        from khataapp.models import UserProfile
+        from accounts.models import UserProfile
 
         profile = UserProfile.objects.filter(user=user).select_related("plan").first()
         if not profile:

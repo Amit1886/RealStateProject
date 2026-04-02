@@ -7,7 +7,7 @@ from typing import Any, Optional
 from django.db import transaction
 
 from commerce.services.whatsapp_conversation import ConversationResult, handle_whatsapp_order_message
-from khataapp.models import Party
+from accounts.models import UserProfile as Party
 from whatsapp.models import Bot, BotFlow, BotMessage, Customer, WhatsAppAccount
 from whatsapp.services.smart_reply import smart_reply
 

@@ -12,7 +12,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 try:
-    from khataapp.models import Party
+    from accounts.models import UserProfile as Party
 except Exception:
     Party = None
 from whatsapp.models import BroadcastCampaign, Customer, WhatsAppAccount, WhatsAppMessage

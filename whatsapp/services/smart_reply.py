@@ -5,7 +5,7 @@ import re
 from typing import Optional
 
 from commerce.models import Order, Product
-from khataapp.models import Party
+from accounts.models import UserProfile as Party
 
 
 _WS = re.compile(r"\s+")

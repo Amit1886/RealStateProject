@@ -32,18 +32,18 @@ class LedgerEntry(models.Model):
     # ---- LINK TO CREDIT ACCOUNT (owner=user stored on CreditAccount) ----
     # NOTE: temporary allow null so migration can run if rows already exist.
     account = models.ForeignKey(
-        "khataapp.CreditAccount",
+        "accounts.UserProfile",
         on_delete=models.CASCADE,
-        related_name="ledger_entries",
+        related_name="ledger_account_entries",
         null=True,      # first add as nullable, later make non-nullable after populating
         blank=True
     )
 
     # ---- PARTY LINK ----
     party = models.ForeignKey(
-        "khataapp.Party",
+        "accounts.UserProfile",
         on_delete=models.CASCADE,
-        related_name="ledger_entries"
+        related_name="ledger_party_entries"
     )
 
     # ---- AMOUNT ----
@@ -113,15 +113,11 @@ class LedgerEntry(models.Model):
     def __str__(self):
         return f"{self.party.name} – {self.txn_type.upper()} ₹{self.amount}"
 
-@property
 def total_parties(self):
-    from khataapp.models import Party
-    return Party.objects.filter(owner=self.user).count()
+    return UserProfile.objects.filter(user=self.user).count()
 
-@property
 def total_transactions(self):
-    from khataapp.models import Transaction
-    return Transaction.objects.filter(party__owner=self.user).count()
+    return LedgerEntry.objects.filter(party__user=self.user).count()
 
 
 
@@ -320,6 +316,22 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+    @property
+    def owner(self):
+        return self.user
+
+    @property
+    def name(self):
+        return self.full_name or self.user.get_full_name() or self.user.username or self.user.email
+
+    @property
+    def whatsapp_number(self):
+        return self.mobile
+
+    @property
+    def party_type(self):
+        return "customer"
 
 
 # ----------------- AUTO CREATE PROFILE ON USER CREATION -----------------

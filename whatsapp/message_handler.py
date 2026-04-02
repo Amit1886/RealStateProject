@@ -13,7 +13,7 @@ import uuid
 from accounts.models import Expense, ExpenseCategory
 try:
     from commerce.models import Invoice, Order, OrderItem, Payment, Product
-    from khataapp.models import Party, Transaction as KhataTransaction
+    from accounts.models import LedgerEntry as KhataTransaction, UserProfile as Party
     ACCOUNTING_ENABLED = True
 except Exception:
     Invoice = Order = OrderItem = Payment = Product = Party = KhataTransaction = None

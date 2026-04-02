@@ -8,7 +8,7 @@ from django.dispatch import receiver
 from django.db.utils import OperationalError, ProgrammingError
 
 from .models import FeatureRegistry, Plan, PlanFeature, Subscription
-from khataapp.models import UserProfile as KhataUserProfile
+from accounts.models import UserProfile as KhataUserProfile
 from .models import OrderItem
 
 

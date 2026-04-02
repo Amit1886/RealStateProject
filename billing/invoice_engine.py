@@ -8,7 +8,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from core_settings.models import CompanySettings
-from khataapp.models import UserProfile
+from accounts.models import UserProfile
 
 from .models import GSTDetail, Invoice, InvoiceItem
 

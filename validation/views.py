@@ -35,7 +35,7 @@ def _ref_url(alert: FraudAlert) -> str:
         if alert.reference_type == "commerce.Invoice":
             return reverse("commerce:invoice_view", kwargs={"invoice_id": alert.reference_id})
         if alert.reference_type == "khataapp.Transaction":
-            return reverse("khataapp:transaction_view", kwargs={"id": alert.reference_id})
+            return reverse("accounts:expense_list")
         if alert.reference_type == "accounts.Expense":
             return reverse("accounts:expense_list")
     except Exception:

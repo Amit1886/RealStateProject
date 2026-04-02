@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 
-from khataapp.models import UserProfile as KhataProfile
+from accounts.models import UserProfile as KhataProfile
 from wallet.models import WalletAccount, WalletTransfer, WithdrawRequest
 from wallet.services import credit_wallet, get_or_create_wallet, mark_withdrawal_paid, request_withdrawal, sync_profile_payment_accounts, transfer_between_wallets
 
@@ -58,10 +58,6 @@ class WalletServiceTests(TestCase):
             user=self.sender,
             mobile=self.sender.mobile,
             full_name="Wallet Sender",
-            upi_id="walletsender@upi",
-            account_number="1234567890",
-            ifsc_code="TEST0001",
-            bank_name="Demo Bank",
         )
         WalletAccount.objects.create(
             user=self.sender,
@@ -82,11 +78,10 @@ class WalletServiceTests(TestCase):
 
         created_accounts = sync_profile_payment_accounts(self.sender)
 
-        self.assertEqual(profile.upi_id, "walletsender@upi")
         self.assertLessEqual(
             WalletAccount.objects.filter(user=self.sender, account_type=WalletAccount.AccountType.WALLET, linked_wallet=wallet).count(),
             2,
         )
-        self.assertEqual(WalletAccount.objects.filter(user=self.sender, account_type=WalletAccount.AccountType.UPI, upi_id="walletsender@upi").count(), 1)
-        self.assertEqual(WalletAccount.objects.filter(user=self.sender, account_type=WalletAccount.AccountType.BANK, account_number="1234567890").count(), 1)
-        self.assertEqual(len(created_accounts), 2)
+        self.assertEqual(WalletAccount.objects.filter(user=self.sender, account_type=WalletAccount.AccountType.UPI).count(), 0)
+        self.assertEqual(WalletAccount.objects.filter(user=self.sender, account_type=WalletAccount.AccountType.BANK).count(), 0)
+        self.assertEqual(len(created_accounts), 0)

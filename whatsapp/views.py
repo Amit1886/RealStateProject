@@ -246,7 +246,7 @@ def _resolve_owner_for_whatsapp_payload(payload: dict[str, Any]) -> Optional[Use
             return owner
 
         try:
-            from khataapp.models import Party
+            from accounts.models import UserProfile as Party
 
             d = _digits(from_number)
             d10 = d[-10:] if d else ""
@@ -403,7 +403,7 @@ def whatsapp_unified_webhook(request):
             from ai_ocr.invoice_reader import read_invoice_from_upload
             from procurement.automation_engine import create_purchase_draft_from_parsed, process_purchase_draft
             from procurement.models import InvoiceSource
-            from khataapp.models import Party
+            from accounts.models import UserProfile as Party
 
             data = b""
             if file_b64:

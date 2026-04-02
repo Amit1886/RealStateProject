@@ -61,7 +61,7 @@ class WhatsAppAccount(models.Model):
     store_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     store_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     quick_assign_agent = models.ForeignKey(
-        "khataapp.FieldAgent",
+        "agents.Agent",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -169,7 +169,7 @@ class Customer(models.Model):
     display_name = models.CharField(max_length=120, blank=True, default="")
 
     party = models.ForeignKey(
-        "khataapp.Party",
+        "accounts.UserProfile",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

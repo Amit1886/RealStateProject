@@ -26,7 +26,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from requests import request
 from .models import DailySummary
-from khataapp.models import Transaction
+from accounts.models import LedgerEntry as Transaction
 from django.utils.timezone import now
 from datetime import timedelta
 # accounts/views.py
@@ -34,7 +34,7 @@ from datetime import timedelta
 from .models import Expense, ExpenseCategory, LoyaltyPoints, LoyaltyProgram, MembershipTier, SpecialOffer
 import uuid
 import json
-from khataapp.models import UserProfile as KhataProfile
+from accounts.models import UserProfile as KhataProfile
 from django.views.decorators.http import require_POST, require_http_methods
 from billing.services import ensure_free_plan
 from billing.services import user_has_feature
@@ -49,8 +49,21 @@ from .utils import render_to_pdf_bytes, send_email_otp, send_sms_otp
 from .forms import SignupForm, LoginForm, OTPForm, UserProfileForm
 
 # External Models
-from khataapp.models import Party, UserProfile, FieldAgent, CollectorVisit, LoginLink, CompanySettings, OfflineMessage, ReminderLog
-from khataapp.utils.whatsapp_utils import send_whatsapp_message
+from accounts.models import UserProfile
+Party = UserProfile
+try:
+    from agents.models import Agent as FieldAgent
+except Exception:
+    FieldAgent = None
+try:
+    from core_settings.models import CompanySettings
+except Exception:
+    CompanySettings = None
+CollectorVisit = None
+LoginLink = None
+OfflineMessage = None
+ReminderLog = None
+from whatsapp.api_connector import send_whatsapp_message
 from billing.models import Plan, Subscription
 from billing.services import get_active_subscription, get_locked_feature_count, get_usage_summary
 from .services.crm_dashboard import build_crm_dashboard_context
@@ -223,23 +236,23 @@ def dashboard(request):
     # ====
     # RECENT DATA
     # ====
-    recent_parties_qs = Party.objects.filter(owner=user).order_by("-id")
+    recent_parties_qs = Party.objects.filter(user=user).order_by("-id")
     if PARTY_DEFER_FIELDS:
         recent_parties_qs = recent_parties_qs.defer(*PARTY_DEFER_FIELDS)
     recent_parties = recent_parties_qs[:5]
     recent_transactions = Transaction.objects.filter(
-        party__owner=user
+        party__user=user
     ).order_by("-id")[:5]
 
     # ====
     # OVERALL TOTALS
     # ====
     total_credit_all = Transaction.objects.filter(
-        party__owner=user, txn_type="credit"
+        party__user=user, txn_type="credit"
     ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
 
     total_debit_all = Transaction.objects.filter(
-        party__owner=user, txn_type="debit"
+        party__user=user, txn_type="debit"
     ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
 
     net_balance = total_debit_all - total_credit_all
@@ -294,7 +307,7 @@ def dashboard(request):
     # PARTY CARDS
     # ====
     party_cards = []
-    parties_qs = Party.objects.filter(owner=user).order_by("name")
+    parties_qs = Party.objects.filter(user=user).order_by("full_name", "user__username")
     if PARTY_DEFER_FIELDS:
         parties_qs = parties_qs.defer(*PARTY_DEFER_FIELDS)
     parties = parties_qs
@@ -303,7 +316,7 @@ def dashboard(request):
 
     # Avoid N+1 aggregation queries per party (dashboard can become very slow with many parties).
     txn_totals = (
-        Transaction.objects.filter(party__owner=user)
+        Transaction.objects.filter(party__user=user)
         .values("party_id", "txn_type")
         .annotate(total=Sum("amount"))
     )
@@ -322,7 +335,7 @@ def dashboard(request):
         try:
             invoice_total_by_party = {
                 r["order__party_id"]: (r["total"] or decimal_zero)
-                for r in Invoice.objects.filter(order__party__owner=user)
+                for r in Invoice.objects.filter(order__party__user=user)
                 .values("order__party_id")
                 .annotate(total=Sum("amount"))
             }
@@ -334,7 +347,7 @@ def dashboard(request):
         try:
             payment_total_by_party = {
                 r["invoice__order__party_id"]: (r["total"] or decimal_zero)
-                for r in Payment.objects.filter(invoice__order__party__owner=user)
+                for r in Payment.objects.filter(invoice__order__party__user=user)
                 .values("invoice__order__party_id")
                 .annotate(total=Sum("amount"))
             }
@@ -385,10 +398,10 @@ def dashboard(request):
     # ====
     if Quotation:
         try:
-            quotation_total = Quotation.objects.filter(party__owner=user).count()
-            quotation_pending_approval = Quotation.objects.filter(party__owner=user, status=Quotation.Status.VERIFIED).count()
-            quotation_converted = Quotation.objects.filter(party__owner=user, status=Quotation.Status.CONVERTED).count()
-            quotation_rejected = Quotation.objects.filter(party__owner=user, status=Quotation.Status.REJECTED).count()
+            quotation_total = Quotation.objects.filter(party__user=user).count()
+            quotation_pending_approval = Quotation.objects.filter(party__user=user, status=Quotation.Status.VERIFIED).count()
+            quotation_converted = Quotation.objects.filter(party__user=user, status=Quotation.Status.CONVERTED).count()
+            quotation_rejected = Quotation.objects.filter(party__user=user, status=Quotation.Status.REJECTED).count()
         except (OperationalError, ProgrammingError):
             # Migrations may not be applied yet (e.g., fresh DB). Keep dashboard functional.
             quotation_total = 0
@@ -408,7 +421,7 @@ def dashboard(request):
     if {"total_due", "credit_score"}.issubset(_party_fields):
         try:
             high_due_qs = (
-                Party.objects.filter(owner=user, party_type="customer", total_due__gt=0)
+                Party.objects.filter(user=user, party_type="customer", total_due__gt=0)
                 .order_by("-total_due", "name", "id")[:5]
             )
             last_sent_map = {
@@ -456,7 +469,7 @@ def dashboard(request):
                 "possible_duplicate__order",
                 "possible_duplicate__order__party",
             )
-            .filter(owner=user)
+            .filter(user=user)
             .order_by("-created_at", "-id")[:5]
         )
     except Exception:
@@ -4752,10 +4765,6 @@ def settings_workspace(request):
         profile.business_type,
         profile.address,
         profile.gst_number,
-        profile.upi_id,
-        profile.bank_name,
-        profile.account_number,
-        profile.ifsc_code,
     ]
     filled_profile_fields = sum(1 for value in profile_checks if _filled(value))
     total_profile_fields = len(profile_checks)
@@ -5200,6 +5209,9 @@ def collector_dashboard(request):
     agent = getattr(request.user, "field_agent_profile", None)
     if not agent or not agent.is_active:
         return HttpResponseForbidden("Collector access required.")
+    if CollectorVisit is None or OfflineMessage is None or CompanySettings is None:
+        messages.info(request, "Collector workspace is not available in this lightweight build.")
+        return redirect("accounts:dashboard")
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -5306,7 +5318,7 @@ def collector_dashboard(request):
                     f"Order #{order.id} received. Total ₹{order.total_amount()}. "
                     f"Agent: {agent.user.get_full_name() or agent.user.email}."
                 )
-                send_whatsapp_message(party.whatsapp_number.lstrip("+"), message)
+                send_whatsapp_message(to=party.whatsapp_number.lstrip("+"), message=message)
             except Exception:
                 OfflineMessage.objects.create(
                     party=party,
@@ -5622,7 +5634,7 @@ def signup_view(request):
                 # Auto-assign default plan (if configured) else Free plan + subscription.
                 # Note: subscriptions are the source of truth for `get_effective_plan()`.
                 try:
-                    from khataapp.models import CompanySettings as KhataCompanySettings
+                    from core_settings.models import CompanySettings as KhataCompanySettings
                     from billing.services import upgrade_subscription
 
                     cs = KhataCompanySettings.objects.select_related("default_plan").order_by("id").first()
@@ -5944,6 +5956,9 @@ def logout_view(request):
 # Login via Secure Link (WhatsApp First)
 # ---------------------------------------------------
 def login_link_view(request, token):
+    if LoginLink is None:
+        messages.error(request, "Secure login links are unavailable in this lightweight build.")
+        return redirect("accounts:login")
     link = get_object_or_404(LoginLink, token=token, is_active=True)
     if not link.is_valid():
         messages.error(request, "Link expired or invalid. Please request a new link.")
@@ -6040,7 +6055,7 @@ def daily_summary_view(request):
 
     if summary is None:
         transactions = Transaction.objects.filter(
-            party__owner=user,
+            party__user=user,
             date=today
         )
 
@@ -6092,7 +6107,7 @@ def update_daily_summary(user, refresh=False):
             return summary
 
     transactions = Transaction.objects.filter(
-        party__owner=user,
+        party__user=user,
         date=today
     )
 

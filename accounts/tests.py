@@ -12,7 +12,7 @@ from billing.models import Invoice
 from customers.models import Customer
 from deals.models import Deal
 from deals.models_commission import Commission
-from khataapp.models import CreditAccount, Party, UserProfile
+from accounts.models import UserProfile
 from leads.models import Lead, LeadActivity, LeadImportBatch, LeadSource, Property, PropertyImage, PropertyVideo
 from payments.models import PaymentOrder
 from rewards.models import ReferralEvent
@@ -103,8 +103,15 @@ class LedgerEntryBalanceRecalcTests(TestCase):
             username="owner",
             mobile="9000000100",
         )
-        self.party = Party.objects.create(owner=self.user, name="P1", party_type="customer")
-        self.account = CreditAccount.objects.create(owner=self.user, name="Primary Account", balance=0)
+        self.profile = UserProfile.objects.create(
+            user=self.user,
+            full_name="P1",
+            mobile=self.user.mobile,
+            business_name="",
+            business_type="",
+        )
+        self.party = self.profile
+        self.account = self.profile
 
     def test_update_running_balance_does_not_recurse(self):
         e1 = LedgerEntry.objects.create(
@@ -1232,10 +1239,6 @@ class SettingsWorkspaceProfileTests(TestCase):
                 "business_type": "Real Estate",
                 "gst_number": "09ABCDE1234F1Z5",
                 "address": "Sector 21, Noida",
-                "upi_id": "modern@upi",
-                "bank_name": "State Bank",
-                "account_number": "1234567890",
-                "ifsc_code": "SBIN0000123",
             },
             follow=True,
             secure=True,
@@ -1247,7 +1250,6 @@ class SettingsWorkspaceProfileTests(TestCase):
         self.user.refresh_from_db()
         self.assertEqual(self.user.first_name, "Settings User")
         self.assertEqual(profile.business_name, "Modern Estates")
-        self.assertEqual(profile.upi_id, "modern@upi")
 
 
 @override_settings(DESKTOP_MODE=True, OTP_BYPASS=True, DISABLE_CELERY=True)
