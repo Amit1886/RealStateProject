@@ -182,10 +182,10 @@ class DesktopReleaseAdmin(admin.ModelAdmin):
 
         base = os.getenv("LOCALAPPDATA") or os.getenv("APPDATA") or ""
         if base:
-            candidates.append(Path(base) / "JaisTechKhataBook" / "logs" / "desktop.log")
-            candidates.append(Path(base) / "JaisTechKhataBook" / "logs" / "django.log")
+            candidates.append(Path(base) / "Billentra" / "logs" / "desktop.log")
+            candidates.append(Path(base) / "Billentra" / "logs" / "django.log")
         try:
-            candidates.append(Path(tempfile.gettempdir()) / "JaisTechKhataBook" / "logs" / "desktop.log")
+            candidates.append(Path(tempfile.gettempdir()) / "Billentra" / "logs" / "desktop.log")
         except Exception:
             pass
         # Dev fallback: local logs folder (if any)
@@ -229,11 +229,11 @@ class DesktopReleaseAdmin(admin.ModelAdmin):
         base = (os.getenv("LOCALAPPDATA") or os.getenv("APPDATA") or "").strip()
         if base:
             try:
-                bases.append((Path(base) / "JaisTechKhataBook" / "logs").resolve())
+                bases.append((Path(base) / "Billentra" / "logs").resolve())
             except Exception:
                 pass
         try:
-            bases.append((Path(tempfile.gettempdir()) / "JaisTechKhataBook" / "logs").resolve())
+            bases.append((Path(tempfile.gettempdir()) / "Billentra" / "logs").resolve())
         except Exception:
             pass
         try:

@@ -52,10 +52,10 @@ def _download_filename(release: DesktopRelease) -> str:
         suffix = ""
     if not suffix:
         suffix = ".zip"
-    return f"JaisTechKhataBookDesktop-{release.version}{suffix}"
+    return f"BillentraDesktop-{release.version}{suffix}"
 
 def _download_apk_filename(release: DesktopRelease) -> str:
-    return f"JaisTechKhataBookAndroid-{release.version}.apk"
+    return f"BillentraAndroid-{release.version}.apk"
 
 
 @require_GET

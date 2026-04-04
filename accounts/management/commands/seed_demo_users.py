@@ -14,7 +14,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         User = get_user_model()
 
-        company, _ = CompanySettings.objects.get_or_create(company_name="JaisTech Demo Company")
+        company, _ = CompanySettings.objects.get_or_create(company_name="Billentra Demo Company")
 
         # Standard ERP role groups (used by role gating)
         role_groups = {}

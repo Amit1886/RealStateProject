@@ -21,7 +21,7 @@ RUNNING_RUNSERVER = "runserver" in sys.argv
 RUNNING_TESTS = "test" in sys.argv
 
 # Prefer a writable, persistent directory for desktop data (SQLite + uploads).
-APP_DATA_DIR = Path(os.getenv("LOCALAPPDATA") or os.getenv("APPDATA") or str(BASE_DIR)) / "JaisTechKhataBook"
+APP_DATA_DIR = Path(os.getenv("LOCALAPPDATA") or os.getenv("APPDATA") or str(BASE_DIR)) / "Billentra"
 DESKTOP_DATA_DIR = APP_DATA_DIR if (IS_FROZEN or DESKTOP_MODE) else BASE_DIR
 
 try:
@@ -595,13 +595,13 @@ LOGGING = {
 
 # ---------------- JAZZMIN ----------------
 JAZZMIN_SETTINGS = {
-    "site_title": "KhataBook Admin",
-    "site_header": "KhataBook",
-    "site_brand": "KhataBook",
+    "site_title": "Billentra Admin",
+    "site_header": "Billentra",
+    "site_brand": "Billentra",
     "site_logo": "img/logo.png",
     "login_logo": "img/logo.png",
-    "welcome_sign": "Welcome to KhataBook Admin",
-    "copyright": "KhataBook",
+    "welcome_sign": "Smart Billing. Easy Business.",
+    "copyright": "Billentra",
     "search_model": "accounts.User",
     "show_sidebar": True,
     "navigation_expanded": True,

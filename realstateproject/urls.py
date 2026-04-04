@@ -402,7 +402,7 @@ urlpatterns += [
 ]
 if getattr(settings, "SERVE_STATICFILES", False):
     # Use staticfiles finders so assets can be served from:
-    # - %LOCALAPPDATA%\JaisTechKhataBook\static (desktop persisted)
+    # - %LOCALAPPDATA%\Billentra\static (desktop persisted)
     # - bundled _MEIPASS/static (PyInstaller)
     # - app static directories (installed apps)
     urlpatterns += [
